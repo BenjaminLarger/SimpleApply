@@ -183,6 +183,15 @@ def main():
             # Create download section
             st.header("📥 Download Documents")
 
+            # Generate clean filenames
+            company_clean = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
+            position_clean = "".join(c for c in job_offer.job_title if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
+
+            cv_pdf_name = f"cv_{company_clean}_{position_clean}.pdf"
+            cv_html_name = f"cv_{company_clean}_{position_clean}.html"
+            cl_pdf_name = f"cover_letter_{company_clean}_{position_clean}.pdf"
+            cl_html_name = f"cover_letter_{company_clean}_{position_clean}.html"
+
             col_cv, col_cl = st.columns(2)
 
             with col_cv:
@@ -194,7 +203,7 @@ def main():
                 st.download_button(
                     label="📄 Download CV (PDF)",
                     data=cv_pdf,
-                    file_name="CV.pdf",
+                    file_name=cv_pdf_name,
                     mime="application/pdf",
                     use_container_width=True
                 )
@@ -202,7 +211,7 @@ def main():
                 st.download_button(
                     label="🌐 Download CV (HTML)",
                     data=cv_html,
-                    file_name="CV.html",
+                    file_name=cv_html_name,
                     mime="text/html",
                     use_container_width=True
                 )
@@ -216,7 +225,7 @@ def main():
                 st.download_button(
                     label="📄 Download Cover Letter (PDF)",
                     data=cl_pdf,
-                    file_name="Cover_Letter.pdf",
+                    file_name=cl_pdf_name,
                     mime="application/pdf",
                     use_container_width=True
                 )
@@ -224,7 +233,7 @@ def main():
                 st.download_button(
                     label="🌐 Download Cover Letter (HTML)",
                     data=cover_letter_html,
-                    file_name="Cover_Letter.html",
+                    file_name=cl_html_name,
                     mime="text/html",
                     use_container_width=True
                 )
