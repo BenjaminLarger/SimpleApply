@@ -9,7 +9,7 @@ from typing import Union
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
-from models import JobOffer
+from .models import JobOffer
 
 
 # Load environment variables

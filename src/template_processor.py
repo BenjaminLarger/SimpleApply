@@ -1,0 +1,229 @@
+"""
+Template processor module for generating personalized CVs and cover letters.
+
+This module handles loading HTML templates and replacing placeholder variables
+with actual user data, matched skills, selected projects, and job information.
+"""
+
+import re
+from pathlib import Path
+from datetime import date
+from typing import Dict, Any
+
+
+from .models import JobOffer, MatchedSkills, SelectedProjects, UserProfile, GeneratedContent
+
+
+class TemplateProcessor:
+    """Processes HTML templates with dynamic content insertion."""
+
+    def __init__(self, templates_dir: Path = Path("templates")):
+        self.templates_dir = templates_dir
+        self.cv_template_name = "cv_template.html"
+        self.cover_letter_template_name = "cover_letter_template.html"
+
+    def load_template(self, template_name: str) -> str:
+        """
+        Load HTML template from templates directory.
+
+        Args:
+            template_name: Name of the template file to load
+
+        Returns:
+            Template content as string
+
+        Raises:
+            FileNotFoundError: If template file doesn't exist
+            IOError: If template cannot be read
+        """
+        template_path = self.templates_dir / template_name
+
+        if not template_path.exists():
+            raise FileNotFoundError(f"Template not found: {template_path}")
+
+        try:
+            with open(template_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except IOError as e:
+            raise IOError(f"Failed to read template {template_path}: {e}")
+
+    def replace_placeholders(self, template: str, replacements: Dict[str, str]) -> str:
+        """
+        Replace placeholder variables in template with actual values.
+
+        Args:
+            template: HTML template content
+            replacements: Dictionary mapping placeholder patterns to replacement values
+
+        Returns:
+            Template with placeholders replaced
+        """
+        result = template
+
+        for placeholder, value in replacements.items():
+            # Replace HTML comments (<!-- PLACEHOLDER -->)
+            comment_pattern = f"<!--\\s*{re.escape(placeholder)}\\s*-->"
+            result = re.sub(comment_pattern, value, result, flags=re.IGNORECASE)
+
+            # Replace direct placeholders {PLACEHOLDER}
+            direct_pattern = f"\\{{\\s*{re.escape(placeholder)}\\s*\\}}"
+            result = re.sub(direct_pattern, value, result, flags=re.IGNORECASE)
+
+        return result
+
+    def generate_cv_replacements(
+        self,
+        job_offer: JobOffer,
+        user_profile: UserProfile,
+        matched_skills: MatchedSkills,
+        selected_projects: SelectedProjects
+    ) -> Dict[str, str]:
+        """
+        Generate replacement dictionary for CV template.
+
+        Args:
+            job_offer: Parsed job offer information
+            user_profile: User profile data
+            matched_skills: Skills matching results
+            selected_projects: Selected relevant projects
+
+        Returns:
+            Dictionary of placeholder -> replacement mappings
+        """
+        # Format skills for display (top 10 most relevant)
+        top_skills = matched_skills.relevant_technologies[:10]
+        skills_text = ", ".join(top_skills)
+
+        return {
+            "JOB TITLE": job_offer.job_title,
+            "TITLE OF THE SIDE PROJECT 1": selected_projects.project1.title,
+            "DESCRIPTION OF THE SIDE PROJECT 1 (Description length must be between 100 and 165 characters)":
+                selected_projects.project1.description,
+            "TITLE OF THE SIDE PROJECT 2": selected_projects.project2.title,
+            "DESCRIPTION OF THE SIDE PROJECT 2 (Description length must be between 100 and 165 characters)":
+                selected_projects.project2.description,
+            "10 relevant skills/tools": skills_text
+        }
+
+    def generate_cover_letter_replacements(
+        self,
+        job_offer: JobOffer,
+        user_profile: UserProfile,
+        matched_skills: MatchedSkills,
+        selected_projects: SelectedProjects
+    ) -> Dict[str, str]:
+        """
+        Generate replacement dictionary for cover letter template.
+
+        Args:
+            job_offer: Parsed job offer information
+            user_profile: User profile data
+            matched_skills: Skills matching results
+            selected_projects: Selected relevant projects
+
+        Returns:
+            Dictionary of placeholder -> replacement mappings
+        """
+        # Get top 3 achievements from matched skills
+        top_achievements = matched_skills.relevant_achievements[:3]
+
+        # Format relevant skills for cover letter
+        relevant_skills = ", ".join(matched_skills.relevant_technologies[:5])
+
+        # Generate company-specific motivation (simplified for now)
+        company_excitement = f"the opportunity to work with cutting-edge technology at {job_offer.company_name}"
+        role_attraction = f"it aligns perfectly with my experience in {', '.join(matched_skills.matched_skills[:3])}"
+
+        # Infer project/goal from job description (simplified)
+        specific_goal = "innovative software solutions that drive business growth"
+
+        return {
+            "Insert Date": date.today().strftime("%B %d, %Y"),
+            "Insert Company Name": job_offer.company_name,
+            "Insert Job Title": job_offer.job_title,
+            "Insert Achievement 1": top_achievements[0] if len(top_achievements) > 0 else "Developed scalable software solutions",
+            "Insert Achievement 2": top_achievements[1] if len(top_achievements) > 1 else "Collaborated effectively in cross-functional teams",
+            "Insert Achievement 3": top_achievements[2] if len(top_achievements) > 2 else "Implemented data-driven decision making processes",
+            "Insert specific detail about the company or role that excites you": company_excitement,
+            "Insert reason why you are drawn to the role": role_attraction,
+            "Insert Relevant Skills": relevant_skills,
+            "Insert specific project or goal mentioned in the job description": specific_goal
+        }
+
+    def _truncate_description(self, description: str, min_length: int, max_length: int) -> str:
+        """
+        Return description as-is without truncation.
+
+        Args:
+            description: Original description text
+            min_length: Minimum required length (unused)
+            max_length: Maximum allowed length (unused)
+
+        Returns:
+            Original description unchanged
+        """
+        return description
+
+    def process_templates(
+        self,
+        job_offer: JobOffer,
+        user_profile: UserProfile,
+        matched_skills: MatchedSkills,
+        selected_projects: SelectedProjects
+    ) -> GeneratedContent:
+        """
+        Process both CV and cover letter templates with provided data.
+
+        Args:
+            job_offer: Parsed job offer information
+            user_profile: User profile data
+            matched_skills: Skills matching results
+            selected_projects: Selected relevant projects
+
+        Returns:
+            GeneratedContent with processed HTML for both documents
+
+        Raises:
+            FileNotFoundError: If template files are not found
+            IOError: If templates cannot be processed
+        """
+        try:
+            # Load templates
+            cv_template = self.load_template(self.cv_template_name)
+            cover_letter_template = self.load_template(self.cover_letter_template_name)
+
+            # Generate replacements
+            cv_replacements = self.generate_cv_replacements(
+                job_offer, user_profile, matched_skills, selected_projects
+            )
+            cover_letter_replacements = self.generate_cover_letter_replacements(
+                job_offer, user_profile, matched_skills, selected_projects
+            )
+
+            # Process templates
+            cv_html = self.replace_placeholders(cv_template, cv_replacements)
+            cover_letter_html = self.replace_placeholders(cover_letter_template, cover_letter_replacements)
+
+            return GeneratedContent(
+                cv_html=cv_html,
+                cover_letter_html=cover_letter_html,
+                job_offer=job_offer,
+                matched_skills=matched_skills,
+                selected_projects=selected_projects
+            )
+
+        except (FileNotFoundError, IOError) as e:
+            raise IOError(f"Template processing failed: {e}")
+
+
+def create_template_processor(templates_dir: str = "templates") -> TemplateProcessor:
+    """
+    Factory function to create a configured TemplateProcessor instance.
+
+    Args:
+        templates_dir: Path to templates directory
+
+    Returns:
+        Configured TemplateProcessor instance
+    """
+    return TemplateProcessor(templates_dir=Path(templates_dir))

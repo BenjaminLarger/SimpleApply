@@ -8,7 +8,7 @@ import json
 from typing import List
 from dotenv import load_dotenv
 from openai import OpenAI
-from models import JobOffer, UserProfile, MatchedSkills
+from .models import JobOffer, UserProfile, MatchedSkills
 
 # Load environment variables
 load_dotenv()
