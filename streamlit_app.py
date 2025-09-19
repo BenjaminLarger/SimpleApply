@@ -33,8 +33,8 @@ def convert_html_to_pdf(html_content: str) -> bytes:
         return pdf_bytes
 
 
-def process_job_application(job_offer_text: str, user_profile: UserProfile) -> tuple[str, str]:
-    """Process job application and return CV and cover letter HTML."""
+def process_job_application(job_offer_text: str, user_profile: UserProfile) -> tuple[str, str, object, object]:
+    """Process job application and return CV, cover letter HTML, job offer data, and matched skills."""
     # Parse job offer
     job_offer = parse_job_offer(job_offer_text)
 
@@ -53,7 +53,7 @@ def process_job_application(job_offer_text: str, user_profile: UserProfile) -> t
         selected_projects=selected_projects
     )
 
-    return generated_content.cv_html, generated_content.cover_letter_html
+    return generated_content.cv_html, generated_content.cover_letter_html, job_offer, matched_skills
 
 
 def main():
@@ -147,9 +147,38 @@ def main():
 
         try:
             with st.spinner("🔍 Analyzing job offer and generating documents..."):
-                cv_html, cover_letter_html = process_job_application(job_offer_text, user_profile)
+                cv_html, cover_letter_html, job_offer, matched_skills = process_job_application(job_offer_text, user_profile)
 
             st.success("✅ Documents generated successfully!")
+
+            # Display job analysis results
+            st.header("🔍 Job Analysis Results")
+
+            col_job, col_skills = st.columns(2)
+
+            with col_job:
+                st.subheader("📋 Job Requirements")
+                st.write(f"**Position:** {job_offer.job_title}")
+                st.write(f"**Company:** {job_offer.company_name}")
+                st.write(f"**Location:** {job_offer.location}")
+
+                st.write("**Required Skills:**")
+                for skill in job_offer.skills_required:
+                    st.write(f"• {skill}")
+
+            with col_skills:
+                st.subheader("🎯 Skills Matching")
+                st.write(f"**Match Rate:** {len(matched_skills.matched_skills)}/{len(job_offer.skills_required)} ({len(matched_skills.matched_skills)/len(job_offer.skills_required)*100:.1f}%)")
+
+                st.write("**Matched Skills:**")
+                for skill in matched_skills.matched_skills:
+                    st.write(f"✅ {skill}")
+
+                if len(matched_skills.matched_skills) < len(job_offer.skills_required):
+                    missing_skills = set(job_offer.skills_required) - set(matched_skills.matched_skills)
+                    st.write("**Skills to Highlight:**")
+                    for skill in missing_skills:
+                        st.write(f"⚠️ {skill}")
 
             # Create download section
             st.header("📥 Download Documents")
