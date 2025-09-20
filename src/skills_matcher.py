@@ -9,6 +9,7 @@ from typing import List
 from dotenv import load_dotenv
 from openai import OpenAI
 from .models import JobOffer, UserProfile, MatchedSkills
+from .cost_tracker import track_openai_call
 
 # Load environment variables
 load_dotenv()
@@ -87,7 +88,7 @@ Please analyze and return a JSON object with the following structure:
 
 Guidelines for matching:
 1. MATCHED SKILLS: Include exact matches and close semantic matches (e.g., "Python" matches "Python development", "REST API" matches "RESTful APIs")
-2. RELEVANT TECHNOLOGIES: Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
+2. RELEVANT TECHNOLOGIES: Return exactly 10 relevant technologies. Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
 3. RELEVANT ACHIEVEMENTS: Select achievements that demonstrate skills needed for this role, even if not exact keyword matches
 4. Consider transferable skills and related technologies (e.g., if job requires React and user has JavaScript experience)
 5. Prioritize recent and significant experiences over older ones
@@ -98,14 +99,18 @@ Return only the JSON object, no additional text.
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4",
-            max_tokens=3000,
-            temperature=0.2,
+            model="gpt-4o",
+            temperature=0.1,
+            max_completion_tokens=4000,
+            response_format={"type": "json_object"},
             messages=[{
                 "role": "user",
                 "content": prompt
             }]
         )
+
+        # Track API call cost
+        track_openai_call(response, "skills_matching")
 
         # Extract and parse response
         response_text = response.choices[0].message.content.strip()
@@ -130,7 +135,7 @@ Return only the JSON object, no additional text.
             return matched_skills
 
         except json.JSONDecodeError as e:
-            raise SkillsMatcherError(f"Failed to parse JSON response from OpenAI: {e}")
+            raise SkillsMatcherError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
 
     except Exception as e:
         if isinstance(e, SkillsMatcherError):

@@ -9,6 +9,7 @@ from typing import List
 from dotenv import load_dotenv
 from openai import OpenAI
 from .models import JobOffer, Project, SelectedProjects
+from .cost_tracker import track_openai_call
 
 # Load environment variables
 load_dotenv()
@@ -105,14 +106,18 @@ Return only the JSON object, no additional text.
 
         # Call OpenAI API
         response = client.chat.completions.create(
-            model="gpt-4",
-            max_tokens=2000,
-            temperature=0.2,
+            model="gpt-4o",
+            temperature=0.1,
+            max_completion_tokens=4000,
+            response_format={"type": "json_object"},
             messages=[{
                 "role": "user",
                 "content": prompt
             }]
         )
+
+        # Track API call cost
+        track_openai_call(response, "project_selection")
 
         # Extract and parse response
         response_text = response.choices[0].message.content.strip()
@@ -154,7 +159,7 @@ Return only the JSON object, no additional text.
             return selected_projects
 
         except json.JSONDecodeError as e:
-            raise ProjectSelectorError(f"Failed to parse JSON response from OpenAI: {e}")
+            raise ProjectSelectorError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
 
     except Exception as e:
         if isinstance(e, ProjectSelectorError):

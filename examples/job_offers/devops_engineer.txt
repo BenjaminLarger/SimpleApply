@@ -1,0 +1,92 @@
+DevOps Engineer - Cloud Infrastructure
+CloudScale Systems | Seattle, WA / Remote | $110k-140k
+
+About CloudScale Systems
+We provide cloud infrastructure solutions for high-growth startups and enterprises. Our platform manages over 10,000 servers across multiple cloud providers, handling millions of deployments monthly.
+
+Position Description
+We're seeking an experienced DevOps Engineer to design, implement, and maintain our cloud infrastructure. You'll work with development teams to streamline deployment processes and ensure high availability of our services.
+
+Core Responsibilities
+- Design and maintain CI/CD pipelines using GitHub Actions and Jenkins
+- Manage Kubernetes clusters across AWS, GCP, and Azure
+- Implement Infrastructure as Code using Terraform and Ansible
+- Monitor system performance and implement alerting solutions
+- Automate deployment processes and reduce manual interventions
+- Ensure security best practices across all environments
+- Collaborate with development teams on containerization strategies
+
+Required Experience
+- 4+ years of DevOps or Site Reliability Engineering experience
+- Strong experience with AWS services (EC2, EKS, RDS, S3, CloudFormation)
+- Proficiency with Kubernetes and Docker containerization
+- Experience with Infrastructure as Code (Terraform, CloudFormation, or Pulumi)
+- CI/CD pipeline design and implementation (Jenkins, GitHub Actions, GitLab CI)
+- Configuration management tools (Ansible, Chef, or Puppet)
+- Monitoring and logging tools (Prometheus, Grafana, ELK stack)
+- Scripting languages (Python, Bash, or Go)
+
+Technical Skills
+- Container Orchestration: Kubernetes, Docker Swarm
+- Cloud Platforms: AWS (primary), GCP, Azure
+- IaC Tools: Terraform, Ansible, CloudFormation
+- CI/CD: Jenkins, GitHub Actions, ArgoCD
+- Monitoring: Prometheus, Grafana, DataDog, New Relic
+- Logging: ELK Stack, Fluentd, CloudWatch
+- Databases: PostgreSQL, MongoDB, Redis
+- Security: Vault, RBAC, network security
+
+Preferred Qualifications
+- AWS certifications (Solutions Architect, DevOps Engineer)
+- Experience with service mesh technologies (Istio, Linkerd)
+- Knowledge of GitOps workflows and ArgoCD
+- Experience with multi-cloud deployments
+- Familiarity with chaos engineering principles
+- Security scanning and compliance tools
+- Performance tuning and optimization experience
+
+Current Tech Stack
+- Cloud: AWS (primary), multi-cloud strategy
+- Containers: Kubernetes 1.28+, Docker
+- IaC: Terraform, Ansible
+- CI/CD: GitHub Actions, Jenkins
+- Monitoring: Prometheus, Grafana, DataDog
+- Databases: PostgreSQL, Redis, MongoDB
+- Languages: Python, Go, Bash
+
+Key Projects
+- Migrate legacy applications to Kubernetes
+- Implement blue-green deployment strategies
+- Build self-healing infrastructure systems
+- Optimize cloud costs through resource management
+- Enhance security posture with automated scanning
+
+What We Offer
+- Competitive salary with equity participation
+- Comprehensive health, dental, and vision coverage
+- Flexible PTO and remote work opportunities
+- Professional certification reimbursement
+- Home office setup stipend ($2500)
+- Annual technology learning budget ($3000)
+- 401(k) with company matching
+
+Growth Opportunities
+- Lead architecture decisions for new projects
+- Mentor junior engineers and interns
+- Contribute to open-source projects
+- Speak at conferences and meetups
+- Shape our cloud-native strategy
+
+Team Culture
+- Emphasis on automation and continuous improvement
+- Blameless post-mortems and learning culture
+- Regular technical discussions and knowledge sharing
+- Cross-functional collaboration
+- Innovation time for exploring new technologies
+
+Application Requirements
+Please include:
+1. Resume detailing your DevOps and cloud experience
+2. Examples of infrastructure projects you've led
+3. GitHub profile or portfolio showcasing automation scripts
+4. Brief description of your approach to infrastructure challenges

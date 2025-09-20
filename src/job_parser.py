@@ -10,6 +10,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from .models import JobOffer
+from .cost_tracker import track_openai_call
 
 
 # Load environment variables
@@ -90,16 +91,20 @@ Guidelines:
 Return only the JSON object, no additional text or explanation.
 """
 
-        # Call OpenAI API
+        # Call OpenAI API with structured output
         response = client.chat.completions.create(
-            model="gpt-4",
-            max_tokens=4000,
+            model="gpt-4o",
             temperature=0.1,
+            max_completion_tokens=4000,
+            response_format={"type": "json_object"},
             messages=[{
                 "role": "user",
                 "content": prompt
             }]
         )
+
+        # Track API call cost
+        track_openai_call(response, "job_parsing")
 
         # Extract and parse response
         response_text = response.choices[0].message.content.strip()
@@ -123,7 +128,7 @@ Return only the JSON object, no additional text or explanation.
             return job_offer
 
         except json.JSONDecodeError as e:
-            raise JobParserError(f"Failed to parse JSON response from OpenAI: {e}")
+            raise JobParserError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
 
     except Exception as e:
         if isinstance(e, JobParserError):

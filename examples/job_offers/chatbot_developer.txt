@@ -1,0 +1,38 @@
+About the job
+¿Te apasiona la ingeniería de datos y te interesa trabajar con tecnologías punteras en la nube?
+
+En knowmad mood estamos buscando un/a Data Developer con ganas de crecer, innovar y dejar huella en proyectos de alto impacto. Te unirás a un equipo dinámico y colaborativo, donde trabajarás con herramientas de AWS como Amazon Lex, Connect, Lambda y Athena, integrando soluciones inteligentes que mejoran la experiencia de usuario en entornos de contact center.
+
+
+¿Cuáles serán las responsabilidades?
+
+Desarrollar nuevas funcionalidades o modificaciones de flujos ya implementados en Amazon Connect.
+Monitorizar y realizar mejoras de los modelos de Amazon Lex para que estos modelos comprendan e identifiquen mejor el motivo por el cual llaman los clientes.
+Revisar y solucionar incidencias relacionadas que nos reporten respecto a los asistentes de voz.
+
+
+¿Cuáles son los requisitos técnicos?
+
+Amazon Lambda y Python: Implementación de funcionalidades en los flujos de llamada y desarrollo de lambdas para análisis.
+Consultas SQL: Conocimiento en Amazon Athena y Glue para consultas y análisis de datos.
+Amazon Lex: Creación y mantenimiento de bots conversacionales, revisión de expresiones no derivadas correctamente.
+Despliegues en entornos AWS: Gestión de despliegues de bots, flujos y lambdas en diferentes entornos de AWS.
+Experiencia en Amazon Connect: Desarrollo de flujos de llamadas automatizadas y gestión de interacciones dentro del contact center.
+
+
+¿Qué ofrecemos?
+
+Horario flexible ⏰: Adapta tu jornada a tu ritmo personal, coordinando con tu equipo para disfrutar de un balance ideal entre trabajo y vida personal.
+Vacaciones 🌴: Disfruta de 22 días de vacaciones más 2 días de libre disposición, además de los días 24 y 31 de diciembre libres.
+Contrato indefinido 📄: Desde el primer día, con la opción de elegir si prefieres recibir tu nómina en 12 o 14 pagas.
+Retribución flexible 💳: Elige cómo destinar parte de tu salario a productos o servicios con ventajas fiscales, como tarjeta restaurante, cheque guardería, seguro médico o formación.
+Club de ventajas: Accede a descuentos exclusivos en tecnología, ocio y formación para mejorar tu vida personal.
+Formación continua 📚: Accede a plataformas como Udemy Business, además de cursos de idiomas, certificaciones oficiales y formación técnica, adaptados a tus necesidades y ritmo.
+Plan de carrera 🌱: Diseña tu propio camino de crecimiento, con apoyo para avanzar dentro de la empresa, transitar entre comunidades o asumir roles de liderazgo.
+Bienestar integral 🧘: Acceso a nuestro programa de bienestar que incluye nutrición saludable, actividad física y talleres de equilibrio emocional.
+Conciliación +VIDA: Asistencia personal y familiar 24/7, con servicios como consultas médicas, legales, dentales, asistencia personal, renovación de carnet de conducir y más para ti y tus familiares.
+Ambiente de trabajo inclusivo 🌍: Fomentamos la diversidad generacional y cultural, con políticas activas de igualdad y diversidad en un entorno de más de 70 nacionalidades.
+Eventos sociales y diversión 🎉: Participa en actividades como videojuegos multijugador, escape rooms virtuales y más, para conectar con tus compañeros fuera del entorno laboral.
+
+
+¡Apúntate y te daremos más detalles! 👇

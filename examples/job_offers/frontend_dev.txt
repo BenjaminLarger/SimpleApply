@@ -1,0 +1,87 @@
+Frontend Developer - React Specialist
+WebFlow Studios | Austin, TX / Hybrid | $90k-120k
+
+About WebFlow Studios
+We're a creative digital agency specializing in beautiful, high-performance web applications for startups and established brands. Our team of 50+ designers and developers creates award-winning digital experiences.
+
+Role Overview
+We're looking for a passionate Frontend Developer to join our client projects team. You'll work on diverse projects ranging from e-commerce platforms to SaaS dashboards, collaborating with our design team to bring stunning mockups to life.
+
+Key Responsibilities
+- Build responsive, interactive web applications using React and TypeScript
+- Collaborate with UX/UI designers to implement pixel-perfect designs
+- Optimize applications for maximum speed and scalability
+- Ensure cross-browser compatibility and mobile responsiveness
+- Integrate with RESTful APIs and GraphQL endpoints
+- Participate in code reviews and maintain coding standards
+- Stay updated with latest frontend technologies and best practices
+
+Required Skills
+- 3+ years of React development experience
+- Strong proficiency in JavaScript ES6+ and TypeScript
+- Expert knowledge of HTML5, CSS3, and modern CSS frameworks
+- Experience with state management (Redux, Context API, or Zustand)
+- Proficiency with build tools (Webpack, Vite, or similar)
+- Knowledge of version control with Git
+- Understanding of responsive design principles
+- Experience with testing frameworks (Jest, React Testing Library)
+
+Preferred Skills
+- Next.js or other React frameworks experience
+- CSS-in-JS libraries (styled-components, emotion)
+- Animation libraries (Framer Motion, GSAP)
+- GraphQL and Apollo Client
+- Webpack configuration and optimization
+- Storybook for component development
+- Figma or Adobe XD for design collaboration
+- Basic understanding of backend technologies
+
+Technical Requirements
+- Frontend: React 18+, TypeScript, Next.js
+- Styling: Tailwind CSS, styled-components
+- State Management: Redux Toolkit, React Query
+- Testing: Jest, React Testing Library, Cypress
+- Tools: Vite, ESLint, Prettier
+- Design: Figma, Adobe Creative Suite
+
+Projects You'll Work On
+- E-commerce platforms with complex product catalogs
+- Real-time dashboards with data visualizations
+- Interactive marketing websites with animations
+- Progressive Web Apps (PWAs)
+- Component libraries and design systems
+
+What Makes You Stand Out
+- Portfolio showcasing modern, responsive web applications
+- Contributions to open-source projects
+- Experience with performance optimization
+- Understanding of accessibility (WCAG) standards
+- Knowledge of SEO best practices
+- Experience with headless CMS integration
+
+Benefits & Perks
+- Competitive salary with annual performance bonuses
+- Health, dental, and vision insurance (100% covered)
+- Flexible work arrangements (hybrid/remote options)
+- Professional development stipend ($2000/year)
+- Latest MacBook Pro and external monitor setup
+- Catered lunches and fully stocked kitchen
+- Annual team retreats and monthly team events
+- Gym membership reimbursement
+
+Culture & Environment
+- Collaborative, creative work environment
+- Flat organizational structure
+- Emphasis on work-life balance
+- Continuous learning and growth opportunities
+- Diverse, inclusive team culture
+- Client exposure and direct feedback
+
+Application Instructions
+Please submit:
+1. Your resume highlighting relevant experience
+2. Portfolio or GitHub showcasing your best React projects
+3. Brief cover letter explaining your interest in frontend development
+4. Optional: Link to any live projects or demo applications
+
+We're excited to see your creative solutions and technical expertise!

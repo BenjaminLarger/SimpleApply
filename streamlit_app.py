@@ -4,11 +4,9 @@ Streamlit UI for AI-Powered Job Application System
 """
 
 import streamlit as st
-import tempfile
 import os
 import yaml
-from pathlib import Path
-from io import BytesIO
+import logging
 from playwright.sync_api import sync_playwright
 
 from src.job_parser import parse_job_offer
@@ -16,10 +14,22 @@ from src.skills_matcher import match_skills
 from src.project_selector import select_projects
 from src.template_processor import create_template_processor
 from src.models import UserProfile
+from src.cost_tracker import get_cost_tracker, reset_cost_tracker
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 def convert_html_to_pdf(html_content: str) -> bytes:
     """Convert HTML content to PDF bytes using Playwright."""
+    logger.info("Starting HTML to PDF conversion")
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
@@ -30,21 +40,31 @@ def convert_html_to_pdf(html_content: str) -> bytes:
             print_background=True
         )
         browser.close()
+        logger.info("PDF conversion completed successfully")
         return pdf_bytes
 
 
 def process_job_application(job_offer_text: str, user_profile: UserProfile) -> tuple[str, str, object, object]:
     """Process job application and return CV, cover letter HTML, job offer data, and matched skills."""
+    logger.info("Starting job application processing")
+
     # Parse job offer
+    logger.info("Parsing job offer text")
     job_offer = parse_job_offer(job_offer_text)
+    logger.info(f"Parsed job offer for {job_offer.company_name} - {job_offer.job_title}")
 
     # Match skills
+    logger.info("Matching user skills with job requirements")
     matched_skills = match_skills(job_offer, user_profile)
+    logger.info(f"Found {len(matched_skills.matched_skills)} matching skills")
 
     # Select projects
+    logger.info("Selecting most relevant projects")
     selected_projects = select_projects(job_offer, user_profile.projects)
+    logger.info(f"Selected {selected_projects} projects")
 
     # Generate documents
+    logger.info("Generating CV and cover letter templates")
     template_processor = create_template_processor()
     generated_content = template_processor.process_templates(
         job_offer=job_offer,
@@ -52,11 +72,13 @@ def process_job_application(job_offer_text: str, user_profile: UserProfile) -> t
         matched_skills=matched_skills,
         selected_projects=selected_projects
     )
+    logger.info("Document generation completed successfully")
 
     return generated_content.cv_html, generated_content.cover_letter_html, job_offer, matched_skills
 
 
 def main():
+    logger.info("Starting Streamlit application")
     st.set_page_config(
         page_title="AI Job Application Generator",
         page_icon="🚀",
@@ -66,6 +88,13 @@ def main():
 
     st.title("🚀 AI-Powered Job Application System")
     st.markdown("Generate tailored CVs and cover letters by analyzing job offers")
+
+    # Cost tracking reset option
+    col_title, col_reset = st.columns([4, 1])
+    with col_reset:
+        if st.button("🔄 Reset Costs", help="Reset API cost tracking for this session"):
+            reset_cost_tracker()
+            st.success("✅ Cost tracking reset!")
 
     # Sidebar for user profile
     st.sidebar.header("👤 User Profile")
@@ -139,6 +168,28 @@ def main():
             st.write(f"**Experiences:** {len(user_profile.experiences)} entries")
             st.write(f"**Languages:** {', '.join(user_profile.languages)}")
 
+    # Sidebar cost display
+    st.sidebar.header("💰 Session Costs")
+    cost_tracker = get_cost_tracker()
+    if cost_tracker.total_calls > 0:
+        st.sidebar.metric(
+            label="Total Cost",
+            value=f"${cost_tracker.total_cost:.4f}",
+            help="Total API costs for this session"
+        )
+        st.sidebar.metric(
+            label="API Calls",
+            value=cost_tracker.total_calls,
+            help="Total API calls made"
+        )
+        st.sidebar.metric(
+            label="Tokens Used",
+            value=f"{cost_tracker.total_tokens:,}",
+            help="Total tokens consumed"
+        )
+    else:
+        st.sidebar.write("No API calls made yet")
+
     # Generate button
     if st.button("🚀 Generate CV & Cover Letter", type="primary", use_container_width=True):
         if not job_offer_text.strip():
@@ -150,6 +201,38 @@ def main():
                 cv_html, cover_letter_html, job_offer, matched_skills = process_job_application(job_offer_text, user_profile)
 
             st.success("✅ Documents generated successfully!")
+
+            # Display cost information
+            cost_tracker = get_cost_tracker()
+            if cost_tracker.total_calls > 0:
+                with st.expander("💰 API Cost Summary", expanded=False):
+                    col_cost1, col_cost2 = st.columns(2)
+
+                    with col_cost1:
+                        st.metric(
+                            label="Total Cost",
+                            value=f"${cost_tracker.total_cost:.4f} USD",
+                            help="Total cost of OpenAI API calls for this generation"
+                        )
+                        st.metric(
+                            label="Total Tokens",
+                            value=f"{cost_tracker.total_tokens:,}",
+                            help="Total tokens used across all API calls"
+                        )
+
+                    with col_cost2:
+                        st.metric(
+                            label="API Calls",
+                            value=cost_tracker.total_calls,
+                            help="Number of API calls made"
+                        )
+
+                        # Show cost breakdown
+                        summary = cost_tracker.get_summary()
+                        if summary["operations"]:
+                            st.write("**Cost by Operation:**")
+                            for op, stats in summary["operations"].items():
+                                st.write(f"• {op}: ${stats['cost']:.4f}")
 
             # Display job analysis results
             st.header("🔍 Job Analysis Results")
@@ -251,4 +334,6 @@ def main():
 
 
 if __name__ == "__main__":
+    print("🚀 Starting AI Job Application System...")
+    logger.info("Application started")
     main()

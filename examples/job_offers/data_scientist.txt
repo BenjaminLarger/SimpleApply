@@ -1,0 +1,63 @@
+Data Scientist - Machine Learning
+DataTech Solutions | San Francisco, CA / Remote | $130k-170k
+
+About DataTech Solutions
+We're an AI-first company helping enterprises make data-driven decisions. Our platform analyzes billions of data points to provide actionable insights for Fortune 500 companies.
+
+Position Summary
+Join our ML team to build predictive models and data pipelines that power our core analytics platform. You'll work with cutting-edge technologies and massive datasets to solve complex business problems.
+
+Key Responsibilities
+- Develop and deploy machine learning models for predictive analytics
+- Build and maintain data pipelines using Python and SQL
+- Perform statistical analysis and hypothesis testing
+- Create data visualizations and dashboards
+- Collaborate with engineering teams on model deployment
+- Present findings to stakeholders and clients
+
+Required Qualifications
+- PhD/Masters in Data Science, Statistics, Computer Science, or related field
+- 3+ years of hands-on experience in data science and machine learning
+- Expert-level Python programming (pandas, numpy, scikit-learn)
+- Strong experience with TensorFlow or PyTorch
+- Proficiency in SQL and data warehousing concepts
+- Statistical analysis and hypothesis testing expertise
+- Experience with A/B testing and experimental design
+- Machine learning model deployment and monitoring experience
+
+Preferred Qualifications
+- Cloud platforms experience (AWS, GCP, or Azure)
+- Big data tools knowledge (Apache Spark, Hadoop)
+- Data visualization tools (Tableau, PowerBI, or similar)
+- Experience with MLOps and model versioning
+- Knowledge of deep learning architectures
+- Experience with time series analysis
+- Familiarity with NLP and computer vision
+
+Technical Stack
+- Languages: Python, R, SQL
+- ML Libraries: TensorFlow, PyTorch, scikit-learn, XGBoost
+- Data Tools: Apache Spark, Airflow, dbt
+- Cloud: AWS (SageMaker, Redshift, S3)
+- Visualization: Tableau, Jupyter notebooks
+
+Projects You'll Work On
+- Customer churn prediction models
+- Real-time recommendation systems
+- Fraud detection algorithms
+- Market trend analysis and forecasting
+- Natural language processing for sentiment analysis
+
+What We Offer
+- Competitive compensation with equity upside
+- Comprehensive health benefits
+- Flexible PTO and remote work options
+- $3000 annual learning and development budget
+- Top-tier hardware and software tools
+- Conference attendance and training opportunities
+
+Application Process
+Please submit your resume along with:
+1. A portfolio showcasing your data science projects
+2. Links to any published research or blog posts
+3. A brief explanation of your most impactful ML project

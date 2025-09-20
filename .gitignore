@@ -1,5 +1,7 @@
 .env
 .venv
 CLAUDE.md
-*.pyc
-./output*
+*.pyc*
+*/__pycache__/
+output/*
+app.log

@@ -1,0 +1,45 @@
+Senior Software Engineer - Backend
+TechCorp Inc. | Remote | $120k-150k
+
+About TechCorp Inc.
+We're a fast-growing fintech startup revolutionizing digital payments. Our platform processes millions of transactions daily and serves customers across 50+ countries.
+
+Position Overview
+We're seeking a talented Senior Software Engineer to join our backend team. You'll be responsible for designing and implementing scalable microservices, optimizing database performance, and ensuring high availability of our payment systems.
+
+Key Responsibilities
+- Design and develop RESTful APIs and microservices
+- Optimize database queries and implement caching strategies
+- Collaborate with frontend teams on API design
+- Implement monitoring and alerting systems
+- Participate in code reviews and technical discussions
+- Mentor junior developers
+
+Required Skills & Experience
+- 5+ years of Python development experience
+- Strong experience with Django or Flask frameworks
+- Proficiency in PostgreSQL and database optimization
+- Experience with Redis for caching and session management
+- Knowledge of AWS cloud services (EC2, RDS, S3, Lambda)
+- Understanding of RESTful API design principles
+- Experience with Git version control
+- Strong problem-solving and debugging skills
+
+Nice to Have
+- Docker and Kubernetes experience
+- CI/CD pipeline setup (GitHub Actions, Jenkins)
+- Microservices architecture knowledge
+- Experience with message queues (RabbitMQ, Kafka)
+- Knowledge of security best practices
+- Experience in fintech or payment systems
+
+What We Offer
+- Competitive salary and equity package
+- Remote-first culture with flexible hours
+- Health, dental, and vision insurance
+- Professional development budget
+- Annual company retreats
+- State-of-the-art equipment
+
+How to Apply
+Send your resume and a brief cover letter explaining why you're interested in joining our mission to transform digital payments.
