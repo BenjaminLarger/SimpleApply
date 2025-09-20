@@ -31,44 +31,58 @@ def get_openai_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
-def select_projects(job_offer: JobOffer, projects: List[Project]) -> SelectedProjects:
+def validate_projects_input(projects: List[Project]) -> None:
     """
-    Select the 2 most relevant projects based on job requirements using AI intelligence.
+    Validate that sufficient projects are available for selection.
 
     Args:
-        job_offer: Parsed job offer information
+        projects: List of user's projects
+
+    Raises:
+        ProjectSelectorError: If insufficient projects available
+    """
+    if len(projects) < 2:
+        raise ProjectSelectorError(f"Need at least 2 projects, but only {len(projects)} available")
+
+
+def prepare_projects_data(projects: List[Project]) -> List[dict]:
+    """
+    Prepare projects data for analysis.
+
+    Args:
         projects: List of user's projects
 
     Returns:
-        SelectedProjects: Selected projects with reasoning
-
-    Raises:
-        ProjectSelectorError: If selection fails or API error occurs
+        List of project dictionaries with analysis-ready format
     """
-    try:
-        if len(projects) < 2:
-            raise ProjectSelectorError(f"Need at least 2 projects, but only {len(projects)} available")
+    projects_data = []
+    for i, project in enumerate(projects):
+        project_info = {
+            "index": i,
+            "title": project.title,
+            "description": project.description,
+            "technologies": project.technologies,
+            "url": project.url,
+            "start_date": project.start_date,
+            "end_date": project.end_date,
+            "status": project.status
+        }
+        projects_data.append(project_info)
+    return projects_data
 
-        # Get OpenAI client
-        client = get_openai_client()
 
-        # Prepare projects data for analysis
-        projects_data = []
-        for i, project in enumerate(projects):
-            project_info = {
-                "index": i,
-                "title": project.title,
-                "description": project.description,
-                "technologies": project.technologies,
-                "url": project.url,
-                "start_date": project.start_date,
-                "end_date": project.end_date,
-                "status": project.status
-            }
-            projects_data.append(project_info)
+def create_project_selection_prompt(job_offer: JobOffer, projects_data: List[dict]) -> str:
+    """
+    Create comprehensive prompt for project selection.
 
-        # Create comprehensive prompt
-        prompt = f"""
+    Args:
+        job_offer: Parsed job offer information
+        projects_data: Prepared projects data
+
+    Returns:
+        Formatted prompt string
+    """
+    return f"""
 You are an expert career counselor specializing in project selection for job applications. Analyze the job requirements and select the 2 most relevant projects that best demonstrate the candidate's suitability for this role.
 
 JOB OFFER:
@@ -104,62 +118,124 @@ Guidelines:
 Return only the JSON object, no additional text.
 """
 
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            temperature=0.1,
-            max_completion_tokens=4000,
-            response_format={"type": "json_object"},
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
+
+def call_openai_for_project_selection(prompt: str):
+    """
+    Call OpenAI API for project selection.
+
+    Args:
+        prompt: Formatted prompt for project selection
+
+    Returns:
+        OpenAI API response
+
+    Raises:
+        ProjectSelectorError: If API call fails
+    """
+    client = get_openai_client()
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0.1,
+        max_completion_tokens=4000,
+        response_format={"type": "json_object"},
+        messages=[{
+            "role": "user",
+            "content": prompt
+        }]
+    )
+
+    track_openai_call(response, "project_selection")
+    return response
+
+
+def validate_selection_indices(selection_data: dict, projects: List[Project]) -> tuple[int, int]:
+    """
+    Validate project selection indices.
+
+    Args:
+        selection_data: Parsed selection response data
+        projects: List of available projects
+
+    Returns:
+        Tuple of validated (project1_index, project2_index)
+
+    Raises:
+        ProjectSelectorError: If indices are invalid
+    """
+    project1_index = selection_data["project1_index"]
+    project2_index = selection_data["project2_index"]
+
+    if not (0 <= project1_index < len(projects)):
+        raise ProjectSelectorError(f"Invalid project1_index: {project1_index}")
+
+    if not (0 <= project2_index < len(projects)):
+        raise ProjectSelectorError(f"Invalid project2_index: {project2_index}")
+
+    if project1_index == project2_index:
+        raise ProjectSelectorError("Cannot select the same project twice")
+
+    return project1_index, project2_index
+
+
+def parse_selection_response(response_text: str, projects: List[Project]) -> SelectedProjects:
+    """
+    Parse OpenAI response and create SelectedProjects model.
+
+    Args:
+        response_text: JSON response from OpenAI
+        projects: List of available projects
+
+    Returns:
+        SelectedProjects model instance
+
+    Raises:
+        ProjectSelectorError: If parsing or validation fails
+    """
+    try:
+        selection_data = json.loads(response_text)
+
+        required_fields = ["project1_index", "project2_index", "selection_reasoning"]
+        for field in required_fields:
+            if field not in selection_data:
+                raise ProjectSelectorError(f"Missing required field: {field}")
+
+        project1_index, project2_index = validate_selection_indices(selection_data, projects)
+
+        selected_project1 = projects[project1_index]
+        selected_project2 = projects[project2_index]
+
+        return SelectedProjects(
+            project1=selected_project1,
+            project2=selected_project2,
+            selection_reasoning=selection_data["selection_reasoning"]
         )
 
-        # Track API call cost
-        track_openai_call(response, "project_selection")
+    except json.JSONDecodeError as e:
+        raise ProjectSelectorError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
 
-        # Extract and parse response
+
+def select_projects(job_offer: JobOffer, projects: List[Project]) -> SelectedProjects:
+    """
+    Select the 2 most relevant projects based on job requirements using AI intelligence.
+
+    Args:
+        job_offer: Parsed job offer information
+        projects: List of user's projects
+
+    Returns:
+        SelectedProjects: Selected projects with reasoning
+
+    Raises:
+        ProjectSelectorError: If selection fails or API error occurs
+    """
+    try:
+        validate_projects_input(projects)
+        projects_data = prepare_projects_data(projects)
+        prompt = create_project_selection_prompt(job_offer, projects_data)
+        response = call_openai_for_project_selection(prompt)
         response_text = response.choices[0].message.content.strip()
-
-        try:
-            # Parse JSON response
-            selection_data = json.loads(response_text)
-
-            # Validate required fields
-            required_fields = ["project1_index", "project2_index", "selection_reasoning"]
-            for field in required_fields:
-                if field not in selection_data:
-                    raise ProjectSelectorError(f"Missing required field: {field}")
-
-            # Validate indices
-            project1_index = selection_data["project1_index"]
-            project2_index = selection_data["project2_index"]
-
-            if not (0 <= project1_index < len(projects)):
-                raise ProjectSelectorError(f"Invalid project1_index: {project1_index}")
-
-            if not (0 <= project2_index < len(projects)):
-                raise ProjectSelectorError(f"Invalid project2_index: {project2_index}")
-
-            if project1_index == project2_index:
-                raise ProjectSelectorError("Cannot select the same project twice")
-
-            # Get selected projects
-            selected_project1 = projects[project1_index]
-            selected_project2 = projects[project2_index]
-
-            # Create SelectedProjects model
-            selected_projects = SelectedProjects(
-                project1=selected_project1,
-                project2=selected_project2,
-                selection_reasoning=selection_data["selection_reasoning"]
-            )
-
-            return selected_projects
-
-        except json.JSONDecodeError as e:
-            raise ProjectSelectorError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
+        return parse_selection_response(response_text, projects)
 
     except Exception as e:
         if isinstance(e, ProjectSelectorError):

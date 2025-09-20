@@ -8,7 +8,7 @@ with actual user data, matched skills, selected projects, and job information.
 import re
 from pathlib import Path
 from datetime import date
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 
 from .models import JobOffer, MatchedSkills, SelectedProjects, UserProfile, GeneratedContent
@@ -90,8 +90,8 @@ class TemplateProcessor:
         Returns:
             Dictionary of placeholder -> replacement mappings
         """
-        # Format skills for display (top 10 most relevant)
-        top_skills = matched_skills.relevant_technologies[:10]
+        # Format skills for display (top 20 most relevant)
+        top_skills = matched_skills.relevant_technologies[:20]
         skills_text = ", ".join(top_skills)
 
         return {
@@ -102,7 +102,56 @@ class TemplateProcessor:
             "TITLE OF THE SIDE PROJECT 2": selected_projects.project2.title,
             "DESCRIPTION OF THE SIDE PROJECT 2 (Description length must be between 100 and 165 characters)":
                 selected_projects.project2.description,
-            "10 relevant skills/tools": skills_text
+            "20 relevant skills/tools": skills_text
+        }
+
+    def _get_achievements_with_fallbacks(self, matched_skills: MatchedSkills) -> List[str]:
+        """
+        Get top 3 achievements with fallback defaults.
+
+        Args:
+            matched_skills: Skills matching results
+
+        Returns:
+            List of 3 achievements (with fallbacks if needed)
+        """
+        top_achievements = matched_skills.relevant_achievements[:3]
+        fallback_achievements = [
+            "Developed scalable software solutions",
+            "Collaborated effectively in cross-functional teams",
+            "Implemented data-driven decision making processes"
+        ]
+
+        achievements = []
+        for i in range(3):
+            if i < len(top_achievements):
+                achievements.append(top_achievements[i])
+            else:
+                achievements.append(fallback_achievements[i])
+
+        return achievements
+
+    def _generate_personalized_content(self, job_offer: JobOffer, matched_skills: MatchedSkills) -> Dict[str, str]:
+        """
+        Generate personalized content for cover letter.
+
+        Args:
+            job_offer: Parsed job offer information
+            matched_skills: Skills matching results
+
+        Returns:
+            Dictionary with personalized content
+        """
+        company_excitement = f"the opportunity to work with cutting-edge technology at {job_offer.company_name}"
+        role_attraction = f"it aligns perfectly with my experience in {', '.join(matched_skills.matched_skills[:3])}"
+        specific_goal = "innovative software solutions that drive business growth"
+        relevant_skills = ", ".join(matched_skills.relevant_technologies[:5])
+
+        return {
+            "company_excitement": company_excitement,
+            "role_attraction": role_attraction,
+            "specific_goal": specific_goal,
+            "relevant_skills": relevant_skills
         }
 
     def generate_cover_letter_replacements(
@@ -124,30 +173,20 @@ class TemplateProcessor:
         Returns:
             Dictionary of placeholder -> replacement mappings
         """
-        # Get top 3 achievements from matched skills
-        top_achievements = matched_skills.relevant_achievements[:3]
-
-        # Format relevant skills for cover letter
-        relevant_skills = ", ".join(matched_skills.relevant_technologies[:5])
-
-        # Generate company-specific motivation (simplified for now)
-        company_excitement = f"the opportunity to work with cutting-edge technology at {job_offer.company_name}"
-        role_attraction = f"it aligns perfectly with my experience in {', '.join(matched_skills.matched_skills[:3])}"
-
-        # Infer project/goal from job description (simplified)
-        specific_goal = "innovative software solutions that drive business growth"
+        achievements = self._get_achievements_with_fallbacks(matched_skills)
+        personalized = self._generate_personalized_content(job_offer, matched_skills)
 
         return {
             "Insert Date": date.today().strftime("%B %d, %Y"),
             "Insert Company Name": job_offer.company_name,
             "Insert Job Title": job_offer.job_title,
-            "Insert Achievement 1": top_achievements[0] if len(top_achievements) > 0 else "Developed scalable software solutions",
-            "Insert Achievement 2": top_achievements[1] if len(top_achievements) > 1 else "Collaborated effectively in cross-functional teams",
-            "Insert Achievement 3": top_achievements[2] if len(top_achievements) > 2 else "Implemented data-driven decision making processes",
-            "Insert specific detail about the company or role that excites you": company_excitement,
-            "Insert reason why you are drawn to the role": role_attraction,
-            "Insert Relevant Skills": relevant_skills,
-            "Insert specific project or goal mentioned in the job description": specific_goal
+            "Insert Achievement 1": achievements[0],
+            "Insert Achievement 2": achievements[1],
+            "Insert Achievement 3": achievements[2],
+            "Insert specific detail about the company or role that excites you": personalized["company_excitement"],
+            "Insert reason why you are drawn to the role": personalized["role_attraction"],
+            "Insert Relevant Skills": personalized["relevant_skills"],
+            "Insert specific project or goal mentioned in the job description": personalized["specific_goal"]
         }
 
     def _truncate_description(self, description: str, min_length: int, max_length: int) -> str:

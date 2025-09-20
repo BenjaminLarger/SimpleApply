@@ -140,7 +140,7 @@ class TestTemplateProcessor:
         assert replacements["JOB TITLE"] == "Senior Python Developer"
         assert replacements["TITLE OF THE SIDE PROJECT 1"] == "E-commerce Platform"
         assert replacements["TITLE OF THE SIDE PROJECT 2"] == "Data Analytics Dashboard"
-        assert "Python" in replacements["10 relevant skills/tools"]
+        assert "Python" in replacements["20 relevant skills/tools"]
 
     def test_generate_cover_letter_replacements(self, template_processor, sample_job_offer,
                                               sample_user_profile, sample_matched_skills, sample_selected_projects):

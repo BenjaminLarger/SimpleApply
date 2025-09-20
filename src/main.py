@@ -99,8 +99,8 @@ def save_html_file(content: str, output_path: Path, description: str) -> None:
         raise IOError(f"Failed to save {description.lower()}: {e}")
 
 
-def main():
-    """Main entry point for the job application system."""
+def setup_argument_parser() -> argparse.ArgumentParser:
+    """Setup and configure command line argument parser."""
     parser = argparse.ArgumentParser(
         description="AI-Powered Job Application System - Generate tailored CV and cover letter from job offer",
         epilog="Examples:\n"
@@ -134,16 +134,11 @@ def main():
         action="version",
         version="AI-Powered Job Application System v1.0.0"
     )
+    return parser
 
-    args = parser.parse_args()
 
-    # Set verbose mode for detailed output
-    verbose = args.verbose
-
-    # Create output directory if it doesn't exist
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(exist_ok=True)
-
+def print_configuration(args, verbose: bool) -> None:
+    """Print system configuration and input parameters."""
     print("🚀 AI-Powered Job Application System")
     print("=" * 40)
 
@@ -154,105 +149,163 @@ def main():
         print(f"   Output Directory: {args.output_dir}")
         print(f"   Verbose Mode: Enabled")
 
+    print(f"📄 Processing job offer: {args.job_offer}")
+    print(f"👤 Using profile: {args.profile}")
+    print(f"📁 Output directory: {args.output_dir}")
+
+
+def load_and_display_job_offer(job_offer_input: str, verbose: bool) -> str:
+    """Load job offer and display loading information."""
+    print("\n🔍 Step 1: Loading job offer...")
+    job_offer_text = load_job_offer(job_offer_input)
+    print(f"   Job offer loaded ({len(job_offer_text)} characters)")
+
+    if verbose:
+        input_type = "file" if Path(job_offer_input).exists() else "direct text"
+        print(f"   Input type: {input_type}")
+        if len(job_offer_text) > 200:
+            print(f"   Preview: {job_offer_text[:200]}...")
+
+    return job_offer_text
+
+
+def load_and_display_user_profile(profile_path: str, verbose: bool) -> UserProfile:
+    """Load user profile and display profile information."""
+    print("\n👤 Step 2: Loading user profile...")
+    user_profile = load_user_profile(profile_path)
+    print(f"   Profile loaded for {user_profile.personal_info.name}")
+    print(f"   Skills: {len(user_profile.skills)}")
+    print(f"   Projects: {len(user_profile.projects)}")
+    print(f"   Experiences: {len(user_profile.experiences)}")
+
+    if verbose:
+        print(f"   Email: {user_profile.personal_info.email}")
+        print(f"   Languages: {', '.join(user_profile.languages)}")
+        if user_profile.projects:
+            print(f"   Available projects: {', '.join([p.title for p in user_profile.projects])}")
+
+    return user_profile
+
+
+def parse_and_display_job_offer(job_offer_text: str, verbose: bool):
+    """Parse job offer and display parsing results."""
+    print("\n🔧 Step 3: Parsing job offer...")
+    job_offer = parse_job_offer(job_offer_text)
+    print(f"   Job Title: {job_offer.job_title}")
+    print(f"   Company: {job_offer.company_name}")
+    print(f"   Required Skills: {len(job_offer.skills_required)}")
+
+    if verbose:
+        print(f"   Location: {job_offer.location}")
+        print(f"   Skills required: {', '.join(job_offer.skills_required[:5])}{'...' if len(job_offer.skills_required) > 5 else ''}")
+
+    return job_offer
+
+
+def match_and_display_skills(job_offer, user_profile, verbose: bool):
+    """Match skills and display matching results."""
+    print("\n🎯 Step 4: Matching skills...")
+    matched_skills = match_skills(job_offer, user_profile)
+    print(f"   Matched Skills: {len(matched_skills.matched_skills)}")
+    print(f"   Relevant Technologies: {len(matched_skills.relevant_technologies)}")
+    print(f"   Relevant Achievements: {len(matched_skills.relevant_achievements)}")
+
+    if verbose:
+        print(f"   Top matched skills: {', '.join(matched_skills.matched_skills[:3])}{'...' if len(matched_skills.matched_skills) > 3 else ''}")
+        total_required = len(job_offer.skills_required)
+        matched_count = len(matched_skills.matched_skills)
+        match_percentage = (matched_count / total_required * 100) if total_required > 0 else 0.0
+        print(f"   Skills match rate: {matched_count}/{total_required} ({match_percentage:.1f}%)")
+
+    return matched_skills
+
+
+def select_and_display_projects(job_offer, projects):
+    """Select projects and display selection results."""
+    print("\n📋 Step 5: Selecting relevant projects...")
+    selected_projects = select_projects(job_offer, projects)
+    print(f"   Selected Project 1: {selected_projects.project1.title}")
+    print(f"   Selected Project 2: {selected_projects.project2.title}")
+    return selected_projects
+
+
+def generate_and_display_documents(job_offer, user_profile, matched_skills, selected_projects, verbose: bool):
+    """Generate documents and display generation progress."""
+    print("\n📝 Step 6: Generating documents...")
+    template_processor = create_template_processor()
+    generated_content = template_processor.process_templates(
+        job_offer=job_offer,
+        user_profile=user_profile,
+        matched_skills=matched_skills,
+        selected_projects=selected_projects
+    )
+    print(f"   CV HTML length: {len(generated_content.cv_html):,} characters")
+    print(f"   Cover Letter HTML length: {len(generated_content.cover_letter_html):,} characters")
+
+    if verbose:
+        print(f"   Templates processed successfully")
+        print(f"   Using template directory: templates/")
+
+    return generated_content
+
+
+def generate_safe_filenames(job_offer):
+    """Generate safe filenames from job offer information."""
+    job_title_safe = "".join(c for c in job_offer.job_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    job_title_safe = job_title_safe.replace(' ', '_')
+    company_safe = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+    company_safe = company_safe.replace(' ', '_')
+
+    cv_filename = f"CV_{job_title_safe}_{company_safe}.html"
+    cover_letter_filename = f"CoverLetter_{job_title_safe}_{company_safe}.html"
+
+    return cv_filename, cover_letter_filename
+
+
+def save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose: bool):
+    """Save output files and display completion status."""
+    print("\n💾 Step 7: Saving output files...")
+
+    cv_filename, cover_letter_filename = generate_safe_filenames(job_offer)
+    cv_path = output_dir / cv_filename
+    cover_letter_path = output_dir / cover_letter_filename
+
+    save_html_file(generated_content.cv_html, cv_path, "CV")
+    save_html_file(generated_content.cover_letter_html, cover_letter_path, "Cover Letter")
+
+    print("\n🎉 Success! Documents generated successfully!")
+    print(f"📋 Generated for: {job_offer.job_title} at {job_offer.company_name}")
+    print(f"🎯 Matched {len(matched_skills.matched_skills)} skills")
+    print(f"📁 Files saved in: {output_dir}")
+
+    if verbose:
+        print(f"\n📊 Generation Summary:")
+        print(f"   CV file: {cv_filename} ({len(generated_content.cv_html):,} chars)")
+        print(f"   Cover Letter file: {cover_letter_filename} ({len(generated_content.cover_letter_html):,} chars)")
+        print(f"   Total processing time: Complete")
+        print(f"   Selected projects: {selected_projects.project1.title}, {selected_projects.project2.title}")
+        print(f"   Match quality: {len(matched_skills.matched_skills)}/{len(job_offer.skills_required)} skills matched")
+
+
+def main():
+    """Main entry point for the job application system."""
+    parser = setup_argument_parser()
+    args = parser.parse_args()
+
+    verbose = args.verbose
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(exist_ok=True)
+
+    print_configuration(args, verbose)
+
     try:
-        print(f"📄 Processing job offer: {args.job_offer}")
-        print(f"👤 Using profile: {args.profile}")
-        print(f"📁 Output directory: {args.output_dir}")
-
-        # Step 1: Load job offer text
-        print("\n🔍 Step 1: Loading job offer...")
-        job_offer_text = load_job_offer(args.job_offer)
-        print(f"   Job offer loaded ({len(job_offer_text)} characters)")
-        if verbose:
-            input_type = "file" if Path(args.job_offer).exists() else "direct text"
-            print(f"   Input type: {input_type}")
-            if len(job_offer_text) > 200:
-                print(f"   Preview: {job_offer_text[:200]}...")
-
-        # Step 2: Load user profile
-        print("\n👤 Step 2: Loading user profile...")
-        user_profile = load_user_profile(args.profile)
-        print(f"   Profile loaded for {user_profile.personal_info.name}")
-        print(f"   Skills: {len(user_profile.skills)}")
-        print(f"   Projects: {len(user_profile.projects)}")
-        print(f"   Experiences: {len(user_profile.experiences)}")
-        if verbose:
-            print(f"   Email: {user_profile.personal_info.email}")
-            print(f"   Languages: {', '.join(user_profile.languages)}")
-            if user_profile.projects:
-                print(f"   Available projects: {', '.join([p.title for p in user_profile.projects])}")
-
-        # Step 3: Parse job offer
-        print("\n🔧 Step 3: Parsing job offer...")
-        job_offer = parse_job_offer(job_offer_text)
-        print(f"   Job Title: {job_offer.job_title}")
-        print(f"   Company: {job_offer.company_name}")
-        print(f"   Required Skills: {len(job_offer.skills_required)}")
-        if verbose:
-            print(f"   Location: {job_offer.location}")
-            print(f"   Skills required: {', '.join(job_offer.skills_required[:5])}{'...' if len(job_offer.skills_required) > 5 else ''}")
-
-        # Step 4: Match skills
-        print("\n🎯 Step 4: Matching skills...")
-        matched_skills = match_skills(job_offer, user_profile)
-        print(f"   Matched Skills: {len(matched_skills.matched_skills)}")
-        print(f"   Relevant Technologies: {len(matched_skills.relevant_technologies)}")
-        print(f"   Relevant Achievements: {len(matched_skills.relevant_achievements)}")
-        if verbose:
-            print(f"   Top matched skills: {', '.join(matched_skills.matched_skills[:3])}{'...' if len(matched_skills.matched_skills) > 3 else ''}")
-            print(f"   Skills match rate: {len(matched_skills.matched_skills)}/{len(job_offer.skills_required)} ({len(matched_skills.matched_skills)/len(job_offer.skills_required)*100:.1f}%)")
-
-        # Step 5: Select projects
-        print("\n📋 Step 5: Selecting relevant projects...")
-        selected_projects = select_projects(job_offer, user_profile.projects)
-        print(f"   Selected Project 1: {selected_projects.project1.title}")
-        print(f"   Selected Project 2: {selected_projects.project2.title}")
-
-        # Step 6: Generate documents
-        print("\n📝 Step 6: Generating documents...")
-        template_processor = create_template_processor()
-        generated_content = template_processor.process_templates(
-            job_offer=job_offer,
-            user_profile=user_profile,
-            matched_skills=matched_skills,
-            selected_projects=selected_projects
-        )
-        print(f"   CV HTML length: {len(generated_content.cv_html):,} characters")
-        print(f"   Cover Letter HTML length: {len(generated_content.cover_letter_html):,} characters")
-        if verbose:
-            print(f"   Templates processed successfully")
-            print(f"   Using template directory: templates/")
-
-        # Step 7: Save output files
-        print("\n💾 Step 7: Saving output files...")
-
-        # Generate meaningful filenames
-        job_title_safe = "".join(c for c in job_offer.job_title if c.isalnum() or c in (' ', '-', '_')).rstrip()
-        job_title_safe = job_title_safe.replace(' ', '_')
-        company_safe = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
-        company_safe = company_safe.replace(' ', '_')
-
-        cv_filename = f"CV_{job_title_safe}_{company_safe}.html"
-        cover_letter_filename = f"CoverLetter_{job_title_safe}_{company_safe}.html"
-
-        cv_path = output_dir / cv_filename
-        cover_letter_path = output_dir / cover_letter_filename
-
-        save_html_file(generated_content.cv_html, cv_path, "CV")
-        save_html_file(generated_content.cover_letter_html, cover_letter_path, "Cover Letter")
-
-        print("\n🎉 Success! Documents generated successfully!")
-        print(f"📋 Generated for: {job_offer.job_title} at {job_offer.company_name}")
-        print(f"🎯 Matched {len(matched_skills.matched_skills)} skills")
-        print(f"📁 Files saved in: {output_dir}")
-
-        if verbose:
-            print(f"\n📊 Generation Summary:")
-            print(f"   CV file: {cv_filename} ({len(generated_content.cv_html):,} chars)")
-            print(f"   Cover Letter file: {cover_letter_filename} ({len(generated_content.cover_letter_html):,} chars)")
-            print(f"   Total processing time: Complete")
-            print(f"   Selected projects: {selected_projects.project1.title}, {selected_projects.project2.title}")
-            print(f"   Match quality: {len(matched_skills.matched_skills)}/{len(job_offer.skills_required)} skills matched")
+        job_offer_text = load_and_display_job_offer(args.job_offer, verbose)
+        user_profile = load_and_display_user_profile(args.profile, verbose)
+        job_offer = parse_and_display_job_offer(job_offer_text, verbose)
+        matched_skills = match_and_display_skills(job_offer, user_profile, verbose)
+        selected_projects = select_and_display_projects(job_offer, user_profile.projects)
+        generated_content = generate_and_display_documents(job_offer, user_profile, matched_skills, selected_projects, verbose)
+        save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose)
 
     except FileNotFoundError as e:
         print(f"❌ File Error: {e}")

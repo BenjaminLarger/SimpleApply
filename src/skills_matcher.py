@@ -31,39 +31,42 @@ def get_openai_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
-def match_skills(job_offer: JobOffer, user_profile: UserProfile) -> MatchedSkills:
+def extract_user_data(user_profile: UserProfile) -> tuple[List[str], List[str]]:
     """
-    Match user skills with job requirements using AI intelligence.
+    Extract technologies and achievements from user profile.
+
+    Args:
+        user_profile: User's complete profile
+
+    Returns:
+        Tuple of (user_technologies, user_achievements)
+    """
+    user_technologies = []
+    for experience in user_profile.experiences:
+        user_technologies.extend(experience.technologies)
+
+    user_achievements = []
+    for experience in user_profile.experiences:
+        user_achievements.extend(experience.achievements)
+    user_achievements.extend(user_profile.achievements)
+
+    return user_technologies, user_achievements
+
+
+def create_skills_matching_prompt(job_offer: JobOffer, user_profile: UserProfile, user_technologies: List[str], user_achievements: List[str]) -> str:
+    """
+    Create comprehensive prompt for skills matching.
 
     Args:
         job_offer: Parsed job offer information
         user_profile: User's complete profile
+        user_technologies: Technologies from user's experience
+        user_achievements: All user achievements
 
     Returns:
-        MatchedSkills: Matched skills analysis
-
-    Raises:
-        SkillsMatcherError: If matching fails or API error occurs
+        Formatted prompt string
     """
-    try:
-        # Get OpenAI client
-        client = get_openai_client()
-
-        # Prepare user technologies from experiences
-        user_technologies = []
-        for experience in user_profile.experiences:
-            user_technologies.extend(experience.technologies)
-
-        # Prepare user achievements from experiences
-        user_achievements = []
-        for experience in user_profile.experiences:
-            user_achievements.extend(experience.achievements)
-
-        # Add profile-level achievements
-        user_achievements.extend(user_profile.achievements)
-
-        # Create comprehensive prompt
-        prompt = f"""
+    return f"""
 You are an expert career counselor and skills matcher. Analyze the job requirements against the user's profile and intelligently match skills, technologies, and achievements.
 
 JOB OFFER:
@@ -88,7 +91,7 @@ Please analyze and return a JSON object with the following structure:
 
 Guidelines for matching:
 1. MATCHED SKILLS: Include exact matches and close semantic matches (e.g., "Python" matches "Python development", "REST API" matches "RESTful APIs")
-2. RELEVANT TECHNOLOGIES: Return exactly 10 relevant technologies. Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
+2. RELEVANT TECHNOLOGIES: Return exactly 20 relevant technologies. Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
 3. RELEVANT ACHIEVEMENTS: Select achievements that demonstrate skills needed for this role, even if not exact keyword matches
 4. Consider transferable skills and related technologies (e.g., if job requires React and user has JavaScript experience)
 5. Prioritize recent and significant experiences over older ones
@@ -97,45 +100,88 @@ Guidelines for matching:
 Return only the JSON object, no additional text.
 """
 
-        # Call OpenAI API
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            temperature=0.1,
-            max_completion_tokens=4000,
-            response_format={"type": "json_object"},
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
 
-        # Track API call cost
-        track_openai_call(response, "skills_matching")
+def call_openai_for_skills_matching(prompt: str):
+    """
+    Call OpenAI API for skills matching.
 
-        # Extract and parse response
+    Args:
+        prompt: Formatted prompt for skills matching
+
+    Returns:
+        OpenAI API response
+
+    Raises:
+        SkillsMatcherError: If API call fails
+    """
+    client = get_openai_client()
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0.1,
+        max_completion_tokens=4000,
+        response_format={"type": "json_object"},
+        messages=[{
+            "role": "user",
+            "content": prompt
+        }]
+    )
+
+    track_openai_call(response, "skills_matching")
+    return response
+
+
+def parse_skills_response(response_text: str) -> MatchedSkills:
+    """
+    Parse OpenAI response and create MatchedSkills model.
+
+    Args:
+        response_text: JSON response from OpenAI
+
+    Returns:
+        MatchedSkills model instance
+
+    Raises:
+        SkillsMatcherError: If parsing or validation fails
+    """
+    try:
+        skills_data = json.loads(response_text)
+
+        required_fields = ["user_skills", "job_skills", "matched_skills", "relevant_technologies", "relevant_achievements"]
+        for field in required_fields:
+            if field not in skills_data:
+                raise SkillsMatcherError(f"Missing required field: {field}")
+
+        for field in required_fields:
+            if not isinstance(skills_data[field], list):
+                skills_data[field] = []
+
+        return MatchedSkills(**skills_data)
+
+    except json.JSONDecodeError as e:
+        raise SkillsMatcherError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
+
+
+def match_skills(job_offer: JobOffer, user_profile: UserProfile) -> MatchedSkills:
+    """
+    Match user skills with job requirements using AI intelligence.
+
+    Args:
+        job_offer: Parsed job offer information
+        user_profile: User's complete profile
+
+    Returns:
+        MatchedSkills: Matched skills analysis
+
+    Raises:
+        SkillsMatcherError: If matching fails or API error occurs
+    """
+    try:
+        user_technologies, user_achievements = extract_user_data(user_profile)
+        prompt = create_skills_matching_prompt(job_offer, user_profile, user_technologies, user_achievements)
+        response = call_openai_for_skills_matching(prompt)
         response_text = response.choices[0].message.content.strip()
-
-        try:
-            # Parse JSON response
-            skills_data = json.loads(response_text)
-
-            # Validate required fields
-            required_fields = ["user_skills", "job_skills", "matched_skills", "relevant_technologies", "relevant_achievements"]
-            for field in required_fields:
-                if field not in skills_data:
-                    raise SkillsMatcherError(f"Missing required field: {field}")
-
-            # Ensure all fields are lists
-            for field in required_fields:
-                if not isinstance(skills_data[field], list):
-                    skills_data[field] = []
-
-            # Create and validate MatchedSkills model
-            matched_skills = MatchedSkills(**skills_data)
-            return matched_skills
-
-        except json.JSONDecodeError as e:
-            raise SkillsMatcherError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
+        return parse_skills_response(response_text)
 
     except Exception as e:
         if isinstance(e, SkillsMatcherError):

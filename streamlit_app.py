@@ -332,7 +332,7 @@ def show_follow_up_page():
                 fig_unmatched = px.bar(unmatched_df, x='Skill', y='Frequency',
                                      title='Top 10 Most Unmatched Skills',
                                      labels={'Frequency': 'Number of Applications Missing This Skill'})
-                fig_unmatched.update_xaxis(tickangle=45)
+                fig_unmatched.update_xaxes(tickangle=45)
                 st.plotly_chart(fig_unmatched, use_container_width=True)
 
             with col_unmatched2:

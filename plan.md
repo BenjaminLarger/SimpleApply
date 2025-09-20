@@ -139,7 +139,7 @@ Add example job offer texts for testing."
 - `<!-- TITLE OF THE SIDE PROJECT 2 -->` - From project selection
 - `<!-- DESCRIPTION OF THE SIDE PROJECT 2 -->` - From project selection
 - `<!-- 3 RELEVANT TECHNICAL SKILLS -->` - From skills matching
-- `<!-- 10 relevant skills/tools -->` - From skills matching
+- `<!-- 20 relevant skills/tools -->` - From skills matching
 
 **Cover Letter Template**:
 - `<!-- Insert Date -->` - Current date

@@ -35,6 +35,12 @@ if [ ! -f ".env" ]; then
     echo "⚠️  Warning: .env file not found. Make sure OPENAI_API_KEY is set."
 fi
 
+# Create required directories if they don't exist
+echo "📁 Creating required output directories..."
+mkdir -p ~/Downloads/Applications/CoverLetters
+mkdir -p ~/Downloads/Applications/CVs
+echo "✅ Output directories ready"
+
 # Run Streamlit app
 echo "🌐 Starting Streamlit application..."
 echo "📱 The app will open in your browser at http://localhost:8501"

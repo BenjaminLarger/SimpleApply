@@ -33,39 +33,45 @@ def get_openai_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
-def parse_job_offer(job_text: Union[str, Path]) -> JobOffer:
+def load_job_content(job_text: Union[str, Path]) -> str:
     """
-    Parse job offer text using Claude AI to extract structured information.
+    Load job content from various input types.
 
     Args:
         job_text: Either raw job posting text or path to file containing job text
 
     Returns:
-        JobOffer: Parsed job information as Pydantic model
+        Job content as string
 
     Raises:
-        JobParserError: If parsing fails or API error occurs
+        JobParserError: If content cannot be loaded or is empty
     """
-    try:
-        # Handle file input
-        if isinstance(job_text, Path):
-            with open(job_text, 'r', encoding='utf-8') as f:
-                job_content = f.read()
-        elif isinstance(job_text, str) and len(job_text) < 1000 and '\n' not in job_text and Path(job_text).exists():
-            # Only treat as file path if it's short, doesn't contain newlines, and actually exists
-            with open(job_text, 'r', encoding='utf-8') as f:
-                job_content = f.read()
-        else:
-            job_content = str(job_text)
+    if isinstance(job_text, Path):
+        with open(job_text, 'r', encoding='utf-8') as f:
+            job_content = f.read()
+    elif isinstance(job_text, str) and len(job_text) < 1000 and '\n' not in job_text and Path(job_text).exists():
+        with open(job_text, 'r', encoding='utf-8') as f:
+            job_content = f.read()
+    else:
+        job_content = str(job_text)
 
-        if not job_content.strip():
-            raise JobParserError("Job offer text is empty")
+    if not job_content.strip():
+        raise JobParserError("Job offer text is empty")
 
-        # Get OpenAI client
-        client = get_openai_client()
+    return job_content
 
-        # Structured prompt for job parsing
-        prompt = f"""
+
+def create_job_parsing_prompt(job_content: str) -> str:
+    """
+    Create structured prompt for job parsing.
+
+    Args:
+        job_content: Raw job posting text
+
+    Returns:
+        Formatted prompt string
+    """
+    return f"""
 You are an expert job posting analyzer. Extract structured information from the following job posting text and return it as valid JSON format.
 
 Job Posting Text:
@@ -91,44 +97,87 @@ Guidelines:
 Return only the JSON object, no additional text or explanation.
 """
 
-        # Call OpenAI API with structured output
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            temperature=0.1,
-            max_completion_tokens=4000,
-            response_format={"type": "json_object"},
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
 
-        # Track API call cost
-        track_openai_call(response, "job_parsing")
+def call_openai_for_parsing(prompt: str):
+    """
+    Call OpenAI API for job parsing.
 
-        # Extract and parse response
+    Args:
+        prompt: Formatted prompt for job parsing
+
+    Returns:
+        OpenAI API response
+
+    Raises:
+        JobParserError: If API call fails
+    """
+    client = get_openai_client()
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0.1,
+        max_completion_tokens=4000,
+        response_format={"type": "json_object"},
+        messages=[{
+            "role": "user",
+            "content": prompt
+        }]
+    )
+
+    track_openai_call(response, "job_parsing")
+    return response
+
+
+def parse_job_response(response_text: str, job_content: str) -> JobOffer:
+    """
+    Parse OpenAI response and create JobOffer model.
+
+    Args:
+        response_text: JSON response from OpenAI
+        job_content: Original job content for fallback description
+
+    Returns:
+        JobOffer model instance
+
+    Raises:
+        JobParserError: If parsing or validation fails
+    """
+    try:
+        job_data = json.loads(response_text)
+
+        required_fields = ["job_title", "company_name", "skills_required", "location"]
+        for field in required_fields:
+            if field not in job_data:
+                raise JobParserError(f"Missing required field: {field}")
+
+        if "description" not in job_data:
+            job_data["description"] = job_content
+
+        return JobOffer(**job_data)
+
+    except json.JSONDecodeError as e:
+        raise JobParserError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
+
+
+def parse_job_offer(job_text: Union[str, Path]) -> JobOffer:
+    """
+    Parse job offer text using OpenAI to extract structured information.
+
+    Args:
+        job_text: Either raw job posting text or path to file containing job text
+
+    Returns:
+        JobOffer: Parsed job information as Pydantic model
+
+    Raises:
+        JobParserError: If parsing fails or API error occurs
+    """
+    try:
+        job_content = load_job_content(job_text)
+        prompt = create_job_parsing_prompt(job_content)
+        response = call_openai_for_parsing(prompt)
         response_text = response.choices[0].message.content.strip()
-
-        try:
-            # Parse JSON response
-            job_data = json.loads(response_text)
-
-            # Validate required fields
-            required_fields = ["job_title", "company_name", "skills_required", "location"]
-            for field in required_fields:
-                if field not in job_data:
-                    raise JobParserError(f"Missing required field: {field}")
-
-            # Add full description if not present
-            if "description" not in job_data:
-                job_data["description"] = job_content
-
-            # Create and validate JobOffer model
-            job_offer = JobOffer(**job_data)
-            return job_offer
-
-        except json.JSONDecodeError as e:
-            raise JobParserError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
+        return parse_job_response(response_text, job_content)
 
     except Exception as e:
         if isinstance(e, JobParserError):
