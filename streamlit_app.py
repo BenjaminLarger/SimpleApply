@@ -220,7 +220,7 @@ def show_historics_page():
 
 def show_follow_up_page():
     """Display the application follow-up page"""
-    st.title("Data Visualizationtory")
+    st.title("Data Visualization")
     st.caption("Track and manage your job applications")
 
     db = ApplicationDatabase()
@@ -245,53 +245,6 @@ def show_follow_up_page():
     with col4:
         st.metric("Average Cost", f"${avg_cost:.4f}")
 
-    # Filters
-    st.subheader("Filter Applications")
-    col_filter1, col_filter2, col_filter3 = st.columns(3)
-
-    with col_filter1:
-        company_filter = st.selectbox(
-            "Filter by Company",
-            ["All"] + sorted(list(set(app.company for app in applications))),
-            key="company_filter"
-        )
-
-    with col_filter2:
-        min_match_rate = st.slider(
-            "Minimum Match Rate",
-            min_value=0.0,
-            max_value=1.0,
-            value=0.0,
-            step=0.1
-        )
-
-    with col_filter3:
-        sort_by = st.selectbox(
-            "Sort by",
-            ["Date (Newest)", "Date (Oldest)", "Match Rate (High)", "Match Rate (Low)", "Cost (High)", "Cost (Low)"]
-        )
-
-    # Apply filters
-    filtered_apps = applications
-    if company_filter != "All":
-        filtered_apps = [app for app in filtered_apps if app.company == company_filter]
-
-    filtered_apps = [app for app in filtered_apps if app.matching_rate >= min_match_rate]
-
-    # Apply sorting
-    if sort_by == "Date (Newest)":
-        filtered_apps.sort(key=lambda x: x.created_at, reverse=True)
-    elif sort_by == "Date (Oldest)":
-        filtered_apps.sort(key=lambda x: x.created_at)
-    elif sort_by == "Match Rate (High)":
-        filtered_apps.sort(key=lambda x: x.matching_rate, reverse=True)
-    elif sort_by == "Match Rate (Low)":
-        filtered_apps.sort(key=lambda x: x.matching_rate)
-    elif sort_by == "Cost (High)":
-        filtered_apps.sort(key=lambda x: x.application_cost, reverse=True)
-    elif sort_by == "Cost (Low)":
-        filtered_apps.sort(key=lambda x: x.application_cost)
-
     # Analytics section
     if len(applications) >= 3:  # Only show analytics if we have enough data
         st.subheader("Analytics")
@@ -309,7 +262,7 @@ def show_follow_up_page():
         today = datetime.now().date()
         date_range = [today - timedelta(days=i) for i in range(10, -1, -1)]
 
-        apps_by_date_gen = sorted(filtered_apps, key=lambda x: x.created_at)
+        apps_by_date_gen = sorted(applications, key=lambda x: x.created_at)
         daily_counts = pd.DataFrame({
             'Date': [app.created_at.date() for app in apps_by_date_gen]
         }).groupby('Date').size().reset_index(name='Count')
@@ -324,62 +277,28 @@ def show_follow_up_page():
                            labels={'Count': 'Number of Applications'},
                            markers=True)
         fig_daily.update_layout(showlegend=False)
-        fig_daily.update_xaxes(tickformat='%Y-%m-%d')
+        fig_daily.update_xaxes(tickformat='%b %d')
         st.plotly_chart(fig_daily, use_container_width=True)
 
-        # Match rate trend
+        # Match rate trend - calculate daily average
         apps_by_date = sorted(applications, key=lambda x: x.created_at)
-        dates = [app.created_at.date() for app in apps_by_date]
-        match_rates = [app.matching_rate for app in apps_by_date]
 
-        df = pd.DataFrame({
-            'Date': dates,
-            'Match Rate': [rate * 100 for rate in match_rates],
-            'Company': [app.company for app in apps_by_date]
-        })
+        # Group applications by date and calculate average match rate
+        daily_match_rates = pd.DataFrame({
+            'Date': [app.created_at.date() for app in apps_by_date],
+            'Match Rate': [app.matching_rate * 100 for app in apps_by_date]
+        }).groupby('Date')['Match Rate'].mean().reset_index()
 
-        fig = px.line(df, x='Date', y='Match Rate',
-                     title='Match Rate Trend Over Time',
+        # Create a complete date range DataFrame and merge with actual match rates
+        date_range_df = pd.DataFrame({'Date': date_range})
+        daily_match_rates_complete = date_range_df.merge(daily_match_rates, on='Date', how='left').fillna(0)
+
+        fig = px.line(daily_match_rates_complete, x='Date', y='Match Rate',
+                     title='Daily Average Match Rate (Past 10 Days)',
                      labels={'Match Rate': 'Match Rate (%)'})
+        fig.update_layout(showlegend=False)
+        fig.update_xaxes(tickformat='%b %d')
         st.plotly_chart(fig, use_container_width=True)
-
-        # Company comparison
-        company_stats = {}
-        for app in applications:
-            if app.company not in company_stats:
-                company_stats[app.company] = {'count': 0, 'avg_match': 0, 'total_cost': 0}
-            company_stats[app.company]['count'] += 1
-            company_stats[app.company]['avg_match'] += app.matching_rate
-            company_stats[app.company]['total_cost'] += app.application_cost
-
-        for company in company_stats:
-            company_stats[company]['avg_match'] /= company_stats[company]['count']
-
-        company_df = pd.DataFrame([
-            {
-                'Company': company,
-                'Applications': stats['count'],
-                'Avg Match Rate': stats['avg_match'] * 100,
-                'Total Cost': stats['total_cost']
-            }
-            for company, stats in company_stats.items()
-        ])
-
-        col_chart1, col_chart2 = st.columns(2)
-
-        with col_chart1:
-            # Company applications chart
-            fig_company = px.bar(company_df, x='Company', y='Applications',
-                               title='Applications by Company',
-                               labels={'Applications': 'Number of Applications'})
-            st.plotly_chart(fig_company, use_container_width=True)
-
-        with col_chart2:
-            # Average match rate by company
-            fig_match = px.bar(company_df, x='Company', y='Avg Match Rate',
-                             title='Average Match Rate by Company',
-                             labels={'Avg Match Rate': 'Average Match Rate (%)'})
-            st.plotly_chart(fig_match, use_container_width=True)
 
         # Most unmatched skills indicator
         st.subheader("Skills Gap Analysis")
@@ -735,7 +654,7 @@ def main():
 
     with nav_col2:
         if st.button(
-            "Data Visualizationtory",
+            "Data Visualization",
             use_container_width=True,
             type="primary" if st.session_state.current_page == "📊 Follow-Up Dashboard" else "secondary"
         ):
