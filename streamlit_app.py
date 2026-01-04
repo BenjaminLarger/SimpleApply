@@ -266,14 +266,48 @@ def show_template_editor_page():
             with col_info2:
                 st.caption(f"Size: {len(original_content)} bytes")
 
-            # Text editor
-            edited_content = st.text_area(
-                f"Edit {tab_name}",
-                value=original_content,
-                height=500,
-                label_visibility="collapsed",
-                key=f"editor_{file_path}"
-            )
+            # For HTML templates, use side-by-side layout with preview
+            if "HTML" in tab_name:
+                col_edit, col_preview = st.columns([1, 1], gap="medium")
+
+                with col_edit:
+                    st.subheader("Edit")
+                    edited_content = st.text_area(
+                        f"Edit {tab_name}",
+                        value=original_content,
+                        height=500,
+                        label_visibility="collapsed",
+                        key=f"editor_{file_path}"
+                    )
+
+                with col_preview:
+                    st.subheader("Live Preview")
+                    # Show live preview of HTML with white background and black text
+                    try:
+                        # Wrap the HTML content with white background and force black text on all nested elements
+                        styled_html = f"""
+                        <style>
+                            #preview-container, #preview-container * {{
+                                color: black !important;
+                            }}
+                        </style>
+                        <div id="preview-container" style="background-color: white; color: black !important; padding: 20px; overflow-y: auto; max-height: 500px;">
+                            {edited_content}
+                        </div>
+                        """
+                        st.html(styled_html)
+                    except Exception as e:
+                        st.warning(f"Preview error (syntax issue): {str(e)[:100]}")
+
+            else:
+                # For YAML, just show editor
+                edited_content = st.text_area(
+                    f"Edit {tab_name}",
+                    value=original_content,
+                    height=500,
+                    label_visibility="collapsed",
+                    key=f"editor_{file_path}"
+                )
 
             # Only show save section if content has changed
             if edited_content != original_content:
@@ -531,8 +565,13 @@ def main():
             color: #F0F4EF;
         }
 
-        p, span, div {
-            color: #F0F4EF;
+        p, span, div, label {
+            color: #F0F4EF !important;
+        }
+
+        /* Force white text in main content area */
+        .main p, .main span, .main label, .main caption {
+            color: #F0F4EF !important;
         }
 
         /* Primary buttons (active tab) */
