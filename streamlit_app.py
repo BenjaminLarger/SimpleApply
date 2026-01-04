@@ -180,42 +180,54 @@ def show_historics_page():
 
     # Action buttons section
     st.subheader("Actions")
-    col_actions1, col_actions2 = st.columns(2)
 
-    with col_actions1:
-        selected_id = st.selectbox(
-            "Select an application to view details:",
-            options=[app.id for app in applications],
-            format_func=lambda x: next((f"{app.company} - {app.position}" for app in applications if app.id == x), "Unknown")
-        )
+    selected_id = st.selectbox(
+        "Select an application to view details:",
+        options=[app.id for app in applications],
+        format_func=lambda x: next((f"{app.company} - {app.position}" for app in applications if app.id == x), "Unknown")
+    )
 
-        if selected_id:
-            selected_app = next((app for app in applications if app.id == selected_id), None)
-            if selected_app:
-                st.write(f"**Position:** {selected_app.position}")
-                st.write(f"**Company:** {selected_app.company}")
-                st.write(f"**Location:** {selected_app.location}")
-                st.write(f"**Date:** {selected_app.created_at.strftime('%Y-%m-%d')}")
-                st.write(f"**Match Rate:** {selected_app.matching_rate:.1%}")
-                st.write(f"**Cost:** ${selected_app.application_cost:.4f}")
+    if selected_id:
+        selected_app = next((app for app in applications if app.id == selected_id), None)
+        if selected_app:
+            # Use a card-like container
+            with st.container(border=True):
+                col1, col2 = st.columns([3, 1])
 
-                if selected_app.matched_skills:
-                    st.write("**Matched Skills:**")
-                    for skill in selected_app.matched_skills:
-                        st.text(f"• {skill}")
+                with col1:
+                    # Header with company and position
+                    st.markdown(f"### {selected_app.company}")
+                    st.caption(f"{selected_app.position} • {selected_app.location}")
 
-                if selected_app.unmatched_skills:
-                    st.write("**Skills to Develop:**")
-                    for skill in selected_app.unmatched_skills:
-                        st.text(f"• {skill}")
+                    # Key metrics in a row
+                    met_col1, met_col2, met_col3 = st.columns(3)
+                    with met_col1:
+                        st.metric("Match Rate", f"{selected_app.matching_rate:.1%}")
+                    with met_col2:
+                        st.metric("Cost", f"${selected_app.application_cost:.4f}")
+                    with met_col3:
+                        st.metric("Date", selected_app.created_at.strftime('%Y-%m-%d'))
 
-    with col_actions2:
-        if selected_id and st.button("Delete Selected Application", type="secondary", use_container_width=True):
-            if db.delete_application(selected_id):
-                st.success("Application deleted successfully!")
-                st.rerun()
-            else:
-                st.error("Failed to delete application")
+                    # Skills section
+                    if selected_app.matched_skills or selected_app.unmatched_skills:
+                        st.divider()
+                        if selected_app.matched_skills:
+                            st.write("**Matched Skills**")
+                            st.write(" ".join([f"`{skill}`" for skill in selected_app.matched_skills]))
+
+                        if selected_app.unmatched_skills:
+                            st.write("**Skills to Develop**")
+                            st.write(" ".join([f"`{skill}`" for skill in selected_app.unmatched_skills]))
+
+                with col2:
+                    if st.button("Delete", type="secondary", use_container_width=True):
+                        if db.delete_application(selected_id):
+                            st.success("Deleted!")
+                            st.rerun()
+                        else:
+                            st.error("Failed to delete")
+    else:
+        st.info("Select an application to view details")
 
 
 def show_follow_up_page():
