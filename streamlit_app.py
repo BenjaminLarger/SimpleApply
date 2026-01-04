@@ -134,10 +134,94 @@ def process_job_application(job_offer_text: str, user_profile: UserProfile) -> t
     return generated_content.cv_html, generated_content.cover_letter_html, job_offer, matched_skills, application_id
 
 
+def show_historics_page():
+    """Display the historics page with table format view of applications"""
+    st.title("Historics")
+    st.caption("View all applications in table format")
+
+    db = ApplicationDatabase()
+    applications = db.get_all_applications()
+
+    if not applications:
+        st.info("No applications found. Generate your first application on the main page!")
+        return
+
+    try:
+        import pandas as pd
+    except ImportError:
+        st.error("Pandas is required for table view. Install with: pip install pandas")
+        return
+
+    # Create DataFrame from applications
+    data = []
+    for app in applications:
+        data.append({
+            'Date': app.created_at.strftime('%Y-%m-%d'),
+            'Company': app.company,
+            'Position': app.position,
+            'Location': app.location,
+            'Match Rate': f"{app.matching_rate:.1%}",
+            'Matched Skills': len(app.matched_skills),
+            'Unmatched Skills': len(app.unmatched_skills),
+            'Cost': f"${app.application_cost:.4f}",
+            'ID': app.id
+        })
+
+    df = pd.DataFrame(data)
+
+    # Display table
+    st.subheader(f"All Applications ({len(df)})")
+    st.dataframe(
+        df.drop('ID', axis=1),
+        use_container_width=True,
+        hide_index=True,
+        height=600
+    )
+
+    # Action buttons section
+    st.subheader("Actions")
+    col_actions1, col_actions2 = st.columns(2)
+
+    with col_actions1:
+        selected_id = st.selectbox(
+            "Select an application to view details:",
+            options=[app.id for app in applications],
+            format_func=lambda x: next((f"{app.company} - {app.position}" for app in applications if app.id == x), "Unknown")
+        )
+
+        if selected_id:
+            selected_app = next((app for app in applications if app.id == selected_id), None)
+            if selected_app:
+                st.write(f"**Position:** {selected_app.position}")
+                st.write(f"**Company:** {selected_app.company}")
+                st.write(f"**Location:** {selected_app.location}")
+                st.write(f"**Date:** {selected_app.created_at.strftime('%Y-%m-%d')}")
+                st.write(f"**Match Rate:** {selected_app.matching_rate:.1%}")
+                st.write(f"**Cost:** ${selected_app.application_cost:.4f}")
+
+                if selected_app.matched_skills:
+                    st.write("**Matched Skills:**")
+                    for skill in selected_app.matched_skills:
+                        st.text(f"• {skill}")
+
+                if selected_app.unmatched_skills:
+                    st.write("**Skills to Develop:**")
+                    for skill in selected_app.unmatched_skills:
+                        st.text(f"• {skill}")
+
+    with col_actions2:
+        if selected_id and st.button("Delete Selected Application", type="secondary", use_container_width=True):
+            if db.delete_application(selected_id):
+                st.success("Application deleted successfully!")
+                st.rerun()
+            else:
+                st.error("Failed to delete application")
+
+
 def show_follow_up_page():
     """Display the application follow-up page"""
-    st.title("📊 Application Follow-Up Dashboard")
-    st.markdown("Track and manage your job applications")
+    st.title("Data Visualizationtory")
+    st.caption("Track and manage your job applications")
 
     db = ApplicationDatabase()
     applications = db.get_all_applications()
@@ -150,18 +234,16 @@ def show_follow_up_page():
     total_cost = db.get_total_cost()
     avg_match_rate = sum(app.matching_rate for app in applications) / len(applications)
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Total Applications", len(applications))
     with col2:
-        st.metric("Total Cost", f"${total_cost:.4f}")
+        st.metric("Average Match", f"{avg_match_rate:.1%}")
     with col3:
-        st.metric("Avg Match Rate", f"{avg_match_rate:.1%}")
-    with col4:
-        st.metric("This Month", len([app for app in applications if app.created_at.month == datetime.now().month]))
+        st.metric("Total Cost", f"${total_cost:.4f}")
 
     # Filters
-    st.header("🔍 Filter Applications")
+    st.subheader("Filter Applications")
     col_filter1, col_filter2, col_filter3 = st.columns(3)
 
     with col_filter1:
@@ -207,55 +289,9 @@ def show_follow_up_page():
     elif sort_by == "Cost (Low)":
         filtered_apps.sort(key=lambda x: x.application_cost)
 
-    st.header(f"📋 Applications ({len(filtered_apps)} found)")
-
-    # Applications table
-    if filtered_apps:
-        for app in filtered_apps:
-            with st.expander(f"{app.company} - {app.position} ({app.matching_rate:.0%} match)", expanded=False):
-                col_info, col_actions = st.columns([3, 1])
-
-                with col_info:
-                    st.write(f"**Company:** {app.company}")
-                    st.write(f"**Position:** {app.position}")
-                    st.write(f"**Location:** {app.location}")
-                    st.write(f"**Applied:** {app.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
-                    st.write(f"**Match Rate:** {app.matching_rate:.1%}")
-                    st.write(f"**Cost:** ${app.application_cost:.4f}")
-
-                    st.write("**Matched Skills:**")
-                    if app.matched_skills:
-                        for skill in app.matched_skills:
-                            st.write(f"✅ {skill}")
-                    else:
-                        st.write("None")
-
-                    if app.unmatched_skills:
-                        st.write("**Skills to Develop:**")
-                        for skill in app.unmatched_skills:
-                            st.write(f"⚠️ {skill}")
-
-                with col_actions:
-                    st.write("**Actions:**")
-
-                    if st.button(f"📄 View Job Offer", key=f"view_{app.id}"):
-                        st.text_area(
-                            "Original Job Offer:",
-                            value=app.job_offer_input,
-                            height=200,
-                            key=f"job_offer_{app.id}"
-                        )
-
-                    if st.button(f"🗑️ Delete", key=f"delete_{app.id}", type="secondary"):
-                        if db.delete_application(app.id):
-                            st.success("Application deleted!")
-                            st.rerun()
-                        else:
-                            st.error("Failed to delete application")
-
     # Analytics section
     if len(applications) >= 3:  # Only show analytics if we have enough data
-        st.header("📈 Analytics")
+        st.subheader("Analytics")
 
         # Match rate trend
         apps_by_date = sorted(applications, key=lambda x: x.created_at)
@@ -319,7 +355,7 @@ def show_follow_up_page():
             st.plotly_chart(fig_match, use_container_width=True)
 
         # Most unmatched skills indicator
-        st.subheader("⚠️ Most Unmatched Skills Across Applications")
+        st.subheader("Skills Gap Analysis")
 
         # Aggregate all unmatched skills
         unmatched_skills_counter = {}
@@ -360,7 +396,7 @@ def show_follow_up_page():
 
         # Skills improvement insights
         if unmatched_skills_counter:
-            st.subheader("💡 Skills Development Insights")
+            st.subheader("Development Insights")
             total_apps = len(applications)
             most_missed = sorted_unmatched[0] if sorted_unmatched else None
 
@@ -397,28 +433,312 @@ def main():
         initial_sidebar_state="expanded"
     )
 
-    # Page navigation
-    page = st.sidebar.selectbox(
-        "Navigate",
-        ["🚀 Generate Application", "📊 Follow-Up Dashboard"]
-    )
+    # Custom color theme
+    st.markdown("""
+    <style>
+        :root {
+            --primary-dark: #0D1821;
+            --accent-teal: #0F7173;
+            --background-light: #F0F4EF;
+        }
 
-    if page == "📊 Follow-Up Dashboard":
+        /* Main background */
+        .main {
+            background-color: #0D1821;
+            color: #F0F4EF;
+        }
+
+        /* Sidebar */
+        [data-testid="sidebar"] {
+            background-color: #0D1821;
+        }
+
+        /* Text elements */
+        h1, h2, h3, h4, h5, h6 {
+            color: #F0F4EF;
+        }
+
+        p, span, div {
+            color: #F0F4EF;
+        }
+
+        /* Primary buttons (active tab) */
+        .stButton > button[kind="primary"] {
+            background-color: #0F7173;
+            color: #F0F4EF;
+            font-weight: 700;
+            transition: background-color 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .stButton > button[kind="primary"]:hover {
+            background-color: rgba(15, 113, 115, 0.8);
+            color: #F0F4EF;
+        }
+
+        /* Secondary buttons (inactive tab) */
+        .stButton > button[kind="secondary"] {
+            background-color: transparent;
+            color: #F0F4EF;
+            font-weight: normal;
+            transition: all 0.2s ease;
+            border: 1px solid #0F7173;
+        }
+
+        .stButton > button[kind="secondary"]:hover {
+            background-color: rgba(15, 113, 115, 0.2);
+            color: #F0F4EF;
+            border-color: #0F7173;
+        }
+
+        /* Input fields - general default */
+        input,
+        textarea,
+        select {
+            border-color: #0F7173 !important;
+            background-color: #0D1821 !important;
+            color: #F0F4EF !important;
+        }
+
+        /* Input fields */
+        .stTextInput > div > div > input,
+        .stTextArea > div > div > textarea,
+        .stSelectbox > div > div > select,
+        .stMultiSelect > div > div > select {
+            border: 2px solid #0F7173 !important;
+            background-color: #0D1821 !important;
+            color: #F0F4EF !important;
+        }
+
+        /* General input focus state */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-top-color: #0F7173 !important;
+            border-right-color: #0F7173 !important;
+            border-bottom-color: #0F7173 !important;
+            border-left-color: #0F7173 !important;
+            outline: none !important;
+            background-color: #0D1821 !important;
+        }
+
+        /* Input fields focus state */
+        .stTextInput > div > div > input:focus,
+        .stTextArea > div > div > textarea:focus,
+        .stSelectbox > div > div > select:focus,
+        .stMultiSelect > div > div > select:focus {
+            border-top-color: #0F7173 !important;
+            border-right-color: #0F7173 !important;
+            border-bottom-color: #0F7173 !important;
+            border-left-color: #0F7173 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(15, 113, 115, 0.2) !important;
+            background-color: #0D1821 !important;
+        }
+
+        /* Streamlit textarea focus state */
+        .stTextAreaRootElement:focus,
+        .st-b5:focus,
+        .st-b3:focus,
+        .st-b4:focus,
+        .st-b6:focus {
+            border-top-color: #0F7173 !important;
+            border-right-color: #0F7173 !important;
+            border-bottom-color: #0F7173 !important;
+            border-left-color: #0F7173 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(15, 113, 115, 0.2) !important;
+        }
+
+        /* Streamlit wrapper classes focus state */
+        .st-b3:focus,
+        .st-b4:focus,
+        .st-b5:focus,
+        .st-b6:focus {
+            border-top-color: #0F7173 !important;
+            border-right-color: #0F7173 !important;
+            border-bottom-color: #0F7173 !important;
+            border-left-color: #0F7173 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(15, 113, 115, 0.2) !important;
+        }
+
+        /* Info/success/warning/error messages */
+        .stAlert {
+            background-color: rgba(15, 113, 115, 0.15);
+            color: #F0F4EF;
+            border: 2px solid #0F7173;
+        }
+
+        /* Override default Streamlit error styling (red) with teal */
+        [data-testid="stAlert"] {
+            background-color: rgba(15, 113, 115, 0.15) !important;
+            border-color: #0F7173 !important;
+            color: #F0F4EF !important;
+        }
+
+        /* Override error icon and text colors */
+        [data-testid="stAlert"] svg {
+            color: #0F7173 !important;
+            fill: #0F7173 !important;
+        }
+
+        [data-testid="stAlert"] > * {
+            color: #F0F4EF !important;
+        }
+
+        /* Streamlit error container */
+        .st-emotion-cache-1v0mbdj {
+            background-color: rgba(15, 113, 115, 0.15) !important;
+            border: 2px solid #0F7173 !important;
+            color: #F0F4EF !important;
+        }
+
+        /* Danger/error state override */
+        [role="alert"] {
+            background-color: rgba(15, 113, 115, 0.15) !important;
+            border-color: #0F7173 !important;
+            color: #F0F4EF !important;
+        }
+
+        [role="alert"] svg {
+            color: #0F7173 !important;
+            fill: #0F7173 !important;
+        }
+
+        /* Metric containers */
+        .stMetric {
+            background-color: rgba(15, 113, 115, 0.15);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0F7173;
+        }
+
+        /* Dividers */
+        .stHorizontalBlock {
+            border-color: #0F7173;
+        }
+
+        hr {
+            border-color: #0F7173 !important;
+        }
+
+        /* Tabs */
+        .stTabs [role="tablist"] {
+            border-color: #0F7173;
+        }
+
+        .stTabs [role="tab"] {
+            color: #F0F4EF;
+            border-bottom-color: transparent;
+        }
+
+        .stTabs [role="tab"][aria-selected="true"] {
+            color: #F0F4EF;
+            border-bottom-color: #0F7173;
+            font-weight: 600;
+        }
+
+        /* Expander */
+        .streamlit-expanderHeader {
+            background-color: rgba(15, 113, 115, 0.15);
+            color: #F0F4EF;
+        }
+
+        /* Code blocks */
+        .stCodeBlock {
+            background-color: #0D1821;
+            color: #F0F4EF;
+            border: 1px solid #0F7173;
+        }
+
+        /* Caption and help text */
+        .stCaption, .stHelp {
+            color: #F0F4EF;
+        }
+
+        /* DataFrames */
+        .streamlit-dataframe {
+            background-color: #0D1821;
+            color: #F0F4EF;
+        }
+
+        /* Plotly charts background */
+        .plotly-graph-div {
+            background-color: transparent;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0D1821;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0F7173;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(15, 113, 115, 0.8);
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Initialize session state for page tracking
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = "🚀 Generate Application"
+
+    # Top navigation bar
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
+
+    with nav_col1:
+        if st.button(
+            "Generate Application",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == "🚀 Generate Application" else "secondary"
+        ):
+            st.session_state.current_page = "🚀 Generate Application"
+            st.rerun()
+
+    with nav_col2:
+        if st.button(
+            "Data Visualizationtory",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == "📊 Follow-Up Dashboard" else "secondary"
+        ):
+            st.session_state.current_page = "📊 Follow-Up Dashboard"
+            st.rerun()
+
+    with nav_col3:
+        if st.button(
+            "Historics",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == "📋 Historics" else "secondary"
+        ):
+            st.session_state.current_page = "📋 Historics"
+            st.rerun()
+
+    st.divider()
+
+    if st.session_state.current_page == "📊 Follow-Up Dashboard":
         show_follow_up_page()
         return
 
-    st.title("🚀 AI-Powered Job Application System")
-    st.markdown("Generate tailored CVs and cover letters by analyzing job offers")
+    if st.session_state.current_page == "📋 Historics":
+        show_historics_page()
+        return
 
-    # Cost tracking reset option
-    _, col_reset = st.columns([4, 1])
-    with col_reset:
-        if st.button("🔄 Reset Costs", help="Reset API cost tracking for this session"):
-            reset_cost_tracker()
-            st.success("✅ Cost tracking reset!")
+    st.title("Job Application Generator")
+    st.caption("Generate tailored CVs and cover letters by analyzing job offers")
 
     # Sidebar for user profile
-    st.sidebar.header("👤 User Profile")
+    st.sidebar.header("User Profile")
 
     # Check if default profile exists
     default_profile_path = "templates/user_profile.yaml"
@@ -429,7 +749,7 @@ def main():
             with open(default_profile_path, 'r', encoding='utf-8') as f:
                 profile_data = yaml.safe_load(f)
             user_profile = UserProfile(**profile_data)
-            st.sidebar.success(f"✅ Using profile for {user_profile.personal_info.name}")
+            st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
         else:
             uploaded_profile = st.sidebar.file_uploader(
                 "Upload your profile (YAML)",
@@ -439,9 +759,9 @@ def main():
             if uploaded_profile:
                 profile_data = yaml.safe_load(uploaded_profile)
                 user_profile = UserProfile(**profile_data)
-                st.sidebar.success(f"✅ Profile loaded for {user_profile.personal_info.name}")
+                st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
             else:
-                st.sidebar.warning("Please upload a profile file")
+                st.sidebar.info("Please upload a profile file")
                 st.stop()
     else:
         uploaded_profile = st.sidebar.file_uploader(
@@ -452,35 +772,24 @@ def main():
         if uploaded_profile:
             profile_data = yaml.safe_load(uploaded_profile)
             user_profile = UserProfile(**profile_data)
-            st.sidebar.success(f"✅ Profile loaded for {user_profile.personal_info.name}")
+            st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
         else:
-            st.sidebar.warning("Please upload a profile file")
+            st.sidebar.info("Please upload a profile file")
             st.stop()
 
     # Main content area
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.header("📄 Job Offer Input")
+        st.subheader("Job Offer")
         job_offer_text = st.text_area(
             "Paste the job offer text here:",
             height=400,
             placeholder="Paste the complete job offer description, requirements, and any other relevant information..."
         )
 
-        # Optional file upload for job offer
-        uploaded_job_file = st.file_uploader(
-            "Or upload a job offer file",
-            type=['txt', 'md'],
-            help="Upload a text file containing the job offer"
-        )
-
-        if uploaded_job_file:
-            job_offer_text = uploaded_job_file.read().decode('utf-8')
-            st.success("✅ Job offer loaded from file")
-
     with col2:
-        st.header("🎯 Profile Summary")
+        st.subheader("Profile Summary")
         if 'user_profile' in locals():
             st.write(f"**Name:** {user_profile.personal_info.name}")
             st.write(f"**Email:** {user_profile.personal_info.email}")
@@ -489,66 +798,30 @@ def main():
             st.write(f"**Experiences:** {len(user_profile.experiences)} entries")
             st.write(f"**Languages:** {', '.join(user_profile.languages)}")
 
-    # Sidebar cost display
-    st.sidebar.header("💰 Session Costs")
-    cost_tracker = get_cost_tracker()
-    if cost_tracker.total_calls > 0:
-        st.sidebar.metric(
-            label="Total Cost",
-            value=f"${cost_tracker.total_cost:.4f}",
-            help="Total API costs for this session"
-        )
-        st.sidebar.metric(
-            label="API Calls",
-            value=cost_tracker.total_calls,
-            help="Total API calls made"
-        )
-        st.sidebar.metric(
-            label="Tokens Used",
-            value=f"{cost_tracker.total_tokens:,}",
-            help="Total tokens consumed"
-        )
-    else:
-        st.sidebar.write("No API calls made yet")
+    # Sidebar session info
+    st.sidebar.divider()
+    st.sidebar.subheader("Session Info")
 
-    # Applications history
-    st.sidebar.header("📊 Applications History")
+    cost_tracker = get_cost_tracker()
     db = ApplicationDatabase()
     applications = db.get_all_applications()
 
+    if cost_tracker.total_calls > 0:
+        st.sidebar.metric("Session Cost", f"${cost_tracker.total_cost:.4f}")
+
     if applications:
+        st.sidebar.metric("Total Applications", len(applications))
         total_cost = db.get_total_cost()
-        st.sidebar.metric(
-            label="Total Applications",
-            value=len(applications),
-            help="Total number of applications created"
-        )
-        st.sidebar.metric(
-            label="Total Cost (All Time)",
-            value=f"${total_cost:.4f}",
-            help="Total cost of all applications"
-        )
-
-        with st.sidebar.expander("🔍 View Applications", expanded=False):
-            for app in applications[:5]:  # Show last 5 applications
-                st.write(f"**{app.company}** - {app.position}")
-                st.write(f"Match: {app.matching_rate:.1%} | Cost: ${app.application_cost:.4f}")
-                st.write(f"Date: {app.created_at.strftime('%Y-%m-%d %H:%M')}")
-                st.write("---")
-
-            if len(applications) > 5:
-                st.write(f"... and {len(applications) - 5} more applications")
-    else:
-        st.sidebar.write("No applications yet")
+        st.sidebar.metric("All-Time Cost", f"${total_cost:.4f}")
 
     # Generate button
-    if st.button("🚀 Generate CV & Cover Letter", type="primary", use_container_width=True):
+    if st.button("Generate CV & Cover Letter", type="primary", use_container_width=True):
         if not job_offer_text.strip():
             st.error("Please enter a job offer description")
             st.stop()
 
         try:
-            with st.spinner("🔍 Analyzing job offer and generating documents..."):
+            with st.spinner("Analyzing job offer and generating documents..."):
                 cv_html, cover_letter_html, job_offer, matched_skills, application_id = process_job_application(job_offer_text, user_profile)
 
             # Store in session state for persistence across reruns
@@ -558,85 +831,63 @@ def main():
             st.session_state.matched_skills = matched_skills
             st.session_state.application_id = application_id
 
-            st.success(f"✅ Documents generated successfully! Application saved with ID: {application_id}")
+            st.success(f"Documents generated successfully (ID: {application_id})")
 
             # Display cost information
             cost_tracker = get_cost_tracker()
             if cost_tracker.total_calls > 0:
-                with st.expander("💰 API Cost Summary", expanded=False):
-                    col_cost1, col_cost2 = st.columns(2)
-
+                with st.expander("Cost Details"):
+                    col_cost1, col_cost2, col_cost3 = st.columns(3)
                     with col_cost1:
-                        st.metric(
-                            label="Total Cost",
-                            value=f"${cost_tracker.total_cost:.4f} USD",
-                            help="Total cost of OpenAI API calls for this generation"
-                        )
-                        st.metric(
-                            label="Total Tokens",
-                            value=f"{cost_tracker.total_tokens:,}",
-                            help="Total tokens used across all API calls"
-                        )
-
+                        st.metric("Total Cost", f"${cost_tracker.total_cost:.4f}")
                     with col_cost2:
-                        st.metric(
-                            label="API Calls",
-                            value=cost_tracker.total_calls,
-                            help="Number of API calls made"
-                        )
-
-                        # Show cost breakdown
-                        summary = cost_tracker.get_summary()
-                        if summary["operations"]:
-                            st.write("**Cost by Operation:**")
-                            for op, stats in summary["operations"].items():
-                                st.write(f"• {op}: ${stats['cost']:.4f}")
+                        st.metric("API Calls", cost_tracker.total_calls)
+                    with col_cost3:
+                        st.metric("Tokens", f"{cost_tracker.total_tokens:,}")
 
             # Display job analysis results
-            st.header("🔍 Job Analysis Results")
+            st.subheader("Job Analysis")
 
             col_job, col_skills = st.columns(2)
 
             with col_job:
-                st.subheader("📋 Job Requirements")
                 st.write(f"**Position:** {job_offer.job_title}")
                 st.write(f"**Company:** {job_offer.company_name}")
                 st.write(f"**Location:** {job_offer.location}")
-
-                st.write("**Required Skills:**")
+                st.caption("Required Skills")
                 for skill in job_offer.skills_required:
-                    st.write(f"• {skill}")
+                    st.text(f"• {skill}")
 
             with col_skills:
-                st.subheader("🎯 Skills Matching")
                 total_required = len(job_offer.skills_required)
                 matched_count = len(matched_skills.matched_skills)
                 match_percentage = (matched_count / total_required * 100) if total_required > 0 else 0.0
-                st.write(f"**Match Rate:** {matched_count}/{total_required} ({match_percentage:.1f}%)")
+                st.metric("Match Rate", f"{matched_count}/{total_required}")
+                st.metric("Coverage", f"{match_percentage:.0f}%")
 
-                st.write("**Matched Skills:**")
-                for skill in matched_skills.matched_skills:
-                    st.write(f"✅ {skill}")
+                if matched_skills.matched_skills:
+                    st.caption("Matched Skills")
+                    for skill in matched_skills.matched_skills:
+                        st.text(f"• {skill}")
 
                 if len(matched_skills.matched_skills) < len(job_offer.skills_required):
                     missing_skills = set(job_offer.skills_required) - set(matched_skills.matched_skills)
-                    st.write("**Skills to Highlight:**")
+                    st.caption("Not Matched")
                     for skill in missing_skills:
-                        st.write(f"⚠️ {skill}")
+                        st.text(f"• {skill}")
 
         except Exception as e:
-            st.error(f"❌ Error generating documents: {str(e)}")
+            st.error(f"Error generating documents: {str(e)}")
             st.exception(e)
 
     # Download section - available if documents exist in session state
     if hasattr(st.session_state, 'cv_html') and hasattr(st.session_state, 'cover_letter_html'):
-        st.header("📥 Download Documents")
+        st.subheader("Download Documents")
 
         # Get data from session state
         cv_html = st.session_state.cv_html
         cover_letter_html = st.session_state.cover_letter_html
         job_offer = st.session_state.job_offer
-        matched_skills = st.session_state.matched_skills
 
         # Generate clean filenames
         company_clean = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
@@ -650,83 +901,65 @@ def main():
         col_cv, col_cl = st.columns(2)
 
         with col_cv:
-            st.subheader("📋 CV")
-
-            if st.button("📄 Download CV (PDF)", key="cv_pdf_btn", use_container_width=True):
-                logger.info("CV PDF download button clicked")
+            st.write("**CV**")
+            if st.button("Download PDF", key="cv_pdf_btn", use_container_width=True):
                 try:
                     cv_pdf = convert_html_to_pdf(cv_html)
                     saved_path = save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
                     logger.info(f"CV PDF saved to: {saved_path}")
-                    st.success(f"✅ CV PDF saved to: {saved_path}")
+                    st.success(f"Saved to {saved_path}")
                 except Exception as e:
                     logger.error(f"Error saving CV PDF: {str(e)}")
-                    st.error(f"❌ Error saving CV PDF: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
-            if st.button("🌐 Download CV (HTML)", key="cv_html_btn", use_container_width=True):
+            if st.button("Download HTML", key="cv_html_btn", use_container_width=True):
                 try:
                     saved_path = save_file_to_applications(cv_html.encode('utf-8'), cv_html_name, "CV HTML")
                     logger.info(f"CV HTML saved to: {saved_path}")
-                    st.success(f"✅ CV HTML saved to: {saved_path}")
+                    st.success(f"Saved to {saved_path}")
                 except Exception as e:
                     logger.error(f"Error saving CV HTML: {str(e)}")
-                    st.error(f"❌ Error saving CV HTML: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
         with col_cl:
-            st.subheader("💌 Cover Letter")
-
-            if st.button("📄 Download Cover Letter (PDF)", key="cl_pdf_btn", use_container_width=True):
+            st.write("**Cover Letter**")
+            if st.button("Download PDF", key="cl_pdf_btn", use_container_width=True):
                 try:
                     cl_pdf = convert_html_to_pdf(cover_letter_html)
                     saved_path = save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-                    st.success(f"✅ Cover Letter PDF saved to: {saved_path}")
+                    st.success(f"Saved to {saved_path}")
                 except Exception as e:
-                    st.error(f"❌ Error saving Cover Letter PDF: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
-            if st.button("🌐 Download Cover Letter (HTML)", key="cl_html_btn", use_container_width=True):
+            if st.button("Download HTML", key="cl_html_btn", use_container_width=True):
                 try:
                     saved_path = save_file_to_applications(cover_letter_html.encode('utf-8'), cl_html_name, "Cover Letter HTML")
-                    st.success(f"✅ Cover Letter HTML saved to: {saved_path}")
+                    st.success(f"Saved to {saved_path}")
                 except Exception as e:
-                    st.error(f"❌ Error saving Cover Letter HTML: {str(e)}")
+                    st.error(f"Error: {str(e)}")
 
         # Combined download button
-        st.markdown("---")
-        if st.button("📦 Download Both CV & Cover Letter (PDF)", key="both_pdf_btn", use_container_width=True):
+        st.divider()
+        if st.button("Download Both (PDF)", key="both_pdf_btn", use_container_width=True):
             try:
-                # Debug logging
-                logger.info(f"Combined download button clicked")
-
-                st.info("🔄 Converting CV to PDF...")
+                logger.info("Combined download button clicked")
                 cv_pdf = convert_html_to_pdf(cv_html)
-                logger.info(f"CV PDF generated: {len(cv_pdf)} bytes")
-
-                st.info("🔄 Converting Cover Letter to PDF...")
                 cl_pdf = convert_html_to_pdf(cover_letter_html)
-                logger.info(f"CL PDF generated: {len(cl_pdf)} bytes")
-
-                st.info("🔄 Saving CV PDF...")
-                cv_saved_path = save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
-                logger.info(f"CV saved to: {cv_saved_path}")
-
-                st.info("🔄 Saving Cover Letter PDF...")
-                cl_saved_path = save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-                logger.info(f"CL saved to: {cl_saved_path}")
-
-                st.success(f"✅ Both documents saved successfully!")
-                st.info(f"📋 CV PDF: {cv_saved_path}")
-                st.info(f"💌 Cover Letter PDF: {cl_saved_path}")
+                save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
+                save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
+                st.success("Documents saved successfully!")
             except Exception as e:
                 logger.error(f"Combined download error: {str(e)}")
-                st.error(f"❌ Error saving documents: {str(e)}")
-                st.exception(e)
+                st.error(f"Error: {str(e)}")
 
         # Preview section
-        with st.expander("👀 Preview CV"):
-            st.components.v1.html(cv_html, height=600, scrolling=True)
+        with st.expander("Preview CV"):
+            cv_wrapped = f'<div style="background-color: white; padding: 20px; border-radius: 8px;">{cv_html}</div>'
+            st.components.v1.html(cv_wrapped, height=600, scrolling=True)
 
-        with st.expander("👀 Preview Cover Letter"):
-            st.components.v1.html(cover_letter_html, height=600, scrolling=True)
+        with st.expander("Preview Cover Letter"):
+            cl_wrapped = f'<div style="background-color: white; padding: 20px; border-radius: 8px;">{cover_letter_html}</div>'
+            st.components.v1.html(cl_wrapped, height=600, scrolling=True)
 
 
 if __name__ == "__main__":
