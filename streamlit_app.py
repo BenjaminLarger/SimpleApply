@@ -293,17 +293,41 @@ def show_follow_up_page():
     if len(applications) >= 3:  # Only show analytics if we have enough data
         st.subheader("Analytics")
 
-        # Match rate trend
-        apps_by_date = sorted(applications, key=lambda x: x.created_at)
-        dates = [app.created_at.date() for app in apps_by_date]
-        match_rates = [app.matching_rate for app in apps_by_date]
-
         try:
             import plotly.express as px
             import pandas as pd
         except ImportError:
             st.error("Plotly and pandas are required for analytics. Install with: pip install plotly pandas")
             return
+
+        # Applications generated per day (past 10 days)
+        # Generate all dates for the past 10 days
+        from datetime import timedelta
+        today = datetime.now().date()
+        date_range = [today - timedelta(days=i) for i in range(10, -1, -1)]
+
+        apps_by_date_gen = sorted(filtered_apps, key=lambda x: x.created_at)
+        daily_counts = pd.DataFrame({
+            'Date': [app.created_at.date() for app in apps_by_date_gen]
+        }).groupby('Date').size().reset_index(name='Count')
+
+        # Create a complete date range DataFrame and merge with actual counts
+        date_range_df = pd.DataFrame({'Date': date_range})
+        daily_counts_complete = date_range_df.merge(daily_counts, on='Date', how='left').fillna(0)
+        daily_counts_complete['Count'] = daily_counts_complete['Count'].astype(int)
+
+        fig_daily = px.line(daily_counts_complete, x='Date', y='Count',
+                           title='Applications Generated Per Day (Past 10 Days)',
+                           labels={'Count': 'Number of Applications'},
+                           markers=True)
+        fig_daily.update_layout(showlegend=False)
+        fig_daily.update_xaxes(tickformat='%Y-%m-%d')
+        st.plotly_chart(fig_daily, use_container_width=True)
+
+        # Match rate trend
+        apps_by_date = sorted(applications, key=lambda x: x.created_at)
+        dates = [app.created_at.date() for app in apps_by_date]
+        match_rates = [app.matching_rate for app in apps_by_date]
 
         df = pd.DataFrame({
             'Date': dates,
