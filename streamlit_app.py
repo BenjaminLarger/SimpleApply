@@ -230,10 +230,101 @@ def show_historics_page():
         st.info("Select an application to view details")
 
 
+def show_template_editor_page():
+    """Display the template editor page"""
+    st.title("Template Editor")
+    st.caption("Edit your templates directly - changes are saved to disk")
+    st.warning("⚠️ Ensure valid syntax before saving. YAML and HTML files must be properly formatted.")
+
+    # Define template files
+    templates = {
+        "User Profile (YAML)": "templates/user_profile.yaml",
+        "CV Template (HTML)": "templates/cv_template.html",
+        "Cover Letter Template (HTML)": "templates/cover_letter_template.html",
+    }
+
+    # Create tabs for each template
+    tabs = st.tabs(list(templates.keys()))
+
+    for tab, (tab_name, file_path) in zip(tabs, templates.items()):
+        with tab:
+            # Read current file content
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    original_content = f.read()
+            except FileNotFoundError:
+                st.error(f"File not found: {file_path}")
+                continue
+            except Exception as e:
+                st.error(f"Error reading file: {str(e)}")
+                continue
+
+            # Display file info
+            col_info1, col_info2 = st.columns([2, 1])
+            with col_info1:
+                st.caption(f"📄 {file_path}")
+            with col_info2:
+                st.caption(f"Size: {len(original_content)} bytes")
+
+            # Text editor
+            edited_content = st.text_area(
+                f"Edit {tab_name}",
+                value=original_content,
+                height=500,
+                label_visibility="collapsed",
+                key=f"editor_{file_path}"
+            )
+
+            # Only show save section if content has changed
+            if edited_content != original_content:
+                st.info("Changes detected")
+
+                col_save1, col_save2 = st.columns(2)
+
+                with col_save1:
+                    if st.button("💾 Save Changes", key=f"save_{file_path}", use_container_width=True, type="primary"):
+                        # Validate content based on file type
+                        is_valid = True
+                        error_msg = ""
+
+                        if "YAML" in tab_name:
+                            try:
+                                yaml.safe_load(edited_content)
+                            except yaml.YAMLError as e:
+                                is_valid = False
+                                error_msg = f"YAML Syntax Error: {str(e)}"
+                        elif "HTML" in tab_name:
+                            # Basic HTML validation - check for matching tags
+                            if edited_content.count('<') != edited_content.count('>'):
+                                is_valid = False
+                                error_msg = "HTML Syntax Error: Mismatched angle brackets"
+
+                        if is_valid:
+                            try:
+                                # Save the file
+                                with open(file_path, 'w', encoding='utf-8') as f:
+                                    f.write(edited_content)
+                                st.success(f"✅ {tab_name} saved successfully!")
+                                st.balloons()
+                                logger.info(f"Template saved: {file_path}")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error saving file: {str(e)}")
+                                logger.error(f"Error saving template {file_path}: {str(e)}")
+                        else:
+                            st.error(f"❌ Cannot save - {error_msg}")
+
+                with col_save2:
+                    if st.button("⚠️ Discard Changes", key=f"discard_{file_path}", use_container_width=True):
+                        st.rerun()
+            else:
+                st.caption("No changes made")
+
+
 def show_follow_up_page():
     """Display the application follow-up page"""
     st.title("Data Visualization")
-    st.caption("Track and manage your job applications")
+    st.subheader("Total Metrics")
 
     db = ApplicationDatabase()
     applications = db.get_all_applications()
@@ -256,6 +347,30 @@ def show_follow_up_page():
         st.metric("Total Cost", f"${total_cost:.4f}")
     with col4:
         st.metric("Average Cost", f"${avg_cost:.4f}")
+
+    # Today's metrics
+    st.divider()
+    st.subheader("Today's Metrics")
+
+    today = datetime.now().date()
+    today_applications = [app for app in applications if app.created_at.date() == today]
+
+    if today_applications:
+        today_total_cost = sum(app.application_cost for app in today_applications)
+        today_avg_match_rate = sum(app.matching_rate for app in today_applications) / len(today_applications)
+        today_avg_cost = today_total_cost / len(today_applications) if len(today_applications) > 0 else 0
+
+        col_today1, col_today2, col_today3, col_today4 = st.columns(4)
+        with col_today1:
+            st.metric("Total Applications", len(today_applications))
+        with col_today2:
+            st.metric("Average Match", f"{today_avg_match_rate:.1%}")
+        with col_today3:
+            st.metric("Total Cost", f"${today_total_cost:.4f}")
+        with col_today4:
+            st.metric("Average Cost", f"${today_avg_cost:.4f}")
+    else:
+        st.info("No applications generated today")
 
     # Analytics section
     if len(applications) >= 3:  # Only show analytics if we have enough data
@@ -653,7 +768,7 @@ def main():
         st.session_state.current_page = "🚀 Generate Application"
 
     # Top navigation bar
-    nav_col1, nav_col2, nav_col3 = st.columns(3)
+    nav_col1, nav_col2, nav_col3, nav_col4 = st.columns(4)
 
     with nav_col1:
         if st.button(
@@ -682,6 +797,15 @@ def main():
             st.session_state.current_page = "📋 Historics"
             st.rerun()
 
+    with nav_col4:
+        if st.button(
+            "Template Editor",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == "⚙️ Template Editor" else "secondary"
+        ):
+            st.session_state.current_page = "⚙️ Template Editor"
+            st.rerun()
+
     st.divider()
 
     if st.session_state.current_page == "📊 Follow-Up Dashboard":
@@ -690,6 +814,10 @@ def main():
 
     if st.session_state.current_page == "📋 Historics":
         show_historics_page()
+        return
+
+    if st.session_state.current_page == "⚙️ Template Editor":
+        show_template_editor_page()
         return
 
     st.title("Job Application Generator")
