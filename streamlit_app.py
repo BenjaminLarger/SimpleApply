@@ -233,14 +233,17 @@ def show_follow_up_page():
     # Summary metrics
     total_cost = db.get_total_cost()
     avg_match_rate = sum(app.matching_rate for app in applications) / len(applications)
+    avg_cost = total_cost / len(applications) if len(applications) > 0 else 0
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Total Applications", len(applications))
     with col2:
         st.metric("Average Match", f"{avg_match_rate:.1%}")
     with col3:
         st.metric("Total Cost", f"${total_cost:.4f}")
+    with col4:
+        st.metric("Average Cost", f"${avg_cost:.4f}")
 
     # Filters
     st.subheader("Filter Applications")
@@ -452,7 +455,7 @@ def main():
     logger.info("Starting Streamlit application")
     st.set_page_config(
         page_title="AI Job Application Generator",
-        page_icon="🚀",
+        page_icon="🫰🏿",
         layout="wide",
         initial_sidebar_state="expanded"
     )
