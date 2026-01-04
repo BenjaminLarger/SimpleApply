@@ -234,11 +234,11 @@ def show_template_editor_page():
     """Display the template editor page"""
     st.title("Template Editor")
     st.caption("Edit your templates directly - changes are saved to disk")
-    st.warning("⚠️ Ensure valid syntax before saving. YAML and HTML files must be properly formatted.")
+
+    st.info("💡 To complete your profile, edit the YAML file at: `templates/user_profile.yaml`")
 
     # Define template files
     templates = {
-        "User Profile (YAML)": "templates/user_profile.yaml",
         "CV Template (HTML)": "templates/cv_template.html",
         "Cover Letter Template (HTML)": "templates/cover_letter_template.html",
     }
@@ -272,6 +272,7 @@ def show_template_editor_page():
 
                 with col_edit:
                     st.subheader("Edit")
+                    st.caption("⚠️ You can edit directly the html in 'templates' directory")
                     edited_content = st.text_area(
                         f"Edit {tab_name}",
                         value=original_content,
@@ -282,6 +283,7 @@ def show_template_editor_page():
 
                 with col_preview:
                     st.subheader("Live Preview (A4 Page)")
+                    st.caption("⚠️ Preview is approximate - download the PDF version to see the exact match")
                     # Show live preview of HTML with A4 page dimensions (210mm x 297mm) and 1cm margins
                     try:
                         # Wrap the HTML content in A4 page container with margins matching PDF output
@@ -299,7 +301,7 @@ def show_template_editor_page():
                                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
                                 overflow: auto;
                                 font-family: Arial, sans-serif;
-                                max-height: 500px;
+                                height: 500px;
                             }}
                         </style>
                         <div id="a4-page">
@@ -311,6 +313,18 @@ def show_template_editor_page():
                         st.html(styled_html)
                     except Exception as e:
                         st.warning(f"Preview error (syntax issue): {str(e)[:100]}")
+
+                    # Download preview as PDF button - centered and constrained to match A4 width
+                    col_spacer_l, col_btn, col_spacer_r = st.columns([0.1, 0.8, 0.1])
+                    with col_btn:
+                        if st.button("📥 Download Preview (PDF)", key=f"download_preview_{file_path}", use_container_width=True, type="primary"):
+                            try:
+                                preview_pdf = convert_html_to_pdf(edited_content)
+                                filename = f"Preview_{file_path.split('/')[-1].replace('.html', '')}.pdf"
+                                saved_path = save_file_to_applications(preview_pdf, filename, "Template Preview PDF")
+                                st.success(f"Saved to {saved_path}")
+                            except Exception as e:
+                                st.error(f"Error downloading preview: {str(e)}")
 
             else:
                 # For YAML, just show editor
