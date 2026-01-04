@@ -48,9 +48,18 @@ def convert_html_to_pdf(html_content: str) -> bytes:
 
 
 def save_file_to_applications(content: bytes, filename: str, file_type: str) -> str:
-    """Save file to ~/Downloads/Applications/ directory and return the full path."""
-    # Create the directory path
-    downloads_path = Path.home() / "Downloads" / "Applications"
+    """Save file to ~/Downloads/Applications/ directory organized by type and return the full path."""
+    # Create the base directory path
+    base_path = Path.home() / "Downloads" / "Applications"
+
+    # Determine subdirectory based on file type
+    if "CV" in file_type:
+        downloads_path = base_path / "CVs"
+    elif "Cover Letter" in file_type:
+        downloads_path = base_path / "CoverLetters"
+    else:
+        downloads_path = base_path
+
     downloads_path.mkdir(parents=True, exist_ok=True)
 
     # Create full file path

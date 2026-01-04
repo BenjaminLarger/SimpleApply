@@ -6,127 +6,91 @@
     <title>Cover Letter</title>
     <style>
         body {
-            font-family: 'Calibri', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Georgia', 'Times New Roman', serif;
             line-height: 1.6;
-            color: #2c3e50;
-            max-width: 800px;
-            margin: auto;
-            padding: 20px;
-            background-color: #ffffff;
+            color: #000;
+            max-width: 850px;
+            margin: 0;
+            padding: 40px;
+            background-color: #fff;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 20px;
-        }
-        .header h1 {
-            margin: 0 0 15px 0;
-            font-size: 28px;
-            font-weight: 600;
-            color: #34495e;
-            letter-spacing: 0.5px;
-        }
-        .contact-info {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        .contact-item {
-            display: flex;
-            align-items: center;
+        .sender-info {
+            margin-bottom: 40px;
             font-size: 14px;
-            color: #7f8c8d;
-            text-decoration: none;
-            transition: color 0.3s ease;
         }
-        .contact-item:hover {
-            color: #3498db;
-        }
-        .contact-item .icon {
-            margin-right: 6px;
-            font-size: 16px;
+        .sender-name {
+            font-weight: bold;
+            margin-bottom: 4px;
         }
         .date {
-            text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
             font-size: 14px;
-            color: #7f8c8d;
-            font-weight: 500;
         }
-        .company-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
+        .recipient {
+            margin-bottom: 40px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .greeting {
             margin-bottom: 20px;
-            letter-spacing: 0.3px;
         }
-        .content {
-            text-align: justify;
+        p {
+            margin: 0 0 16px 0;
+            text-align: left;
+        }
+        ul {
+            margin: 16px 0;
+            padding-left: 40px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .closing {
+            margin-top: 32px;
         }
         .signature {
-            margin-top: 20px;
-            font-weight: bold;
+            margin-top: 32px;
+            font-family: 'Georgia', 'Times New Roman', serif;
         }
-        
-        /* Responsive design for smaller screens */
+        .signature-name {
+            font-weight: normal;
+        }
+
         @media (max-width: 600px) {
-            .contact-info {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
+            body {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Benjamin Larger</h1>
-        <div class="contact-info">
-            <a href="mailto:benjaminlarger.bl@gmail.com" class="contact-item">
-                <span class="icon">✉</span>
-                benjaminlarger.bl@gmail.com
-            </a>
-            <span class="contact-item">
-                <span class="icon">📞</span>
-                +34 667-006-863
-            </span>
-            <a href="https://www.linkedin.com/in/benjamin-larger/" class="contact-item" target="_blank">
-                <span class="icon">💼</span>
-                LinkedIn Profile
-            </a>
-        </div>
+    <div class="sender-info">
+        <div>benjaminlarger.bl@gmail.com | +34 667 006 863</div>
     </div>
 
-    <div class="content">
-        <div class="date"><!-- Insert Date --></div>
-        <div class="company-name"><!-- Insert Company Name --></div>
+    <div class="date">[Date]</div>
 
-        <p>Dear Hiring Manager,</p>
+    <div class="greeting">Dear [Hiring Manager Name / Hiring Team],</div>
 
-        <p>I am writing to express my interest in the <!-- Insert Job Title --> position at <!-- Insert Company Name -->, as advertised. With a strong background in programming engineering from 42 School and a Master's degree in Market Finance from the University of Montpellier, I am excited about the opportunity to contribute to your team and help drive innovative projects forward.</p>
+    <p>I am writing to express my interest in the [Job Title] position at [Company Name]. With a strong foundation in software engineering from 42 School and a Master's degree in Finance from the University of Montpellier, combined with professional experience at ENGIE, I am confident I can contribute meaningfully to your team.</p>
 
-        <p>Throughout my academic and professional journey, I have honed my skills in various programming languages and technologies, including Python, Django, C, C++, HTML, CSS, and more. My experience as an IS Software Engineer Intern at ENGIE in Madrid allowed me to collaborate with cross-functional teams to develop tailored software solutions, scrape critical business data, and design RESTful APIs. Additionally, my proficiency in machine learning, data analysis, and statistical modeling, further demonstrated through my completion of the 42 Spain Data Science Bootcamp, equips me with a versatile skill set to tackle complex challenges.</p>
+    <p>In my role as IS Software Engineer Intern at ENGIE in Madrid, I developed skills across multiple programming languages and frameworks such as Python, Django, C, C++, and full-stack web technologies. I collaborated with cross-functional teams to design RESTful APIs, perform data extraction for critical business processes, and build robust software solutions.</p>
 
-        <p>Some of my most relevant achievements include:</p>
-        <ul>
-            <li><!-- Insert Achievement 1 --></li>
-            <li><!-- Insert Achievement 2 --></li>
-            <li><!-- Insert Achievement 3 --></li>
-        </ul>
+    <p>Key areas where I can add value to your organization:</p>
+    <ul>
+        <li>[Achievement 1]</li>
+        <li>[Achievement 2]</li>
+        <li>[Achievement 3]</li>
+    </ul>
 
-        <p>What excites me about the opportunity at <!-- Insert Company Name --> is <!-- Insert specific detail about the company or role that excites you -->. I am particularly drawn to this role because <!-- Insert reason why you are drawn to the role -->. I am confident that my background and passion for technology make me a strong fit for your team.</p>
+    <p>I am particularly drawn to [Company Name] because of [specific company detail or mission]. The opportunity to [specific responsibility or project mentioned in job posting] aligns directly with my professional goals and expertise. I am eager to discuss how my background and skills can contribute to your team's success.</p>
 
-        <p>I am eager to bring my expertise in <!-- Insert Relevant Skills --> to <!-- Insert Company Name --> and am excited about the possibility of contributing to <!-- Insert specific project or goal mentioned in the job description -->. I am looking forward to the opportunity to discuss how my background, skills, and certifications will be beneficial to your team.</p>
+    <p>Thank you for considering my application. I look forward to speaking with you about how I can contribute to [Company Name].</p>
 
-        <p>Thank you for considering my application. I am looking forward to the possibility of discussing this exciting opportunity with you.</p>
+    <div class="closing">Sincerely,</div>
 
-        <div class="signature">
-            <p>Sincerely,</p>
-            <p>Benjamin Larger</p>
-        </div>
+    <div class="signature">
+        <div style="margin-top: 24px; margin-bottom: 0;">Benjamin Larger</div>
     </div>
 </body>
 </html>

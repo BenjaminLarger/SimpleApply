@@ -69,6 +69,10 @@ class TemplateProcessor:
             direct_pattern = f"\\{{\\s*{re.escape(placeholder)}\\s*\\}}"
             result = re.sub(direct_pattern, value, result, flags=re.IGNORECASE)
 
+            # Replace bracket placeholders [PLACEHOLDER]
+            bracket_pattern = f"\\[\\s*{re.escape(placeholder)}\\s*\\]"
+            result = re.sub(bracket_pattern, value, result, flags=re.IGNORECASE)
+
         return result
 
     def generate_cv_replacements(
@@ -177,16 +181,17 @@ class TemplateProcessor:
         personalized = self._generate_personalized_content(job_offer, matched_skills)
 
         return {
-            "Insert Date": date.today().strftime("%B %d, %Y"),
-            "Insert Company Name": job_offer.company_name,
-            "Insert Job Title": job_offer.job_title,
-            "Insert Achievement 1": achievements[0],
-            "Insert Achievement 2": achievements[1],
-            "Insert Achievement 3": achievements[2],
-            "Insert specific detail about the company or role that excites you": personalized["company_excitement"],
-            "Insert reason why you are drawn to the role": personalized["role_attraction"],
-            "Insert Relevant Skills": personalized["relevant_skills"],
-            "Insert specific project or goal mentioned in the job description": personalized["specific_goal"]
+            "Date": date.today().strftime("%B %d, %Y"),
+            "Hiring Manager Name / Hiring Team": "Hiring Team",
+            "Company Name": job_offer.company_name,
+            "Company Address": job_offer.location,
+            "City, State ZIP": job_offer.location,
+            "Job Title": job_offer.job_title,
+            "Achievement 1": achievements[0],
+            "Achievement 2": achievements[1],
+            "Achievement 3": achievements[2],
+            "specific company detail or mission": personalized["company_excitement"],
+            "specific responsibility or project mentioned in job posting": personalized["specific_goal"]
         }
 
     def _truncate_description(self, description: str, min_length: int, max_length: int) -> str:
