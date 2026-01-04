@@ -317,7 +317,7 @@ def show_template_editor_page():
                     # Download preview as PDF button - centered and constrained to match A4 width
                     col_spacer_l, col_btn, col_spacer_r = st.columns([0.1, 0.8, 0.1])
                     with col_btn:
-                        if st.button("📥 Download Preview (PDF)", key=f"download_preview_{file_path}", use_container_width=True, type="primary"):
+                        if st.button("Download Preview (PDF)", key=f"download_preview_{file_path}", use_container_width=True, type="primary"):
                             try:
                                 preview_pdf = convert_html_to_pdf(edited_content)
                                 filename = f"Preview_{file_path.split('/')[-1].replace('.html', '')}.pdf"
@@ -892,29 +892,14 @@ def main():
     # Sidebar for user profile
     st.sidebar.header("User Profile")
 
-    # Check if default profile exists
+    # Load user profile
     default_profile_path = "templates/user_profile.yaml"
 
     if os.path.exists(default_profile_path):
-        use_default = st.sidebar.checkbox("Use default profile", value=True)
-        if use_default:
-            with open(default_profile_path, 'r', encoding='utf-8') as f:
-                profile_data = yaml.safe_load(f)
-            user_profile = UserProfile(**profile_data)
-            st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
-        else:
-            uploaded_profile = st.sidebar.file_uploader(
-                "Upload your profile (YAML)",
-                type=['yaml', 'yml'],
-                help="Upload a YAML file with your profile information"
-            )
-            if uploaded_profile:
-                profile_data = yaml.safe_load(uploaded_profile)
-                user_profile = UserProfile(**profile_data)
-                st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
-            else:
-                st.sidebar.info("Please upload a profile file")
-                st.stop()
+        with open(default_profile_path, 'r', encoding='utf-8') as f:
+            profile_data = yaml.safe_load(f)
+        user_profile = UserProfile(**profile_data)
+        st.sidebar.caption(f"Profile: {user_profile.personal_info.name}")
     else:
         uploaded_profile = st.sidebar.file_uploader(
             "Upload your profile (YAML)",
@@ -934,21 +919,49 @@ def main():
 
     with col1:
         st.subheader("Job Offer")
-        job_offer_text = st.text_area(
-            "Paste the job offer text here:",
-            height=400,
-            placeholder="Paste the complete job offer description, requirements, and any other relevant information..."
-        )
+        with st.container(border=True):
+            job_offer_text = st.text_area(
+               "" ,
+                height=400,
+                placeholder="Paste the complete job offer description, requirements, and any other relevant information..."
+            )
 
     with col2:
         st.subheader("Profile Summary")
         if 'user_profile' in locals():
-            st.write(f"**Name:** {user_profile.personal_info.name}")
-            st.write(f"**Email:** {user_profile.personal_info.email}")
-            st.write(f"**Skills:** {len(user_profile.skills)} total")
-            st.write(f"**Projects:** {len(user_profile.projects)} available")
-            st.write(f"**Experiences:** {len(user_profile.experiences)} entries")
-            st.write(f"**Languages:** {', '.join(user_profile.languages)}")
+            with st.container(border=True):
+                st.write(f"## 👤 {user_profile.personal_info.name}")
+                st.divider()
+
+                # Skills
+                with st.expander(f"Skills ({len(user_profile.skills)})"):
+                    if user_profile.skills:
+                        cols = st.columns(2)
+                        for idx, skill in enumerate(user_profile.skills):
+                            with cols[idx % 2]:
+                                st.text(f"• {skill}")
+                    else:
+                        st.caption("No skills added yet")
+                
+
+                # Projects
+                with st.expander(f"Projects ({len(user_profile.projects)})"):
+                    if user_profile.projects:
+                        for project in user_profile.projects[:3]:
+                            st.text(f"• {project.title}")
+                    else:
+                        st.caption("No projects added yet")
+
+                # Experiences
+                with st.expander(f"Experiences ({len(user_profile.experiences)})"):
+                    if user_profile.experiences:
+                        for exp in user_profile.experiences[:2]:
+                            st.text(f"• {exp.role} @ {exp.company}")
+                        if len(user_profile.experiences) > 2:
+                            st.caption(f"... and {len(user_profile.experiences) - 2} more")
+                    else:
+                        st.caption("No experiences added yet")
+                st.caption("⚠️ You can edit those information in the file located at templates/user_profile.yaml")
 
     # Sidebar session info
     st.sidebar.divider()
@@ -962,9 +975,19 @@ def main():
         st.sidebar.metric("Session Cost", f"${cost_tracker.total_cost:.4f}")
 
     if applications:
-        st.sidebar.metric("Total Applications", len(applications))
-        total_cost = db.get_total_cost()
-        st.sidebar.metric("All-Time Cost", f"${total_cost:.4f}")
+
+        # Today's metrics
+        today = datetime.now().date()
+        today_applications = [app for app in applications if app.created_at.date() == today]
+
+        if today_applications:
+            today_total_cost = sum(app.application_cost for app in today_applications)
+            today_avg_cost = today_total_cost / len(today_applications) if len(today_applications) > 0 else 0
+
+            st.sidebar.metric("Today's Applications", len(today_applications))
+            st.sidebar.metric("Today's Avg Cost", f"${today_avg_cost:.4f}")
+        else:
+            st.sidebar.caption("No applications today")
 
     # Generate button
     if st.button("Generate CV & Cover Letter", type="primary", use_container_width=True):
