@@ -262,7 +262,7 @@ def show_template_editor_page():
             # Display file info
             col_info1, col_info2 = st.columns([2, 1])
             with col_info1:
-                st.caption(f"📄 {file_path}")
+                st.caption(f"{file_path}")
             with col_info2:
                 st.caption(f"Size: {len(original_content)} bytes")
 
@@ -281,18 +281,31 @@ def show_template_editor_page():
                     )
 
                 with col_preview:
-                    st.subheader("Live Preview")
-                    # Show live preview of HTML with white background and black text
+                    st.subheader("Live Preview (A4 Page)")
+                    # Show live preview of HTML with A4 page dimensions (210mm x 297mm) and 1cm margins
                     try:
-                        # Wrap the HTML content with white background and force black text on all nested elements
+                        # Wrap the HTML content in A4 page container with margins matching PDF output
                         styled_html = f"""
                         <style>
                             #preview-container, #preview-container * {{
                                 color: black !important;
                             }}
+                            #a4-page {{
+                                width: 210mm;
+                                height: 297mm;
+                                margin: 0 auto;
+                                padding: 10mm;
+                                background-color: white;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                                overflow: auto;
+                                font-family: Arial, sans-serif;
+                                max-height: 500px;
+                            }}
                         </style>
-                        <div id="preview-container" style="background-color: white; color: black !important; padding: 20px; overflow-y: auto; max-height: 500px;">
-                            {edited_content}
+                        <div id="a4-page">
+                            <div id="preview-container">
+                                {edited_content}
+                            </div>
                         </div>
                         """
                         st.html(styled_html)
