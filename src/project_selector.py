@@ -60,6 +60,7 @@ def prepare_projects_data(projects: List[Project]) -> List[dict]:
         project_info = {
             "index": i,
             "title": project.title,
+            "type": project.type,
             "description": project.description,
             "technologies": project.technologies,
             "url": project.url,
@@ -95,6 +96,8 @@ JOB OFFER:
 AVAILABLE PROJECTS:
 {json.dumps(projects_data, indent=2)}
 
+Note: The project descriptions already include relevant technologies used in each project.
+
 Please analyze and return a JSON object with the following structure:
 {{
     "project1_index": <index of first selected project>,
@@ -109,10 +112,12 @@ Selection Criteria:
 4. **Recent Activity**: More recent projects generally preferred unless older ones are significantly more relevant
 5. **Demonstrable Impact**: Projects with clear outcomes, URLs, or measurable results
 6. **Complementary Skills**: Select projects that together cover different aspects of the job requirements
+7. **Project Type Balance**: Prefer freelance projects when available as they show real-world client experience, but include side projects if they better match the job requirements
 
 Guidelines:
 - Choose projects that best showcase the candidate's fit for this specific role
 - Ensure the two selected projects complement each other (don't pick two very similar projects)
+- Prioritize showing client/freelance work experience when relevant to the role
 - The reasoning should be specific to this job and explain the strategic thinking behind the selection
 
 Return only the JSON object, no additional text.

@@ -54,6 +54,7 @@ skills:
   - "SQL"
   - "Unit Test"
   - "Django"
+  - "Kafka"
   - "REST API"
   - "Claude Code"
   - "N8N"
@@ -138,6 +139,7 @@ education:
 
 projects:
   - title: "AI-Powered WhatsApp Bot"
+    type: Side Project 
     description: "Developed an intelligent WhatsApp bot using Meta Cloud API with Flask backend, featuring real-time webhook integration, OpenAI Assistant API for AI responses, and secure message handling. Implemented comprehensive security with payload validation, ngrok tunneling for local development, and production-ready phone number management."
     technologies:
       - "Python"
@@ -161,6 +163,7 @@ projects:
     end_date: "2024-07-31"
     status: "completed"
   - title: "Multi-Model Chat Interface"
+    type: Side Project 
     description: "Built a comprehensive AI chat system integrating four types of AI models: OpenAI API (GPT-3.5-turbo), Hugging Face transformers for local model access, Hugging Face Inference API for serverless access, and DistilBERT for text classification. Features FastAPI backend, web-based chat interface, fine-tuning capabilities, and WebSocket support for real-time communication."
     technologies:
       - "Python"
@@ -188,6 +191,7 @@ projects:
     end_date: "2024-11-30"
     status: "completed"
   - title: "Weather Prediction Project"
+    type: Side Project 
     description: "Developed a machine learning system for weather prediction using advanced ML models including Random Forest, Gradient Boosting, Ridge Regression, and K-Nearest Neighbors. Features an interactive web interface with real-time compilation and performance metrics evaluation."
     technologies:
       - "Python"
@@ -207,6 +211,7 @@ projects:
     end_date: "2024-12-31"
     status: "completed"
   - title: "AI-Powered CV & Cover Letter Generator - CrewAI"
+    type: Side Project 
     description: "Developed a CrewAI-based system that analyzes job postings, matches skills, and generates tailored HTML/PDF CVs and cover letters, featuring Streamlit UI and automated document conversion."
     technologies:
       - "Python"
@@ -225,6 +230,7 @@ projects:
     end_date: "2024-09-30"
     status: "completed"
   - title: "AI Spreadsheet Analyst - LangChain"
+    type: Side Project 
     description: "Developed an AI agent for spreadsheet analysis using LangGraph, featuring secure sandbox execution, multi-step reasoning, and LangSmith for evaluating agents' performance."
     technologies:
       - "Python"
@@ -243,6 +249,7 @@ projects:
     end_date: "2024-05-31"
     status: "completed"
   - title: MeetingFlowAI
+    type: Side Project 
     description: "Created an AI-powered automation agent that creates a multi-step workflow: Gmail → OpenAI Processing → Calendar Integration. Features an enhanced UI that highlights the complete program workflow for better user experience."
     technologies:
       - "Python"
@@ -253,6 +260,38 @@ projects:
     url: "https://github.com/BenjaminLarger/MeetingFlowAI"
     start_date: "2024-01-01"
     end_date: "2024-02-28"
+    status: "completed"
+  - title: Recepcia - AI Voice Receptionist
+    type: Freelance
+    description: I built a B2B SaaS platform that automates appointment scheduling for SMEs, using AI-powered voice assistants with Vapi, telephony integrations via Twilio/Telynx, advanced Prompt Engineering, and RAG for context-aware conversations, along with secure OAuth calendar integrations (Google/Outlook) and N8N workflow automation.
+    technologies:
+      - "Vapi"
+      - "Twilio"
+      - "Telynx"
+      - "Prompt Engineering"
+      - "RAG"
+      - "OAuth"
+      - "N8N"
+      - "SaaS"
+    url: "https://www.recepcia.tech"
+    start_date: ""
+    end_date: ""
+    status: "completed"
+  - title: Personal Trainer Mobile Platform
+    type: Freelance
+    description: I built a cross-platform coaching app with an offline-first architecture, secure authentication, subscriptions, and analytics, powered by a FastAPI backend. It was delivered with a high-performance Astro landing page to drive user conversion and onboarding.
+    technologies:
+      - "Flutter"
+      - "FastAPI"
+      - "Stripe"
+      - "Astro"
+      - "Cross-platform Development"
+      - "Mobile Development"
+      - "Payment Integration"
+      - "Authentication"
+    url: ""
+    start_date: ""
+    end_date: ""
     status: "completed"
 
 languages:

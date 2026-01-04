@@ -96,12 +96,12 @@ class TemplateProcessor:
 
         return {
             "JOB TITLE": job_offer.job_title,
-            "TITLE OF THE SIDE PROJECT 1": selected_projects.project1.title,
-            "DESCRIPTION OF THE SIDE PROJECT 1 (Description length must be between 100 and 165 characters)":
-                selected_projects.project1.description,
-            "TITLE OF THE SIDE PROJECT 2": selected_projects.project2.title,
-            "DESCRIPTION OF THE SIDE PROJECT 2 (Description length must be between 100 and 165 characters)":
-                selected_projects.project2.description,
+            "PROJECT 1 TITLE": selected_projects.project1.title,
+            "PROJECT 1 TYPE": selected_projects.project1.type,
+            "PROJECT 1 DESCRIPTION": selected_projects.project1.description,
+            "PROJECT 2 TITLE": selected_projects.project2.title,
+            "PROJECT 2 TYPE": selected_projects.project2.type,
+            "PROJECT 2 DESCRIPTION": selected_projects.project2.description,
             "20 relevant skills/tools": skills_text
         }
 

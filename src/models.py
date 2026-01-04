@@ -42,14 +42,15 @@ class Education(BaseModel):
 
 
 class Project(BaseModel):
-    """Side project entry."""
+    """Side project or freelance project entry."""
     title: str
     description: str
     technologies: List[str]
-    url: str
-    start_date: str
-    end_date: str
-    status: str
+    url: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    status: str = ""
+    type: str = "Side Project"  # "Freelance" or "Side Project"
 
 
 class UserProfile(BaseModel):
