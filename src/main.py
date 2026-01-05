@@ -13,7 +13,9 @@ from .job_parser import parse_job_offer
 from .skills_matcher import match_skills
 from .project_selector import select_projects
 from .template_processor import create_template_processor
-from .models import UserProfile
+from .models import UserProfile, Application
+from .database import ApplicationDatabase
+from .cost_tracker import get_cost_tracker
 
 
 def load_job_offer(job_offer_input: str) -> str:
@@ -263,7 +265,35 @@ def generate_safe_filenames(job_offer):
     return cv_filename, cover_letter_filename
 
 
-def save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose: bool):
+def convert_html_to_pdf(html_content: str) -> bytes:
+    """
+    Convert HTML content to PDF bytes using Playwright.
+
+    Args:
+        html_content: HTML content to convert
+
+    Returns:
+        PDF as bytes
+
+    Raises:
+        ImportError: If playwright is not installed
+        Exception: If PDF conversion fails
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        raise ImportError("Playwright is required for PDF generation. Install with: pip install playwright")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(size={"width": 210*3.779, "height": 297*3.779})  # A4 in pixels
+        page.set_content(html_content)
+        pdf_bytes = page.pdf(format="A4", margin={"top": "10mm", "right": "10mm", "bottom": "10mm", "left": "10mm"})
+        browser.close()
+        return pdf_bytes
+
+
+def save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose: bool, job_offer_text: str = ""):
     """Save output files and display completion status."""
     print("\n💾 Step 7: Saving output files...")
 
@@ -273,6 +303,54 @@ def save_and_display_files(generated_content, job_offer, matched_skills, selecte
 
     save_html_file(generated_content.cv_html, cv_path, "CV")
     save_html_file(generated_content.cover_letter_html, cover_letter_path, "Cover Letter")
+
+    # Generate PDFs if possible
+    cv_pdf = None
+    cl_pdf = None
+    try:
+        cv_pdf = convert_html_to_pdf(generated_content.cv_html)
+        cl_pdf = convert_html_to_pdf(generated_content.cover_letter_html)
+
+        # Save PDFs to files
+        pdf_cv_path = output_dir / cv_filename.replace('.html', '.pdf')
+        pdf_cl_path = output_dir / cover_letter_filename.replace('.html', '.pdf')
+        with open(pdf_cv_path, 'wb') as f:
+            f.write(cv_pdf)
+        with open(pdf_cl_path, 'wb') as f:
+            f.write(cl_pdf)
+        print(f"📄 PDF files saved")
+    except ImportError:
+        print("⚠️  Playwright not available - skipping PDF generation (HTML files saved)")
+    except Exception as e:
+        print(f"⚠️  PDF generation failed: {e} (HTML files saved)")
+
+    # Save to database
+    try:
+        cost_tracker = get_cost_tracker()
+        total_skills = len(job_offer.skills_required)
+        matched_count = len(matched_skills.matched_skills)
+        matching_rate = (matched_count / total_skills) if total_skills > 0 else 0.0
+        unmatched_skills = list(set(job_offer.skills_required) - set(matched_skills.matched_skills))
+
+        application = Application(
+            company=job_offer.company_name,
+            position=job_offer.job_title,
+            matching_rate=matching_rate,
+            unmatched_skills=unmatched_skills,
+            matched_skills=matched_skills.matched_skills,
+            location=job_offer.location,
+            job_offer_input=job_offer_text,
+            application_cost=cost_tracker.total_cost,
+            language=job_offer.language,
+            cv_pdf=cv_pdf,
+            cover_letter_pdf=cl_pdf
+        )
+
+        db = ApplicationDatabase()
+        app_id = db.save_application(application)
+        print(f"💾 Application saved to database (ID: {app_id})")
+    except Exception as e:
+        print(f"⚠️  Database save failed: {e}")
 
     print("\n🎉 Success! Documents generated successfully!")
     print(f"📋 Generated for: {job_offer.job_title} at {job_offer.company_name}")
@@ -306,7 +384,7 @@ def main():
         matched_skills = match_and_display_skills(job_offer, user_profile, verbose)
         selected_projects = select_and_display_projects(job_offer, user_profile.projects)
         generated_content = generate_and_display_documents(job_offer, user_profile, matched_skills, selected_projects, verbose)
-        save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose)
+        save_and_display_files(generated_content, job_offer, matched_skills, selected_projects, output_dir, verbose, job_offer_text)
 
     except FileNotFoundError as e:
         print(f"❌ File Error: {e}")

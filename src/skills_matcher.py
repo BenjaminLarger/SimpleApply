@@ -117,12 +117,12 @@ Please analyze and return a JSON object with the following structure:
 Guidelines for matching:
 1. MATCHED SKILLS: Include exact matches and close semantic matches (e.g., "Python" matches "Python development", "REST API" matches "RESTful APIs")
 2. RELEVANT TECHNOLOGIES: Return exactly 20 relevant technologies. Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
-3. KEY VALUE CONTRIBUTIONS: Generate 3-5 COMPLETE PARAGRAPHS demonstrating how user adds value to this specific organization:
-   - Each paragraph: 2-4 sentences long
+3. KEY VALUE CONTRIBUTIONS: Generate 3-5 CONCISE STATEMENTS demonstrating how user adds value to this specific organization:
+   - Each statement: MAXIMUM 350 CHARACTERS
    - Focus on VALUE TO THE ORGANIZATION (not just listing skills)
    - Mention SPECIFIC PROJECTS from user profile that demonstrate relevant experience
    - Highlight PROFESSIONAL ACHIEVEMENTS from experiences that align with job requirements
-   - Use HIGH VARIABILITY - each paragraph should be unique and contextual to this specific job
+   - Use HIGH VARIABILITY - each statement should be unique and contextual to this specific job
    - Write in {target_language} (preserve technical terms in English)
    - Use first-person narrative ("I have experience...", "My work on...")
    - Demonstrate FIT FOR THE POSITION through concrete examples
@@ -208,10 +208,26 @@ def parse_skills_response(response_text: str) -> MatchedSkills:
         # Each contribution should be a complete paragraph demonstrating value to the organization
         if not skills_data.get("key_value_contributions") or len(skills_data["key_value_contributions"]) == 0:
             skills_data["key_value_contributions"] = [
-                "My background in software development and data science positions me to deliver innovative technical solutions that drive measurable business impact.",
-                "I bring a proven track record of collaborating with cross-functional teams to implement scalable software systems and solve complex technical challenges.",
-                "My experience spans full-stack development, cloud architecture, and AI integration, enabling me to contribute effectively across multiple technical domains and domains critical to your organization's growth."
+                "My software development and data science expertise enables me to deliver innovative technical solutions that drive measurable business impact.",
+                "I bring a proven track record of collaborating with cross-functional teams to implement scalable systems and solve complex technical challenges.",
+                "My experience spans full-stack development, cloud architecture, and AI integration, enabling me to contribute effectively across multiple technical domains."
             ]
+
+        # Enforce 350 character limit per contribution (safety measure)
+        # Truncate at word boundary to avoid cutting off mid-word
+        contributions = skills_data.get("key_value_contributions", [])
+        truncated_contributions = []
+        for contrib in contributions:
+            if len(contrib) > 350:
+                # Truncate at 350 chars and find last space to avoid breaking words
+                truncated = contrib[:350]
+                last_space = truncated.rfind(" ")
+                if last_space > 0:
+                    truncated = truncated[:last_space]
+                truncated_contributions.append(truncated.rstrip() + ".")
+            else:
+                truncated_contributions.append(contrib)
+        skills_data["key_value_contributions"] = truncated_contributions
 
         return MatchedSkills(**skills_data)
 

@@ -34,7 +34,7 @@
       }
     },
     "cover_letter": {
-      "greeting": "Dear",
+      "greeting": "Dear Hiring Manager",
       "intro_paragraph": "I am writing to express my interest in the {job_title} position at {company_name}. With a strong foundation in software engineering from 42 School and a Master's degree in Finance from the University of Montpellier, combined with professional experience at ENGIE, I am confident I can contribute meaningfully to your team.",
       "intro_paragraph_male": "I am writing to express my interest in the {job_title} position at {company_name}. With a strong foundation in software engineering from 42 School and a Master's degree in Finance from the University of Montpellier, combined with professional experience at ENGIE, I am confident I can contribute meaningfully to your team.",
       "intro_paragraph_female": "I am writing to express my interest in the {job_title} position at {company_name}. With a strong foundation in software engineering from 42 School and a Master's degree in Finance from the University of Montpellier, combined with professional experience at ENGIE, I am confident I can contribute meaningfully to your team.",
@@ -53,15 +53,15 @@
       },
       "AI-Powered WhatsApp Bot": {
         "title": "AI-Powered WhatsApp Bot",
-        "description": "Developed an intelligent WhatsApp bot using Meta Cloud API with Flask backend, featuring real-time webhook integration, OpenAI Assistant API for AI responses, and secure message handling. Implemented comprehensive security with payload validation, ngrok tunneling for local development, and production-ready phone number management."
+        "description": "Intelligent WhatsApp bot using Meta Cloud API with Flask backend. Features real-time webhook integration, OpenAI Assistant API, secure message handling, and production-ready phone management."
       },
       "Multi-Model Chat Interface": {
         "title": "Multi-Model Chat Interface",
-        "description": "Built a comprehensive AI chat system integrating four types of AI models: OpenAI API (GPT-3.5-turbo), Hugging Face transformers for local model access, Hugging Face Inference API for serverless access, and DistilBERT for text classification. Features FastAPI backend, web-based chat interface, fine-tuning capabilities, and WebSocket support for real-time communication."
+        "description": "AI chat system integrating OpenAI, Hugging Face, and DistilBERT models. FastAPI backend with WebSocket support, fine-tuning capabilities, and real-time communication."
       },
       "Weather Prediction Project": {
         "title": "Weather Prediction Project",
-        "description": "Developed a machine learning system for weather prediction using advanced ML models including Random Forest, Gradient Boosting, Ridge Regression, and K-Nearest Neighbors. Features an interactive web interface with real-time compilation and performance metrics evaluation."
+        "description": "ML system for weather prediction using Random Forest, Gradient Boosting, Ridge Regression, and K-Nearest Neighbors. Interactive web interface with real-time metrics."
       },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "AI-Powered CV & Cover Letter Generator - CrewAI",
@@ -77,7 +77,7 @@
       },
       "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - AI Voice Receptionist",
-        "description": "Built a B2B SaaS platform that automates appointment scheduling for SMEs, using AI-powered voice assistants with Vapi, telephony integrations via Twilio/Telynx, advanced Prompt Engineering, and RAG for context-aware conversations, along with secure OAuth calendar integrations (Google/Outlook) and N8N workflow automation."
+        "description": "B2B SaaS automating appointment scheduling with AI voice assistants via Vapi. Features Twilio/Telynx integration, RAG, secure OAuth calendar sync (Google/Outlook), and N8N automation."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Personal Trainer Mobile Platform",
@@ -206,15 +206,15 @@
       },
       "AI-Powered WhatsApp Bot": {
         "title": "Bot WhatsApp Alimenté par l'IA",
-        "description": "Bot WhatsApp intelligent développé avec l'API Cloud de Meta et backend Flask, intégrant l'API Assistant OpenAI pour des réponses alimentées par l'IA et une gestion sécurisée des messages. Webhooks en temps réel, validation de charge utile, tunneling ngrok pour le développement local et gestion des numéros de téléphone prête pour la production."
+        "description": "Bot WhatsApp intelligent avec API Cloud Meta et backend Flask. Webhooks en temps réel, API Assistant OpenAI, gestion sécurisée des messages et gestion des numéros prête pour la production."
       },
       "Multi-Model Chat Interface": {
         "title": "Interface de Chat Multi-Modèles",
-        "description": "Système de chat IA complet intégrant quatre types de modèles IA : API OpenAI (GPT-3.5-turbo), transformers Hugging Face pour accès aux modèles locaux, API Inference Hugging Face pour accès sans serveur, et DistilBERT pour la classification de texte. Backend FastAPI, interface de chat web, capacités de fine-tuning et support WebSocket pour communication en temps réel."
+        "description": "Système de chat IA intégrant les modèles OpenAI, Hugging Face et DistilBERT. Backend FastAPI avec support WebSocket, fine-tuning et communication en temps réel."
       },
       "Weather Prediction Project": {
         "title": "Projet de Prédiction Météorologique",
-        "description": "Système de machine learning pour la prédiction météorologique utilisant des modèles avancés incluant Random Forest, Gradient Boosting, Ridge Regression et K-Nearest Neighbors. Interface web interactive avec compilation en temps réel et évaluation des métriques de performance."
+        "description": "Système ML pour prédiction météorologique utilisant Random Forest, Gradient Boosting, Ridge Regression et K-Nearest Neighbors. Interface web interactive avec métriques en temps réel."
       },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "Générateur d'IA pour CV et Lettre de Motivation - CrewAI",
@@ -228,9 +228,9 @@
         "title": "MeetingFlowAI",
         "description": "Agent d'automatisation alimenté par l'IA qui crée un flux de travail multi-étapes : Gmail → Traitement OpenAI → Intégration Calendrier. Interface améliorée qui met en évidence le flux de travail du programme complet pour une meilleure expérience utilisateur."
       },
-      "Recepcia - AI Voice Receptionist": {
+      "Recepcia - Réceptionniste Vocale IA": {
         "title": "Recepcia - Réceptionniste Vocale IA",
-        "description": "Plateforme B2B SaaS qui automatise la planification des rendez-vous pour les PME, utilisant des assistants vocaux alimentés par l'IA avec Vapi, intégrations téléphoniques via Twilio/Telynx, ingénierie de prompt avancée et RAG pour conversations conscientes du contexte, ainsi que des intégrations OAuth sécurisées pour calendriers (Google/Outlook) et automatisation des flux de travail N8N."
+        "description": "SaaS B2B automatisant la planification des rendez-vous avec assistants vocaux IA via Vapi. Intégrations Twilio/Telynx, RAG, synchronisation sécurisée des calendriers OAuth (Google/Outlook) et automatisation N8N."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Plateforme Mobile d'Entraîneur Personnel",
@@ -325,15 +325,15 @@
       },
       "AI-Powered WhatsApp Bot": {
         "title": "Bot de WhatsApp Impulsado por IA",
-        "description": "Bot inteligente de WhatsApp desarrollado con la API Cloud de Meta y backend Flask, integrando la API de Asistente OpenAI para respuestas impulsadas por IA y manejo seguro de mensajes. Integración de webhooks en tiempo real, validación de carga útil, tunelización ngrok para desarrollo local y gestión de números de teléfono lista para producción."
+        "description": "Bot inteligente de WhatsApp con API Cloud de Meta y backend Flask. Webhooks en tiempo real, API de Asistente OpenAI, manejo seguro de mensajes y gestión lista para producción."
       },
       "Multi-Model Chat Interface": {
         "title": "Interfaz de Chat Multi-Modelo",
-        "description": "Sistema integral de chat IA que integra cuatro tipos de modelos de IA: API OpenAI (GPT-3.5-turbo), transformers de Hugging Face para acceso a modelos locales, API de Inferencia de Hugging Face para acceso sin servidor y DistilBERT para clasificación de texto. Backend FastAPI, interfaz de chat web, capacidades de fine-tuning y soporte WebSocket para comunicación en tiempo real."
+        "description": "Sistema de chat IA que integra modelos de OpenAI, Hugging Face y DistilBERT. Backend FastAPI con soporte WebSocket, fine-tuning y comunicación en tiempo real."
       },
       "Weather Prediction Project": {
         "title": "Proyecto de Predicción del Clima",
-        "description": "Sistema de aprendizaje automático para predicción meteorológica utilizando modelos avanzados que incluyen Random Forest, Gradient Boosting, Ridge Regression y K-Nearest Neighbors. Interfaz web interactiva con compilación en tiempo real y evaluación de métricas de rendimiento."
+        "description": "Sistema ML para predicción meteorológica usando Random Forest, Gradient Boosting, Ridge Regression y K-Nearest Neighbors. Interfaz web interactiva con métricas en tiempo real."
       },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "Generador de CV y Carta de Presentación Impulsado por IA - CrewAI",
@@ -347,9 +347,9 @@
         "title": "MeetingFlowAI",
         "description": "Agente de automatización impulsado por IA que crea un flujo de trabajo multi-paso: Gmail → Procesamiento OpenAI → Integración de Calendario. Interfaz mejorada que destaca el flujo de trabajo del programa completo para una mejor experiencia del usuario."
       },
-      "Recepcia - AI Voice Receptionist": {
+      "Recepcia - Recepcionista de Voz de IA": {
         "title": "Recepcia - Recepcionista de Voz de IA",
-        "description": "Plataforma B2B SaaS que automatiza la programación de citas para PYMES, utilizando asistentes de voz impulsados por IA con Vapi, integraciones telefónicas a través de Twilio/Telynx, ingeniería avanzada de prompts y RAG para conversaciones conscientes del contexto, junto con integraciones OAuth seguras para calendarios (Google/Outlook) y automatización de flujos de trabajo N8N."
+        "description": "SaaS B2B automatizando programación de citas con asistentes de voz IA vía Vapi. Integraciones Twilio/Telynx, RAG, sincronización segura de calendarios OAuth (Google/Outlook) y automatización N8N."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Plataforma Móvil de Entrenador Personal",
