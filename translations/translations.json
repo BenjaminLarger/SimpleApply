@@ -126,9 +126,9 @@
       "projects_header": "PROJETS FREELANCE / PERSONNELS",
       "experience_header": "EXPÉRIENCE PROFESSIONNELLE",
       "skills_header": "COMPÉTENCES, LANGUES & LOISIRS",
-      "summary_text": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
-      "summary_text_male": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
-      "summary_text_female": "Ingénieure passionnée par les technologies avec double expertise en développement logiciel et finance de marché. Formée à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation. Je suis ouverte à la relocalisation.",
+      "summary_text": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
+      "summary_text_male": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
+      "summary_text_female": "Ingénieure passionnée par les technologies avec double expertise en développement logiciel et finance de marché. Formée à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation. Je suis ouverte à la relocalisation.",
       "languages_label": "Langues",
       "hobbies_label": "Loisirs",
       "skills_label": "Compétences & Outils",
@@ -165,6 +165,28 @@
       "closing_paragraph_1_female": "Je suis particulièrement attirée par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravie de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
       "closing_paragraph_2": "Je vous remercie d'avoir examiné ma candidature. J'attends avec intérêt de pouvoir discuter de ma contribution potentielle à {company_name}.",
       "sign_off": "Cordialement"
+    },
+    "experience": {
+      "engie": {
+        "role": "Ingénieur Logiciel IS en alternance",
+        "role_male": "Ingénieur Logiciel IS en alternance",
+        "role_female": "Ingénieure Logiciel IS en alternance",
+        "achievements": {
+          "collaboration": "Collaboration avec les équipes Back et Middle Office pour la mise en œuvre de solutions logicielles sur mesure.",
+          "scraping": "Extraction de données depuis les logiciels internes via Playwright pour traiter des informations métier critiques.",
+          "energy_solutions": "Développement de solutions de gestion énergétique : conception d'APIs RESTful en Python pour optimiser l'engagement des unités de production, intégrant efficacité algorithmique et gestion robuste des erreurs.",
+          "docker": "Dockerisation d'applications : création de tâches conteneurisées pour la scalabilité, déployées sur AWS Lambda."
+        }
+      },
+      "ing": {
+        "role": "Stagiaire Analyste de Données FEC",
+        "role_male": "Stagiaire Analyste de Données FEC",
+        "role_female": "Stagiaire Analyste de Données FEC",
+        "achievements": {
+          "analytics": "Analyses de données en Python pour identifier des comportements suspects dans un jeu de données de plus de 10 000 enregistrements.",
+          "vba_automation": "Développement de scripts VBA pour automatiser les tâches de traitement de données, réduisant le temps d'analyse de 20%."
+        }
+      }
     },
     "hobbies": {
       "blockchain": "Technologie Blockchain",
@@ -262,6 +284,28 @@
       "closing_paragraph_1_female": "Me atrae especialmente {company_name} por {company_excitement}. La oportunidad de {specific_goal} se alinea directamente con mis objetivos profesionales y experiencia. Estoy ansiosa por discutir cómo mi formación y habilidades pueden contribuir al éxito de su equipo.",
       "closing_paragraph_2": "Agradezco su consideración de mi solicitud. Espero poder hablar con usted sobre cómo puedo contribuir a {company_name}.",
       "sign_off": "Atentamente"
+    },
+    "experience": {
+      "engie": {
+        "role": "Becario Ingeniero de Software SI",
+        "role_male": "Becario Ingeniero de Software SI",
+        "role_female": "Becaria Ingeniera de Software SI",
+        "achievements": {
+          "collaboration": "Colaboración con equipos de Back y Middle Office para implementar soluciones de software personalizadas.",
+          "scraping": "Extracción de datos de software interno mediante Playwright para procesar información crítica del negocio.",
+          "energy_solutions": "Desarrollo de soluciones de gestión energética: diseño de APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas, integrando eficiencia algorítmica y gestión robusta de errores.",
+          "docker": "Dockerización de aplicaciones: desarrollo de tareas contenedorizadas para escalabilidad, desplegadas en AWS Lambda."
+        }
+      },
+      "ing": {
+        "role": "Becario Analista de Datos FEC",
+        "role_male": "Becario Analista de Datos FEC",
+        "role_female": "Becaria Analista de Datos FEC",
+        "achievements": {
+          "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en un conjunto de datos de más de 10.000 registros.",
+          "vba_automation": "Desarrollo de scripts VBA para automatizar tareas de procesamiento de datos, reduciendo el tiempo de análisis en un 20%."
+        }
+      }
     },
     "hobbies": {
       "blockchain": "Tecnología Blockchain",

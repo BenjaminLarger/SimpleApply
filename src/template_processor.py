@@ -249,13 +249,6 @@ class TemplateProcessor:
                 logger.debug(f"Could not load summary translation: {e}")
                 summary_text = job_offer.job_title
 
-        # Generate value contributions from AI-generated content
-        contributions = matched_skills.key_value_contributions[:5]  # Max 5 paragraphs
-
-        # Pad with empty strings if needed
-        while len(contributions) < 5:
-            contributions.append("")
-
         replacements = {
             "CV_SUMMARY": summary_text,
             "PROJECT 1 TITLE": projects_to_use.project1.title,
@@ -265,12 +258,7 @@ class TemplateProcessor:
             "PROJECT 2 TYPE": projects_to_use.project2.type,
             "PROJECT 2 DESCRIPTION": projects_to_use.project2.description,
             "20 relevant skills/tools": skills_text,
-            "SKILLS_LIST": skills_text,
-            "VALUE_CONTRIBUTION_1": contributions[0],
-            "VALUE_CONTRIBUTION_2": contributions[1],
-            "VALUE_CONTRIBUTION_3": contributions[2],
-            "VALUE_CONTRIBUTION_4": contributions[3],
-            "VALUE_CONTRIBUTION_5": contributions[4]
+            "SKILLS_LIST": skills_text
         }
 
         # Add education, hobbies, and language translations
@@ -284,16 +272,39 @@ class TemplateProcessor:
                 replacements["SCHOOL42_TRAINING"] = education_trans.get("school_42_training", "")
                 replacements["UNIVERSITY_DEGREE"] = education_trans.get("university_degree", "")
 
-                # Add value section header translation
-                try:
-                    value_header = self.translation_loader.get_translation(
-                        language=language,
-                        section="cv",
-                        key="value_section_header"
-                    )
-                    replacements["VALUE_SECTION_HEADER"] = value_header
-                except TranslationError:
-                    replacements["VALUE_SECTION_HEADER"] = "KEY AREAS WHERE I CAN ADD VALUE TO YOUR ORGANIZATION"
+                # Load experience translations with gender support
+                # Experience is stored at the top level, not under "cv"
+                lang_translations = self.translation_loader.translations.get(language, {})
+                experience_trans = lang_translations.get("experience", {})
+                gender = user_profile.personal_info.gender.lower()
+
+                # ENGIE role (gender-aware)
+                engie_data = experience_trans.get("engie", {})
+                if gender in ["male", "female"]:
+                    engie_role = engie_data.get(f"role_{gender}", engie_data.get("role", ""))
+                else:
+                    engie_role = engie_data.get("role", "")
+                replacements["ENGIE_ROLE"] = engie_role
+
+                # ENGIE achievements
+                engie_achievements = engie_data.get("achievements", {})
+                replacements["ENGIE_ACHIEVEMENT_1"] = engie_achievements.get("collaboration", "")
+                replacements["ENGIE_ACHIEVEMENT_2"] = engie_achievements.get("scraping", "")
+                replacements["ENGIE_ACHIEVEMENT_3"] = engie_achievements.get("energy_solutions", "")
+                replacements["ENGIE_ACHIEVEMENT_4"] = engie_achievements.get("docker", "")
+
+                # ING role (gender-aware)
+                ing_data = experience_trans.get("ing", {})
+                if gender in ["male", "female"]:
+                    ing_role = ing_data.get(f"role_{gender}", ing_data.get("role", ""))
+                else:
+                    ing_role = ing_data.get("role", "")
+                replacements["ING_ROLE"] = ing_role
+
+                # ING achievements
+                ing_achievements = ing_data.get("achievements", {})
+                replacements["ING_ACHIEVEMENT_1"] = ing_achievements.get("analytics", "")
+                replacements["ING_ACHIEVEMENT_2"] = ing_achievements.get("vba_automation", "")
 
                 # Load hobbies and languages
                 hobbies_trans = self.translation_loader.get_section_translations(language, "cv").get("hobbies", {})
@@ -326,6 +337,8 @@ class TemplateProcessor:
                 replacements["BOOTCAMP42_DATE"] = translate_date("2025-05-01", language)
                 replacements["SCHOOL42_DATE"] = translate_date_range("2023-01-01", "2025-12-31", language)
                 replacements["UNIVERSITY_DATE"] = translate_date_range("2019-01-01", "2025-12-31", language)
+                replacements["ENGIE_DATE"] = translate_date_range("2023-01-01", "2023-06-30", language)
+                replacements["ING_DATE"] = translate_date_range("2023-05-01", "2023-09-30", language)
 
             except (TranslationError, KeyError) as e:
                 logger.debug(f"Could not load some translations: {e}. Using defaults.")
@@ -422,7 +435,7 @@ class TemplateProcessor:
         personalized = self._generate_personalized_content(job_offer, matched_skills)
 
         replacements = {
-            "Date": date.today().strftime("%Y-%m-%d"),
+            "Date": date.today().strftime("%d/%m/%Y"),
             "Company Name": job_offer.company_name,
             "Company Address": job_offer.location,
             "City, State ZIP": job_offer.location,
