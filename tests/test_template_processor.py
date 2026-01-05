@@ -45,7 +45,7 @@ def sample_matched_skills():
         job_skills=["Python", "Django", "PostgreSQL", "Docker"],
         matched_skills=["Python", "Django", "Docker"],
         relevant_technologies=["Python", "Django", "Docker", "PostgreSQL", "JavaScript"],
-        relevant_achievements=["Built scalable web applications", "Implemented containerized deployments"]
+        key_value_contributions=["My experience building scalable web applications using Python and Django directly aligns with your requirements. I've successfully architected systems handling millions of requests.", "I have hands-on experience implementing containerized deployments with Docker and Kubernetes, optimizing deployment pipelines and reducing infrastructure costs."]
     )
 
 

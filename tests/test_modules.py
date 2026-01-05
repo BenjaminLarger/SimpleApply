@@ -4,10 +4,10 @@ Test script to validate all three modules work together.
 """
 
 import yaml
-from models import UserProfile
-from job_parser import parse_job_offer
+from src.models import UserProfile
+from src.job_parser import parse_job_offer
 from src.skills_matcher import match_skills
-from project_selector import select_projects
+from src.project_selector import select_projects
 
 
 def test_complete_pipeline():
@@ -67,7 +67,7 @@ def test_complete_pipeline():
         print(f"✅ Skills analysis complete:")
         print(f"   🔄 Matched skills: {len(matched_skills.matched_skills)} found")
         print(f"   🛠️  Relevant technologies: {len(matched_skills.relevant_technologies)} highlighted")
-        print(f"   🏆 Relevant achievements: {len(matched_skills.relevant_achievements)} selected")
+        print(f"   🏆 Key value contributions: {len(matched_skills.key_value_contributions)} paragraphs generated")
 
         print(f"\n   Top matched skills: {matched_skills.matched_skills[:5]}")
 

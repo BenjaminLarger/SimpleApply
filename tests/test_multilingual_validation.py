@@ -81,7 +81,7 @@ class TestMultilingualValidation:
         assert matched_skills.matched_skills is not None
         assert len(matched_skills.matched_skills) > 0
         assert matched_skills.relevant_technologies is not None
-        assert matched_skills.relevant_achievements is not None
+        assert matched_skills.key_value_contributions is not None
 
     def test_english_project_selection(self, english_job_offer_text, user_profile):
         """Test project selection works for English job offer."""
@@ -135,7 +135,7 @@ class TestMultilingualValidation:
         assert matched_skills.matched_skills is not None
         assert len(matched_skills.matched_skills) > 0
         assert matched_skills.relevant_technologies is not None
-        assert matched_skills.relevant_achievements is not None
+        assert matched_skills.key_value_contributions is not None
 
     def test_french_project_selection(self, french_job_offer_text, user_profile):
         """Test project selection works for French job offer."""
@@ -195,7 +195,7 @@ class TestMultilingualValidation:
         assert matched_skills.matched_skills is not None
         assert len(matched_skills.matched_skills) > 0
         assert matched_skills.relevant_technologies is not None
-        assert matched_skills.relevant_achievements is not None
+        assert matched_skills.key_value_contributions is not None
 
     def test_spanish_project_selection(self, spanish_job_offer_text, user_profile):
         """Test project selection works for Spanish job offer."""

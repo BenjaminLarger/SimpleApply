@@ -15,32 +15,11 @@
       "relevant_skills_label": "Relevant Skills",
       "main_classes_label": "Main classes",
       "age_phrase": "years old",
+      "value_section_header": "KEY AREAS WHERE I CAN ADD VALUE TO YOUR ORGANIZATION",
       "education": {
         "bootcamp_description": "Machine learning with Scikit-Learn (supervised/unsupervised), data analysis with Pandas/NumPy, and visualization using Matplotlib/Seaborn. Solid grounding in regression, hypothesis testing, and time series. Completed projects in predictive modeling, segmentation, and decision support.",
         "school_42_training": "Programming Engineering training – Common Core",
         "university_degree": "Master's degree in Market Finance - Bachelor of Economics"
-      },
-      "experience": {
-        "engie": {
-          "role": "IS Software Engineer Intern",
-          "role_male": "IS Software Engineer Intern",
-          "role_female": "IS Software Engineer Intern",
-          "achievements": {
-            "collaboration": "Collaborated with Back and Middle Office teams to implement tailored software solutions.",
-            "scraping": "Scraped data from internal software using Playwright to process business-critical information.",
-            "energy_solutions": "Developed Energy Management Solutions: Designed RESTful APIs in Python to optimize powerplant unit-commitment, integrating algorithmic efficiency and robust error handling.",
-            "docker": "Dockerized Apps: Built containerized tasks for scalability purpose, deployed on AWS lambdas."
-          }
-        },
-        "ing": {
-          "role": "FEC Data Analyst Intern",
-          "role_male": "FEC Data Analyst Intern",
-          "role_female": "FEC Data Analyst Intern",
-          "achievements": {
-            "analytics": "Conducted Python data analytics to identify suspicious behaviours in a dataset of 10,000+ records.",
-            "vba_automation": "Developed VBA scripts to automate data processing tasks, reducing analysis time by 20%."
-          }
-        }
       },
       "hobbies": {
         "blockchain": "Blockchain technology",
@@ -156,30 +135,11 @@
       "relevant_skills_label": "Compétences Pertinentes",
       "main_classes_label": "Cours principaux",
       "age_phrase": "ans",
+      "value_section_header": "DOMAINES CLÉS OÙ JE PEUX APPORTER DE LA VALEUR À VOTRE ORGANISATION",
       "education": {
         "bootcamp_description": "Apprentissage automatique avec Scikit-Learn (supervisé/non supervisé), analyse de données avec Pandas/NumPy, et visualisation avec Matplotlib/Seaborn. Solides bases en régression, tests d'hypothèses et séries temporelles. Réalisation de projets en modélisation prédictive, segmentation et aide à la décision.",
         "school_42_training": "Formation en Ingénierie Informatique – Tronc Commun",
         "university_degree": "Master en Finance de Marché - Licence en Sciences Économiques"
-      },
-      "experience": {
-        "engie": {
-          "role_male": "Stagiaire Ingénieur Logiciel SI",
-          "role_female": "Stagiaire Ingénieure Logiciel SI",
-          "achievements": {
-            "collaboration": "Collaboration avec les équipes Back et Middle Office pour la mise en œuvre de solutions logicielles sur mesure.",
-            "scraping": "Extraction de données depuis les logiciels internes via Playwright pour traiter des informations métier critiques.",
-            "energy_solutions": "Développement de solutions de gestion énergétique : conception d'APIs RESTful en Python pour optimiser l'engagement des unités de production, intégrant efficacité algorithmique et gestion robuste des erreurs.",
-            "docker": "Dockerisation d'applications : création de tâches conteneurisées pour la scalabilité, déployées sur AWS Lambda."
-          }
-        },
-        "ing": {
-          "role_male": "Stagiaire Analyste de Données FEC",
-          "role_female": "Stagiaire Analyste de Données FEC",
-          "achievements": {
-            "analytics": "Analyses de données en Python pour identifier des comportements suspects dans un jeu de données de plus de 10 000 enregistrements.",
-            "vba_automation": "Développement de scripts VBA pour automatiser les tâches de traitement de données, réduisant le temps d'analyse de 20%."
-          }
-        }
       },
       "hobbies": {
         "blockchain": "Technologie Blockchain",
@@ -205,31 +165,6 @@
       "closing_paragraph_1_female": "Je suis particulièrement attirée par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravie de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
       "closing_paragraph_2": "Je vous remercie d'avoir examiné ma candidature. J'attends avec intérêt de pouvoir discuter de ma contribution potentielle à {company_name}.",
       "sign_off": "Cordialement"
-    },
-    "education": {
-      "bootcamp_description": "Apprentissage automatique avec Scikit-Learn (supervisé/non supervisé), analyse de données avec Pandas/NumPy, et visualisation avec Matplotlib/Seaborn. Solides bases en régression, tests d'hypothèses et séries temporelles. Réalisation de projets en modélisation prédictive, segmentation et aide à la décision.",
-      "school_42_training": "Formation en Ingénierie Informatique – Tronc Commun",
-      "university_degree": "Master en Finance de Marché - Licence en Sciences Économiques"
-    },
-    "experience": {
-      "engie": {
-        "role_male": "Stagiaire Ingénieur Logiciel SI",
-        "role_female": "Stagiaire Ingénieure Logiciel SI",
-        "achievements": {
-          "collaboration": "Collaboration avec les équipes Back et Middle Office pour la mise en œuvre de solutions logicielles sur mesure.",
-          "scraping": "Extraction de données depuis les logiciels internes via Playwright pour traiter des informations métier critiques.",
-          "energy_solutions": "Développement de solutions de gestion énergétique : conception d'APIs RESTful en Python pour optimiser l'engagement des unités de production, intégrant efficacité algorithmique et gestion robuste des erreurs.",
-          "docker": "Dockerisation d'applications : création de tâches conteneurisées pour la scalabilité, déployées sur AWS Lambda."
-        }
-      },
-      "ing": {
-        "role_male": "Stagiaire Analyste de Données FEC",
-        "role_female": "Stagiaire Analyste de Données FEC",
-        "achievements": {
-          "analytics": "Analyses de données en Python pour identifier des comportements suspects dans un jeu de données de plus de 10 000 enregistrements.",
-          "vba_automation": "Développement de scripts VBA pour automatiser les tâches de traitement de données, réduisant le temps d'analyse de 20%."
-        }
-      }
     },
     "hobbies": {
       "blockchain": "Technologie Blockchain",
@@ -297,30 +232,11 @@
       "relevant_skills_label": "Competencias Relevantes",
       "main_classes_label": "Clases principales",
       "age_phrase": "años",
+      "value_section_header": "ÁREAS CLAVE DONDE PUEDO APORTAR VALOR A SU ORGANIZACIÓN",
       "education": {
         "bootcamp_description": "Aprendizaje automático con Scikit-Learn (supervisado/no supervisado), análisis de datos con Pandas/NumPy, y visualización con Matplotlib/Seaborn. Sólidos fundamentos en regresión, pruebas de hipótesis y series temporales. Proyectos completados en modelización predictiva, segmentación y apoyo a la toma de decisiones.",
         "school_42_training": "Formación en Ingeniería Informática – Tronco Común",
         "university_degree": "Máster en Finanzas de Mercado - Licenciatura en Ciencias Económicas"
-      },
-      "experience": {
-        "engie": {
-          "role_male": "Becario Ingeniero de Software SI",
-          "role_female": "Becaria Ingeniera de Software SI",
-          "achievements": {
-            "collaboration": "Colaboración con equipos de Back y Middle Office para implementar soluciones de software personalizadas.",
-            "scraping": "Extracción de datos de software interno mediante Playwright para procesar información crítica del negocio.",
-            "energy_solutions": "Desarrollo de soluciones de gestión energética: diseño de APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas, integrando eficiencia algorítmica y gestión robusta de errores.",
-            "docker": "Dockerización de aplicaciones: desarrollo de tareas contenedorizadas para escalabilidad, desplegadas en AWS Lambda."
-          }
-        },
-        "ing": {
-          "role_male": "Becario Analista de Datos FEC",
-          "role_female": "Becaria Analista de Datos FEC",
-          "achievements": {
-            "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en un conjunto de datos de más de 10.000 registros.",
-            "vba_automation": "Desarrollo de scripts VBA para automatizar tareas de procesamiento de datos, reduciendo el tiempo de análisis en un 20%."
-          }
-        }
       },
       "hobbies": {
         "blockchain": "Tecnología Blockchain",
@@ -346,31 +262,6 @@
       "closing_paragraph_1_female": "Me atrae especialmente {company_name} por {company_excitement}. La oportunidad de {specific_goal} se alinea directamente con mis objetivos profesionales y experiencia. Estoy ansiosa por discutir cómo mi formación y habilidades pueden contribuir al éxito de su equipo.",
       "closing_paragraph_2": "Agradezco su consideración de mi solicitud. Espero poder hablar con usted sobre cómo puedo contribuir a {company_name}.",
       "sign_off": "Atentamente"
-    },
-    "education": {
-      "bootcamp_description": "Aprendizaje automático con Scikit-Learn (supervisado/no supervisado), análisis de datos con Pandas/NumPy, y visualización con Matplotlib/Seaborn. Sólidos fundamentos en regresión, pruebas de hipótesis y series temporales. Proyectos completados en modelización predictiva, segmentación y apoyo a la toma de decisiones.",
-      "school_42_training": "Formación en Ingeniería Informática – Tronco Común",
-      "university_degree": "Máster en Finanzas de Mercado - Licenciatura en Ciencias Económicas"
-    },
-    "experience": {
-      "engie": {
-        "role_male": "Becario Ingeniero de Software SI",
-        "role_female": "Becaria Ingeniera de Software SI",
-        "achievements": {
-          "collaboration": "Colaboración con equipos de Back y Middle Office para implementar soluciones de software personalizadas.",
-          "scraping": "Extracción de datos de software interno mediante Playwright para procesar información crítica del negocio.",
-          "energy_solutions": "Desarrollo de soluciones de gestión energética: diseño de APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas, integrando eficiencia algorítmica y gestión robusta de errores.",
-          "docker": "Dockerización de aplicaciones: desarrollo de tareas contenedorizadas para escalabilidad, desplegadas en AWS Lambda."
-        }
-      },
-      "ing": {
-        "role_male": "Becario Analista de Datos FEC",
-        "role_female": "Becaria Analista de Datos FEC",
-        "achievements": {
-          "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en un conjunto de datos de más de 10.000 registros.",
-          "vba_automation": "Desarrollo de scripts VBA para automatizar tareas de procesamiento de datos, reduciendo el tiempo de análisis en un 20%."
-        }
-      }
     },
     "hobbies": {
       "blockchain": "Tecnología Blockchain",

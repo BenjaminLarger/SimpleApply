@@ -105,13 +105,27 @@ Please analyze and return a JSON object with the following structure:
     "job_skills": ["List of all job required skills - in {target_language} with technical terms in English"],
     "matched_skills": ["Skills that match - in {target_language} with technical terms in English"],
     "relevant_technologies": ["20 most relevant technologies - in {target_language} with technical terms in English"],
-    "relevant_achievements": ["Most relevant achievements - in {target_language}"]
+    "key_value_contributions": [
+        "First dynamic paragraph explaining project experience relevant to this job",
+        "Second paragraph highlighting professional achievements that align with requirements",
+        "Third paragraph showcasing technical expertise and value to organization",
+        "Optional fourth paragraph if particularly strong match exists",
+        "Optional fifth paragraph for exceptional cases"
+    ]
 }}
 
 Guidelines for matching:
 1. MATCHED SKILLS: Include exact matches and close semantic matches (e.g., "Python" matches "Python development", "REST API" matches "RESTful APIs")
 2. RELEVANT TECHNOLOGIES: Return exactly 20 relevant technologies. Prioritize technologies mentioned in job requirements, but also include related ones from user's experience
-3. RELEVANT ACHIEVEMENTS: Select achievements that demonstrate skills needed for this role, even if not exact keyword matches
+3. KEY VALUE CONTRIBUTIONS: Generate 3-5 COMPLETE PARAGRAPHS demonstrating how user adds value to this specific organization:
+   - Each paragraph: 2-4 sentences long
+   - Focus on VALUE TO THE ORGANIZATION (not just listing skills)
+   - Mention SPECIFIC PROJECTS from user profile that demonstrate relevant experience
+   - Highlight PROFESSIONAL ACHIEVEMENTS from experiences that align with job requirements
+   - Use HIGH VARIABILITY - each paragraph should be unique and contextual to this specific job
+   - Write in {target_language} (preserve technical terms in English)
+   - Use first-person narrative ("I have experience...", "My work on...")
+   - Demonstrate FIT FOR THE POSITION through concrete examples
 4. Consider transferable skills and related technologies (e.g., if job requires React and user has JavaScript experience)
 5. Prioritize recent and significant experiences over older ones
 6. Include both technical and soft skills where relevant
@@ -167,7 +181,7 @@ def parse_skills_response(response_text: str) -> MatchedSkills:
     try:
         skills_data = json.loads(response_text)
 
-        required_fields = ["user_skills", "job_skills", "matched_skills", "relevant_technologies", "relevant_achievements"]
+        required_fields = ["user_skills", "job_skills", "matched_skills", "relevant_technologies", "key_value_contributions"]
         for field in required_fields:
             if field not in skills_data:
                 raise SkillsMatcherError(f"Missing required field: {field}")
@@ -190,9 +204,14 @@ def parse_skills_response(response_text: str) -> MatchedSkills:
                 # Last resort: Use job skills if no matches found
                 skills_data["relevant_technologies"] = skills_data.get("job_skills", ["Technology"])[:20]
 
-        # Similar fallback for achievements
-        if not skills_data.get("relevant_achievements") or len(skills_data["relevant_achievements"]) == 0:
-            skills_data["relevant_achievements"] = ["Developed technical solutions", "Collaborated with teams"]
+        # CRITICAL FIX: Ensure key_value_contributions is never empty (prevents blank professional value section)
+        # Each contribution should be a complete paragraph demonstrating value to the organization
+        if not skills_data.get("key_value_contributions") or len(skills_data["key_value_contributions"]) == 0:
+            skills_data["key_value_contributions"] = [
+                "My background in software development and data science positions me to deliver innovative technical solutions that drive measurable business impact.",
+                "I bring a proven track record of collaborating with cross-functional teams to implement scalable software systems and solve complex technical challenges.",
+                "My experience spans full-stack development, cloud architecture, and AI integration, enabling me to contribute effectively across multiple technical domains and domains critical to your organization's growth."
+            ]
 
         return MatchedSkills(**skills_data)
 
@@ -286,7 +305,7 @@ if __name__ == "__main__":
         print("Skills Matching Results:")
         print(f"Matched Skills: {matched_skills.matched_skills}")
         print(f"Relevant Technologies: {matched_skills.relevant_technologies}")
-        print(f"Relevant Achievements: {len(matched_skills.relevant_achievements)} achievements selected")
+        print(f"Key Value Contributions: {len(matched_skills.key_value_contributions)} paragraphs generated")
 
     except Exception as e:
         print(f"Error: {e}")

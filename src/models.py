@@ -74,7 +74,7 @@ class MatchedSkills(BaseModel):
     job_skills: List[str] = Field(..., description="Job required skills")
     matched_skills: List[str] = Field(..., description="Skills that match between user and job")
     relevant_technologies: List[str] = Field(..., description="Most relevant technologies to highlight")
-    relevant_achievements: List[str] = Field(..., description="Most relevant achievements from experience")
+    key_value_contributions: List[str] = Field(..., description="3-5 dynamic paragraphs demonstrating how user adds value to the organization")
 
 
 class SelectedProjects(BaseModel):
