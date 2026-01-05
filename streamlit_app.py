@@ -7,6 +7,7 @@ import streamlit as st
 import os
 import yaml
 import logging
+import base64
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 from pathlib import Path
@@ -71,6 +72,41 @@ def save_file_to_applications(content: bytes, filename: str, file_type: str) -> 
 
     logger.info(f"Saved {file_type} to {file_path}")
     return str(file_path)
+
+
+def display_pdf_preview(pdf_bytes: bytes, pdf_type: str = "PDF") -> None:
+    """
+    Display PDF preview using base64 encoding in an iframe.
+
+    Args:
+        pdf_bytes: PDF file content as bytes
+        pdf_type: Type of PDF for error messages ("CV" or "Cover Letter")
+    """
+    if not pdf_bytes:
+        st.warning(f"No {pdf_type} PDF available to preview.")
+        return
+
+    try:
+        # Encode PDF to base64
+        base64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+
+        # Create iframe with embedded PDF
+        pdf_display = f'''
+            <iframe
+                src="data:application/pdf;base64,{base64_pdf}"
+                width="100%"
+                height="800"
+                type="application/pdf"
+                style="border: 1px solid #e0e0e0; border-radius: 4px;">
+                <p>Your browser does not support PDF preview.
+                   Please download the file to view it.</p>
+            </iframe>
+        '''
+        st.markdown(pdf_display, unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"Error displaying {pdf_type} PDF: {str(e)}")
+        logger.error(f"PDF preview error for {pdf_type}: {str(e)}")
 
 
 def process_job_application(job_offer_text: str, user_profile: UserProfile) -> tuple[str, str, object, object, int]:
@@ -219,6 +255,62 @@ def show_historics_page():
                         if selected_app.unmatched_skills:
                             st.write("**Skills to Develop**")
                             st.write(" ".join([f"`{skill}`" for skill in selected_app.unmatched_skills]))
+
+                    # PDF Download section
+                    if selected_app.cv_pdf or selected_app.cover_letter_pdf:
+                        st.divider()
+                        st.write("**Downloads**")
+                        pdf_col1, pdf_col2 = st.columns(2)
+
+                        with pdf_col1:
+                            if selected_app.cv_pdf:
+                                st.download_button(
+                                    label="📄 Download CV",
+                                    data=selected_app.cv_pdf,
+                                    file_name=f"CV_{selected_app.company}_{selected_app.position.replace(' ', '_')}.pdf",
+                                    mime="application/pdf",
+                                    use_container_width=True
+                                )
+                            else:
+                                st.caption("❌ CV PDF not available")
+
+                        with pdf_col2:
+                            if selected_app.cover_letter_pdf:
+                                st.download_button(
+                                    label="📄 Download Cover Letter",
+                                    data=selected_app.cover_letter_pdf,
+                                    file_name=f"CoverLetter_{selected_app.company}_{selected_app.position.replace(' ', '_')}.pdf",
+                                    mime="application/pdf",
+                                    use_container_width=True
+                                )
+                            else:
+                                st.caption("❌ Cover Letter PDF not available")
+
+                    # PDF Preview section
+                    if selected_app.cv_pdf or selected_app.cover_letter_pdf:
+                        st.divider()
+                        st.write("**Preview Documents**")
+                        preview_col1, preview_col2 = st.columns(2)
+
+                        with preview_col1:
+                            if selected_app.cv_pdf:
+                                with st.expander("📄 Preview CV", expanded=False):
+                                    display_pdf_preview(
+                                        selected_app.cv_pdf,
+                                        pdf_type="CV"
+                                    )
+                            else:
+                                st.caption("❌ CV PDF not available for preview")
+
+                        with preview_col2:
+                            if selected_app.cover_letter_pdf:
+                                with st.expander("📄 Preview Cover Letter", expanded=False):
+                                    display_pdf_preview(
+                                        selected_app.cover_letter_pdf,
+                                        pdf_type="Cover Letter"
+                                    )
+                            else:
+                                st.caption("❌ Cover Letter PDF not available for preview")
 
                 with col2:
                     if st.button("Delete", type="secondary", use_container_width=True):
@@ -922,9 +1014,10 @@ def main():
         st.subheader("Job Offer")
         with st.container(border=True):
             job_offer_text = st.text_area(
-               "" ,
+                "Job Offer Text",
                 height=400,
-                placeholder="Paste the complete job offer description, requirements, and any other relevant information..."
+                placeholder="Paste the complete job offer description, requirements, and any other relevant information...",
+                label_visibility="collapsed"
             )
 
     with col2:
@@ -989,6 +1082,27 @@ def main():
             st.sidebar.metric("Today's Avg Cost", f"${today_avg_cost:.4f}")
         else:
             st.sidebar.caption("No applications today")
+
+    # PDF Storage Info
+    st.sidebar.divider()
+    st.sidebar.subheader("PDF Storage")
+    storage_info = db.get_pdf_storage_info()
+    st.sidebar.metric("Total Applications", storage_info["total_records"])
+    st.sidebar.metric("CVs Stored", storage_info["cv_pdf_count"])
+    st.sidebar.metric("Cover Letters", storage_info["cover_letter_pdf_count"])
+    st.sidebar.metric("Storage Size", f"{storage_info['total_size_mb']:.2f} MB")
+
+    # Cleanup old PDFs
+    if st.sidebar.button("🗑️ Cleanup PDFs (90+ days old)", use_container_width=True, help="Delete PDFs older than 90 days to free up space"):
+        try:
+            cleaned = db.cleanup_old_pdfs(days=90)
+            if cleaned > 0:
+                st.sidebar.success(f"Cleaned up {cleaned} old PDF records")
+                st.rerun()
+            else:
+                st.sidebar.info("No old PDFs to clean up")
+        except Exception as e:
+            st.sidebar.error(f"Cleanup error: {str(e)}")
 
     # Generate button
     if st.button("Generate CV & Cover Letter", type="primary", use_container_width=True):
@@ -1064,6 +1178,7 @@ def main():
         cv_html = st.session_state.cv_html
         cover_letter_html = st.session_state.cover_letter_html
         job_offer = st.session_state.job_offer
+        application_id = st.session_state.application_id
 
         # Generate clean filenames
         company_clean = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
@@ -1083,7 +1198,16 @@ def main():
                     cv_pdf = convert_html_to_pdf(cv_html)
                     saved_path = save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
                     logger.info(f"CV PDF saved to: {saved_path}")
-                    st.success(f"Saved to {saved_path}")
+
+                    # Also store in database
+                    db = ApplicationDatabase()
+                    updated_app = db.get_application(application_id)
+                    if updated_app:
+                        updated_app.cv_pdf = cv_pdf
+                        db.save_application(updated_app)
+                        logger.info(f"CV PDF stored in database for application {application_id}")
+
+                    st.success(f"Saved to {saved_path} and database")
                 except Exception as e:
                     logger.error(f"Error saving CV PDF: {str(e)}")
                     st.error(f"Error: {str(e)}")
@@ -1103,7 +1227,16 @@ def main():
                 try:
                     cl_pdf = convert_html_to_pdf(cover_letter_html)
                     saved_path = save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-                    st.success(f"Saved to {saved_path}")
+
+                    # Also store in database
+                    db = ApplicationDatabase()
+                    updated_app = db.get_application(application_id)
+                    if updated_app:
+                        updated_app.cover_letter_pdf = cl_pdf
+                        db.save_application(updated_app)
+                        logger.info(f"Cover Letter PDF stored in database for application {application_id}")
+
+                    st.success(f"Saved to {saved_path} and database")
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
 
@@ -1123,7 +1256,17 @@ def main():
                 cl_pdf = convert_html_to_pdf(cover_letter_html)
                 save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
                 save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-                st.success("Documents saved successfully!")
+
+                # Also store in database
+                db = ApplicationDatabase()
+                updated_app = db.get_application(application_id)
+                if updated_app:
+                    updated_app.cv_pdf = cv_pdf
+                    updated_app.cover_letter_pdf = cl_pdf
+                    db.save_application(updated_app)
+                    logger.info(f"Both PDFs stored in database for application {application_id}")
+
+                st.success("Documents saved to files and database!")
             except Exception as e:
                 logger.error(f"Combined download error: {str(e)}")
                 st.error(f"Error: {str(e)}")
