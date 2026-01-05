@@ -83,8 +83,17 @@ def create_project_selection_prompt(job_offer: JobOffer, projects_data: List[dic
     Returns:
         Formatted prompt string
     """
+    language_map = {
+        "en": "English",
+        "fr": "French",
+        "es": "Spanish"
+    }
+    target_language = language_map.get(job_offer.language, "English")
+
     return f"""
 You are an expert career counselor specializing in project selection for job applications. Analyze the job requirements and select the 2 most relevant projects that best demonstrate the candidate's suitability for this role.
+
+**IMPORTANT**: The job offer is in {target_language}. The selection_reasoning MUST be written in {target_language}.
 
 JOB OFFER:
 - Title: {job_offer.job_title}
@@ -102,7 +111,7 @@ Please analyze and return a JSON object with the following structure:
 {{
     "project1_index": <index of first selected project>,
     "project2_index": <index of second selected project>,
-    "selection_reasoning": "Detailed explanation of why these two projects were selected for this specific job role"
+    "selection_reasoning": "Detailed explanation in {target_language} of why these two projects were selected for this specific job role"
 }}
 
 Selection Criteria:
@@ -119,6 +128,7 @@ Guidelines:
 - Ensure the two selected projects complement each other (don't pick two very similar projects)
 - Prioritize showing client/freelance work experience when relevant to the role
 - The reasoning should be specific to this job and explain the strategic thinking behind the selection
+- Write all reasoning in {target_language}
 
 Return only the JSON object, no additional text.
 """

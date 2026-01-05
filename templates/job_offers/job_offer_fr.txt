@@ -1,0 +1,80 @@
+Qui sommes-nous ?
+
+N2JSoft est une fintech B2B SaaS spécialisée dans la digitalisation des processus RH et financiers. Avec plus de 20 000 clients et 1 million d’utilisateurs dans 86 pays, nos solutions N2F et Keeple s’imposent comme des références sur le marché français.
+N2F est une solution complète de gestion des dépenses professionnelles (notes de frais, cartes corporate, factures fournisseurs), et Keeple centralise la gestion RH du quotidien (congés, absences, temps de travail) le tout dans une interface simple, intuitive et 100% connectée (app web et mobile).
+
+
+Portés par une équipe engagée, qui place l’humain au centre de ses priorités, nous poursuivons une ambition claire : devenir le leader européen de la gestion des dépenses professionnelles.
+
+
+Dans ce contexte, nous recherchons un(e) Développeur(se) spécialisé(e) en Intelligence Artificielle pour renforcer notre équipe R&D et accélérer le développement de nos solutions innovantes. Tu travailleras sur la conception, l’intégration et l’industrialisation de cas d’usage IA (LLM, Machine Learning, RAG, automatisation) au service de nos produits SaaS.
+
+
+Missions principales :
+
+Conception et développement de solutions IA en Python.
+Mise en place de pipelines RAG (Retrieval Augmented Generation) pour améliorer la pertinence des modèles,
+Exploitation du cloud AWS et en particulier des services IA/LLM (ex. Bedrock),
+Intégration d’outils IA et d’orchestration (N8N, OpenAI, Claude, …),
+Expérimentation et amélioration continue via prompt engineering et fine-tuning de modèles,
+Veille technologique sur les innovations IA et proposition d’idées/concepts pour enrichir nos produits,
+Collaboration avec les équipes produit, data et dev pour industrialiser des solutions IA fiables et scalables.
+
+
+Compétences techniques attendues :
+
+Maîtrise du langage Python.
+Expérience sur AWS (idéalement Bedrock, Lambda, S3, etc.),
+Bonne culture des APIs IA (OpenAI, Claude, etc.).
+
+
+C’est un plus si :
+
+Première expérience en mise en production de solutions IA/LLM
+Connaissances avancées en LLM et techniques de prompting,
+Pratique du RAG et des architectures de recherche de données contextuelles,
+Familiarité avec des outils d’orchestration et d’automatisation (ex. N8N),
+
+
+Soft skills :
+
+Force de proposition : capable de transformer la veille technologique en solutions concrètes,
+Autonomie et rigueur dans le développement,
+Goût pour le travail collaboratif (produit, QA, data, dev),
+Curiosité et capacité à vulgariser l’IA pour des profils non techniques.
+
+
+Profil recherché :
+
+Expérience confirmée (3 à 5 ans minimum) en développement logiciel (si possible sur des projets IA)
+Expérience dans un contexte cloud (idéalement AWS),
+
+
+Ce que ce poste n’est PAS :
+
+de la data science (pas de modélisation statistique, pas d’entraînement de modèles maison),
+un rôle de recherche LLM ou NLP,
+un poste MLOps centré sur l’infrastructure ou la gestion de clusters,
+un rôle orienté expérimentation académique.
+
+
+Ce poste est bel et bien un rôle de développeur(se) logiciel : il s’agit de concevoir, intégrer et industrialiser des fonctionnalités IA directement dans nos produits SaaS. Tech, pragmatique, orienté production.
+
+
+Pourquoi nous rejoindre ?
+
+Un environnement stimulant et innovant,
+Des défis techniques stimulants à fort impact technologique dans une culture de la qualité et du partage,
+Une vraie autonomie dans les choix techniques, et du temps pour faire bien,
+Un cadre de travail flexible : télétravail possible avec une semaine de présence par trimestre.
+
+
+Les avantages chez N2JSOFT :
+
+Prime de vacances,
+Chèques cadeaux à Noël,
+Chèques rentrée scolaire (si tu as des enfants),
+Chèque culture,
+Cours de musique,
+Événements d’équipe toute l’année.
+

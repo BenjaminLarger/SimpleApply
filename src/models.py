@@ -14,12 +14,14 @@ class JobOffer(BaseModel):
     skills_required: List[str] = Field(..., description="Required skills and technologies")
     location: str = Field(..., description="Job location")
     description: str = Field(..., description="Full job description text")
+    language: str = Field(default="en", description="Detected language of job offer (en, fr, es)")
 
 
 class PersonalInfo(BaseModel):
     """Personal information from user profile."""
     name: str
     email: str
+    gender: str = Field(default="male", description="Gender for pronoun and title adaptation (male/female)")
 
 
 class Experience(BaseModel):

@@ -1,0 +1,83 @@
+About the job
+The role you'll play
+
+You will bridge the gap between data systems and actionable business intelligence. In this role, you will transform raw data into value by architecting robust data pipelines, building intuitive dashboards, and uncovering insights that improve the performance of our machine translation solutions. 
+
+The team you'll be a part of 
+
+You will join the Machine Learning Team, where we build LanguageWire's machine translation (MT) engines, quality estimation models, and adjacent services designed to predict performance and maximize translator efficiency. We constantly explore and apply state-of-the-art approaches and advancements in the field. With a research-based approach and the use of the latest technologies, we push the boundaries of ML to deliver innovative solutions. 
+
+ 
+Our systems operate on a large scale, generating vast amounts of data. We are looking for an Analytics Engineer with strong analytical capabilities to help us make sense of this data landscape. You will collaborate closely with Machine Learning Engineers, Data Engineers, and Software Engineers, reporting directly to the Team Lead in ML.
+ 
+If you want to make a difference, make it with us by...
+
+Orchestrating data ecosystems: Optimizing, maintaining, building out our data pipelines and dashboards. You will take ownership of everything from data sourcing to data visualization. 
+Mastering the domain: Becoming an expert in our domain and on our data and the "go to" expert to ask for insights. 
+Driving discovery: Proactively seeking new methods to extract value, identify trends, and tell compelling stories through data. 
+Innovating with AI: Leveraging GenAI and LLMs to generate novel insights from unstructured textual data. 
+ 
+Desired experience and competencies 
+
+What does it take to work for LanguageWire?
+
+What you'll need to bring
+
+Educational background: A relevant degree (B.Sc/M.Sc) combined with at least 2 years of relevant work experience in analytics or data engineering. 
+Database expertise: Fluency in SQL, capable of writing complex, performant queries. You need to understand how analytical databases such as Snowflake or Big Query work. We use Big Query. 
+Analytical mindset: A strong track record in data analysis and data storytelling, with the ability to draw clear conclusions from complex datasets. 
+Programming skills: Solid Python programming experience for data manipulation and scripting. 
+Pipeline orchestration: Hands-on experience with tools such as Airflow, dbt, or similar frameworks. 
+Cloud fluency: Experience with working in a Cloud environment (Azure, AWS, or GCP). 
+Visualization mastery: Proven experience managing and building dashboards (e.g., PowerBI, Tableau, Looker). 
+Collaboration: The ability to work with cross-functional teams to understand data needs and translate them into technical solutions. 
+ 
+This will make you stand out 
+
+Experience working with LLMs and extracting insights from unstructured textual information. 
+An interest in languages, linguistics, and translation technologies. 
+Hands-on experience with Big Query, dbt and ELT pipelines
+ 
+Our perks
+
+Enjoy flat hierarchies, responsibility and freedom, direct feedback, and room to stand up for your own ideas
+Internal development opportunities, ongoing support from your People Partner, and an inclusive and fun company culture
+International company with over 400 employees. Offices in Copenhagen, Aarhus, Stockholm, Varberg, London, Leuven, Lille, Paris, Munich, Hamburg,Montreal, Sophia Antipolis, Atlanta, Finland and Valencia
+For this role, we have a full-time FlexiWire@home option for remote work. Of course, you are always welcome at the office to collaborate and connect with your colleagues. 
+We take care of our people and initiate many social get-togethers from Friday Bars a to Summer or Christmas parties. We have fun! 
+200 great colleagues in the Valencia office belonging to different business departments 
+Excellent location in cool and modern offices in the city center, with a great rooftop terrace and a view over the Town Hall Square
+Private health insurance
+Working in an international environment—more than 20 different nationalities
+A dog friendly atmosphere 
+Big kitchen with access to organic fruits, nuts and biscuits and coffee.
+Social area and game room (foosball table, darts, and board games)
+Bike and car parking
+About LanguageWire 
+
+At LanguageWire, we want to wire the world together with language. Why? Because we want to help people & businesses simplify communication. We are fueled by the most advanced technology (AI) and our goal is to make customer's lives easier by simplifying their communication with any audience across the globe. 
+
+Our values drive our behavior
+
+We are curious. We are trustworthy. We are caring. We are ambitious. 
+
+At LanguageWire, we are curious and intrigued by what we don't understand. We believe relationships are based on honesty and responsibility, and being trustworthy reinforces an open, humble, and honest way of communicating. We are caring and respect each other personally and professionally. We encourage authentic collaboration, invite feedback and a positive social environment. Our desire to learn, build, and share knowledge is a natural part of our corporate culture.
+ 
+Working at LanguageWire — why we like it: 
+
+"As a Senior Full Stack Engineer at LanguageWire, my day is dynamic and collaborative, particularly within the Machine Learning team. I work closely with Machine Learning Engineers to integrate advanced AI capabilities into our web applications and APIs, aiming to enhance customer experiences through innovative features. I also collaborate with other development teams to ensure seamless integration and alignment of our technology solutions, fostering continuous learning and driving the evolution of LanguageWire's technology."
+
+(Cristian, Senior Full-Stack Engineer, Poland)
+
+
+Yes, to diversity, equity & inclusion 
+
+In LanguageWire, we believe diversity in gender, age, background, and culture is essential for our growth. Therefore, we are committed to creating a culture that incorporates diverse perspectives and expertise in our everyday work.
+ 
+LanguageWire's recruitment process is designed to be transparent and fair for all candidates. We encourage candidates of all backgrounds to apply, and we ensure that candidates are provided with an equal opportunity to demonstrate their competencies and skills.
+
+Want to know more? 
+
+We can't wait to meet you! So, why wait 'til tomorrow? Apply today! 
+ 
+If you want to know more about LanguageWire, we encourage you to visit our website!

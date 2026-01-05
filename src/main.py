@@ -187,10 +187,11 @@ def load_and_display_user_profile(profile_path: str, verbose: bool) -> UserProfi
     return user_profile
 
 
-def parse_and_display_job_offer(job_offer_text: str, verbose: bool):
+def parse_and_display_job_offer(job_offer_text: str, user_profile: UserProfile, verbose: bool):
     """Parse job offer and display parsing results."""
     print("\n🔧 Step 3: Parsing job offer...")
-    job_offer = parse_job_offer(job_offer_text)
+    gender = user_profile.personal_info.gender if hasattr(user_profile.personal_info, 'gender') else 'male'
+    job_offer = parse_job_offer(job_offer_text, gender=gender)
     print(f"   Job Title: {job_offer.job_title}")
     print(f"   Company: {job_offer.company_name}")
     print(f"   Required Skills: {len(job_offer.skills_required)}")
@@ -301,7 +302,7 @@ def main():
     try:
         job_offer_text = load_and_display_job_offer(args.job_offer, verbose)
         user_profile = load_and_display_user_profile(args.profile, verbose)
-        job_offer = parse_and_display_job_offer(job_offer_text, verbose)
+        job_offer = parse_and_display_job_offer(job_offer_text, user_profile, verbose)
         matched_skills = match_and_display_skills(job_offer, user_profile, verbose)
         selected_projects = select_and_display_projects(job_offer, user_profile.projects)
         generated_content = generate_and_display_documents(job_offer, user_profile, matched_skills, selected_projects, verbose)

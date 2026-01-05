@@ -61,38 +61,60 @@ def load_job_content(job_text: Union[str, Path]) -> str:
     return job_content
 
 
-def create_job_parsing_prompt(job_content: str) -> str:
+def create_job_parsing_prompt(job_content: str, gender: str = "male") -> str:
     """
     Create structured prompt for job parsing.
 
     Args:
         job_content: Raw job posting text
+        gender: User's gender ('male', 'female', or None for no gender-based transformation)
 
     Returns:
         Formatted prompt string
     """
+    gender_instruction = ""
+    if gender and gender.lower() in ["male", "female"]:
+        gender_instruction = f"""
+**GENDER-AWARE JOB TITLE EXTRACTION**: The candidate is {gender.lower()}.
+If the job title contains gender-inclusive forms (patterns like "(e)", "(ée)", "/", or "·"), apply gender agreement:
+  - For {gender.lower()}: Apply the appropriate gender form for adjectives and nouns
+    - Examples:
+      - "Développeur(se)" → "Développeur" (male) or "Développeuse" (female)
+      - "Spécialisé(e)" → "Spécialisé" (male) or "Spécialisée" (female)
+      - "Ingénieur/Ingénieure" → "Ingénieur" (male) or "Ingénieure" (female)
+  - Apply this rule to ALL job title components, not just the main role
+
+**IMPORTANT**: Return the job title with proper gender agreement applied. Do NOT include gender markers like (e), (ée), /, or ·.
+"""
+
     return f"""
 You are an expert job posting analyzer. Extract structured information from the following job posting text and return it as valid JSON format.
+
+**IMPORTANT**: Detect the primary language of the job posting (en=English, fr=French, es=Spanish).
+{gender_instruction}
 
 Job Posting Text:
 {job_content}
 
 Please analyze the text and extract the following information in JSON format:
 {{
-    "job_title": "The specific job title/position",
+    "job_title": "The specific job title/position (with gender agreement applied if applicable)",
     "company_name": "The company name",
     "skills_required": ["Array of required skills, technologies, programming languages, frameworks, etc."],
     "location": "Job location (city, state/country, or 'Remote')",
-    "description": "The full original job posting text"
+    "description": "The full original job posting text",
+    "language": "The language code of the job posting (en, fr, or es)"
 }}
 
 Guidelines:
 - Extract all technical skills, programming languages, frameworks, tools, and methodologies mentioned
 - Include both hard and soft skills if clearly stated as requirements
 - For location, include the most specific information available (city, state, country, or Remote/Hybrid)
+- Detect the language: Use 'en' for English, 'fr' for French, 'es' for Spanish
 - If information is not clearly stated, make reasonable inferences but avoid hallucinating details
 - Ensure the JSON is valid and properly formatted
 - Include the complete original job posting text in the description field
+- Apply gender agreement to job title if gender-inclusive forms are present
 
 Return only the JSON object, no additional text or explanation.
 """
@@ -153,18 +175,23 @@ def parse_job_response(response_text: str, job_content: str) -> JobOffer:
         if "description" not in job_data:
             job_data["description"] = job_content
 
+        # Set default language to English if not provided
+        if "language" not in job_data:
+            job_data["language"] = "en"
+
         return JobOffer(**job_data)
 
     except json.JSONDecodeError as e:
         raise JobParserError(f"Failed to parse JSON response from OpenAI: {e}\nResponse Text: {response_text}")
 
 
-def parse_job_offer(job_text: Union[str, Path]) -> JobOffer:
+def parse_job_offer(job_text: Union[str, Path], gender: str = "male") -> JobOffer:
     """
     Parse job offer text using OpenAI to extract structured information.
 
     Args:
         job_text: Either raw job posting text or path to file containing job text
+        gender: User's gender ('male' or 'female') for gender-aware job title extraction
 
     Returns:
         JobOffer: Parsed job information as Pydantic model
@@ -174,7 +201,7 @@ def parse_job_offer(job_text: Union[str, Path]) -> JobOffer:
     """
     try:
         job_content = load_job_content(job_text)
-        prompt = create_job_parsing_prompt(job_content)
+        prompt = create_job_parsing_prompt(job_content, gender=gender)
         response = call_openai_for_parsing(prompt)
         response_text = response.choices[0].message.content.strip()
         return parse_job_response(response_text, job_content)

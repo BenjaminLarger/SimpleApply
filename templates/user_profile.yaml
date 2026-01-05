@@ -1,6 +1,7 @@
 personal_info:
   name: "Benjamin Larger"
   email: "benjaminlarger.bl@gmail.com"
+  gender: "male"
 
 experiences:
   - company: "ENGIE Madrid, Spain"
@@ -122,7 +123,31 @@ skills:
   - "API gateaway"
   - "Data Visualization"
   - "Git workflows"
-
+  - "Go"
+  - "GoFiber"
+  - "Cobra CLI"
+  - "MongoDB"
+  - "Apache Kafka"
+  - "Redis"
+  - "Go Playground Validator v10"
+  - "Viper"
+  - "Docker Compose"
+  - "Traefik v3"
+  - "Astro"
+  - "CSS"
+  - "OpenAI API"
+  - "Google AI API"
+  - "Anthropic API"
+  - "Groq API"
+  - "Ollama"
+  - "API Key Authentication"
+  - "IP Whitelisting"
+  - "JWT (JSON Web Tokens)"
+  - "REST API"
+  - "Event-Driven Architecture"
+  - "Clean Architecture"
+  - "Hexagonal Architecture (Ports & Adapters)"
+  - "Reverse Proxy"
 
 
 education:
@@ -139,6 +164,36 @@ education:
       - "Inter-University Exchange Agreement at University of Nebraska at Omaha, United States"
 
 projects:
+  - title: "ModPilot: AI Content Moderation Platform"
+    type: Side Project
+    description: Enterprise moderation SaaS with real-time AI processing. Go backend, Astro frontend, Kafka/Redis architecture. Handles 1000s of posts/sec with intelligent model escalation and concurrent moderator support.
+    status: "in progress"
+    technologies:
+      - "Go"
+      - "GoFiber"
+      - "Cobra CLI"
+      - "MongoDB"
+      - "Apache Kafka"
+      - "Redis"
+      - "Go Playground Validator v10"
+      - "Viper"
+      - "Docker Compose"
+      - "Traefik v3"
+      - "Astro"
+      - "CSS"
+      - "OpenAI API"
+      - "Google AI API"
+      - "Anthropic API"
+      - "Groq API"
+      - "Ollama"
+      - "API Key Authentication"
+      - "IP Whitelisting"
+      - "JWT (JSON Web Tokens)"
+      - "REST API"
+      - "Event-Driven Architecture"
+      - "Clean Architecture"
+      - "Hexagonal Architecture (Ports & Adapters)"
+      - "Reverse Proxy"
   - title: "AI-Powered WhatsApp Bot"
     type: Side Project 
     description: "Developed an intelligent WhatsApp bot using Meta Cloud API with Flask backend, featuring real-time webhook integration, OpenAI Assistant API for AI responses, and secure message handling. Implemented comprehensive security with payload validation, ngrok tunneling for local development, and production-ready phone number management."

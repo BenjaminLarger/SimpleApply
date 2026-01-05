@@ -82,7 +82,8 @@ def process_job_application(job_offer_text: str, user_profile: UserProfile) -> t
 
     # Parse job offer
     logger.info("Parsing job offer text")
-    job_offer = parse_job_offer(job_offer_text)
+    gender = user_profile.personal_info.gender if hasattr(user_profile.personal_info, 'gender') else 'male'
+    job_offer = parse_job_offer(job_offer_text, gender=gender)
     logger.info(f"Parsed job offer for {job_offer.company_name} - {job_offer.job_title}")
 
     # Match skills
@@ -947,7 +948,7 @@ def main():
                 # Projects
                 with st.expander(f"Projects ({len(user_profile.projects)})"):
                     if user_profile.projects:
-                        for project in user_profile.projects[:3]:
+                        for project in user_profile.projects[:30]:
                             st.text(f"• {project.title}")
                     else:
                         st.caption("No projects added yet")
@@ -955,7 +956,7 @@ def main():
                 # Experiences
                 with st.expander(f"Experiences ({len(user_profile.experiences)})"):
                     if user_profile.experiences:
-                        for exp in user_profile.experiences[:2]:
+                        for exp in user_profile.experiences[:10]:
                             st.text(f"• {exp.role} @ {exp.company}")
                         if len(user_profile.experiences) > 2:
                             st.caption(f"... and {len(user_profile.experiences) - 2} more")

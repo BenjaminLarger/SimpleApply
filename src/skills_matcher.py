@@ -57,6 +57,12 @@ def create_skills_matching_prompt(job_offer: JobOffer, user_profile: UserProfile
     """
     Create comprehensive prompt for skills matching.
 
+    NOTE: This function requests exactly 20 relevant technologies from OpenAI.
+    However, OpenAI may return fewer items or empty lists. The parse_skills_response()
+    function includes fallback logic to handle these edge cases.
+
+    See: https://github.com/BenjaminLarger/simpleApply/issues (Compétences & Outils not filling)
+
     Args:
         job_offer: Parsed job offer information
         user_profile: User's complete profile
@@ -66,8 +72,21 @@ def create_skills_matching_prompt(job_offer: JobOffer, user_profile: UserProfile
     Returns:
         Formatted prompt string
     """
+    language_map = {
+        "en": "English",
+        "fr": "French",
+        "es": "Spanish"
+    }
+    target_language = language_map.get(job_offer.language, "English")
+
     return f"""
 You are an expert career counselor and skills matcher. Analyze the job requirements against the user's profile and intelligently match skills, technologies, and achievements.
+
+**IMPORTANT**: The job offer is in {target_language}. You MUST:
+1. Return all matched_skills and relevant_technologies in {target_language}
+2. Translate all user profile content from English to {target_language}
+3. **PRESERVE TECHNICAL TERMS IN ENGLISH**: Python, JavaScript, Docker, React, Django, AWS, SQL, etc. should remain in English
+4. Translate soft skills and descriptions naturally
 
 JOB OFFER:
 - Title: {job_offer.job_title}
@@ -82,11 +101,11 @@ USER PROFILE:
 
 Please analyze and return a JSON object with the following structure:
 {{
-    "user_skills": ["List of all user's skills and technologies"],
-    "job_skills": ["List of all job required skills"],
-    "matched_skills": ["Skills that directly or closely match between user and job"],
-    "relevant_technologies": ["Most relevant technologies to highlight for this role"],
-    "relevant_achievements": ["Most relevant achievements that align with job requirements"]
+    "user_skills": ["List of all user's skills and technologies - in {target_language} with technical terms in English"],
+    "job_skills": ["List of all job required skills - in {target_language} with technical terms in English"],
+    "matched_skills": ["Skills that match - in {target_language} with technical terms in English"],
+    "relevant_technologies": ["20 most relevant technologies - in {target_language} with technical terms in English"],
+    "relevant_achievements": ["Most relevant achievements - in {target_language}"]
 }}
 
 Guidelines for matching:
@@ -96,6 +115,7 @@ Guidelines for matching:
 4. Consider transferable skills and related technologies (e.g., if job requires React and user has JavaScript experience)
 5. Prioritize recent and significant experiences over older ones
 6. Include both technical and soft skills where relevant
+7. Keep all technical terms and programming languages in English
 
 Return only the JSON object, no additional text.
 """
@@ -155,6 +175,24 @@ def parse_skills_response(response_text: str) -> MatchedSkills:
         for field in required_fields:
             if not isinstance(skills_data[field], list):
                 skills_data[field] = []
+
+        # CRITICAL FIX: Ensure relevant_technologies is never empty (prevents blank "Compétences & Outils" section)
+        # This is the most critical field for CV generation - if empty, the skills section appears blank
+        if not skills_data.get("relevant_technologies") or len(skills_data["relevant_technologies"]) == 0:
+            # Fallback: Use matched_skills as base for technologies
+            fallback_technologies = skills_data.get("matched_skills", [])
+            if fallback_technologies:
+                # Extend to at least 10 items if possible by combining with job skills
+                if len(fallback_technologies) < 10:
+                    fallback_technologies = fallback_technologies + skills_data.get("job_skills", [])
+                skills_data["relevant_technologies"] = fallback_technologies[:20]  # Limit to 20
+            else:
+                # Last resort: Use job skills if no matches found
+                skills_data["relevant_technologies"] = skills_data.get("job_skills", ["Technology"])[:20]
+
+        # Similar fallback for achievements
+        if not skills_data.get("relevant_achievements") or len(skills_data["relevant_achievements"]) == 0:
+            skills_data["relevant_achievements"] = ["Developed technical solutions", "Collaborated with teams"]
 
         return MatchedSkills(**skills_data)
 

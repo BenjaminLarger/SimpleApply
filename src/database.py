@@ -16,6 +16,7 @@ class Application(BaseModel):
     location: str
     job_offer_input: str
     application_cost: float
+    language: str = "en"
     created_at: Optional[datetime] = None
 
 
@@ -38,6 +39,7 @@ class ApplicationDatabase:
                     location TEXT NOT NULL,
                     job_offer_input TEXT NOT NULL,
                     application_cost REAL NOT NULL DEFAULT 0.0,
+                    language TEXT NOT NULL DEFAULT 'en',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -45,6 +47,13 @@ class ApplicationDatabase:
             # Add application_cost column if it doesn't exist (for existing databases)
             try:
                 conn.execute("ALTER TABLE applications ADD COLUMN application_cost REAL NOT NULL DEFAULT 0.0")
+            except sqlite3.OperationalError:
+                # Column already exists
+                pass
+
+            # Add language column if it doesn't exist (for existing databases)
+            try:
+                conn.execute("ALTER TABLE applications ADD COLUMN language TEXT NOT NULL DEFAULT 'en'")
             except sqlite3.OperationalError:
                 # Column already exists
                 pass
@@ -65,7 +74,7 @@ class ApplicationDatabase:
                 cursor = conn.execute("""
                     UPDATE applications
                     SET matching_rate = ?, unmatched_skills = ?, matched_skills = ?,
-                        location = ?, job_offer_input = ?, application_cost = ?,
+                        location = ?, job_offer_input = ?, application_cost = ?, language = ?,
                         created_at = CURRENT_TIMESTAMP
                     WHERE company = ? AND position = ?
                 """, (
@@ -75,6 +84,7 @@ class ApplicationDatabase:
                     application.location,
                     application.job_offer_input,
                     application.application_cost,
+                    application.language,
                     application.company,
                     application.position
                 ))
@@ -84,8 +94,8 @@ class ApplicationDatabase:
                 # Insert new record
                 cursor = conn.execute("""
                     INSERT INTO applications
-                    (company, position, matching_rate, unmatched_skills, matched_skills, location, job_offer_input, application_cost)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (company, position, matching_rate, unmatched_skills, matched_skills, location, job_offer_input, application_cost, language)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     application.company,
                     application.position,
@@ -94,7 +104,8 @@ class ApplicationDatabase:
                     json.dumps(application.matched_skills),
                     application.location,
                     application.job_offer_input,
-                    application.application_cost
+                    application.application_cost,
+                    application.language
                 ))
                 conn.commit()
                 return cursor.lastrowid
@@ -109,17 +120,19 @@ class ApplicationDatabase:
             row = cursor.fetchone()
 
             if row:
+                row_dict = dict(row)
                 return Application(
-                    id=row['id'],
-                    company=row['company'],
-                    position=row['position'],
-                    matching_rate=row['matching_rate'],
-                    unmatched_skills=json.loads(row['unmatched_skills']),
-                    matched_skills=json.loads(row['matched_skills']),
-                    location=row['location'],
-                    job_offer_input=row['job_offer_input'],
-                    application_cost=row['application_cost'],
-                    created_at=datetime.fromisoformat(row['created_at'])
+                    id=row_dict['id'],
+                    company=row_dict['company'],
+                    position=row_dict['position'],
+                    matching_rate=row_dict['matching_rate'],
+                    unmatched_skills=json.loads(row_dict['unmatched_skills']),
+                    matched_skills=json.loads(row_dict['matched_skills']),
+                    location=row_dict['location'],
+                    job_offer_input=row_dict['job_offer_input'],
+                    application_cost=row_dict['application_cost'],
+                    language=row_dict.get('language', 'en'),
+                    created_at=datetime.fromisoformat(row_dict['created_at'])
                 )
             return None
 
@@ -134,17 +147,19 @@ class ApplicationDatabase:
 
             applications = []
             for row in rows:
+                row_dict = dict(row)
                 applications.append(Application(
-                    id=row['id'],
-                    company=row['company'],
-                    position=row['position'],
-                    matching_rate=row['matching_rate'],
-                    unmatched_skills=json.loads(row['unmatched_skills']),
-                    matched_skills=json.loads(row['matched_skills']),
-                    location=row['location'],
-                    job_offer_input=row['job_offer_input'],
-                    application_cost=row['application_cost'],
-                    created_at=datetime.fromisoformat(row['created_at'])
+                    id=row_dict['id'],
+                    company=row_dict['company'],
+                    position=row_dict['position'],
+                    matching_rate=row_dict['matching_rate'],
+                    unmatched_skills=json.loads(row_dict['unmatched_skills']),
+                    matched_skills=json.loads(row_dict['matched_skills']),
+                    location=row_dict['location'],
+                    job_offer_input=row_dict['job_offer_input'],
+                    application_cost=row_dict['application_cost'],
+                    language=row_dict.get('language', 'en'),
+                    created_at=datetime.fromisoformat(row_dict['created_at'])
                 ))
             return applications
 
@@ -168,17 +183,19 @@ class ApplicationDatabase:
 
             applications = []
             for row in rows:
+                row_dict = dict(row)
                 applications.append(Application(
-                    id=row['id'],
-                    company=row['company'],
-                    position=row['position'],
-                    matching_rate=row['matching_rate'],
-                    unmatched_skills=json.loads(row['unmatched_skills']),
-                    matched_skills=json.loads(row['matched_skills']),
-                    location=row['location'],
-                    job_offer_input=row['job_offer_input'],
-                    application_cost=row['application_cost'],
-                    created_at=datetime.fromisoformat(row['created_at'])
+                    id=row_dict['id'],
+                    company=row_dict['company'],
+                    position=row_dict['position'],
+                    matching_rate=row_dict['matching_rate'],
+                    unmatched_skills=json.loads(row_dict['unmatched_skills']),
+                    matched_skills=json.loads(row_dict['matched_skills']),
+                    location=row_dict['location'],
+                    job_offer_input=row_dict['job_offer_input'],
+                    application_cost=row_dict['application_cost'],
+                    language=row_dict.get('language', 'en'),
+                    created_at=datetime.fromisoformat(row_dict['created_at'])
                 ))
             return applications
 

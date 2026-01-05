@@ -1,0 +1,38 @@
+About the job
+¿Eres un constructor de ideas con pasión por la IA?
+
+En Igeneris somos una firma española de innovación. Nos dedicamos a la construcción de soluciones que transforman empresas. Exploramos, lanzamos y escalamos negocios que cambian industrias y facturan cientos de millones de euros combinando estrategia, innovación y tecnología.
+Nos sentimos especialmente orgullosos de ver el impacto de nuestras ideas en el mercado: Emov, Galp Solar, Homepaq, Avikor, Taiti, Bemycar, etc...
+Ahora tenemos un nuevo reto: Ofrecer soluciones con producto IA y te estamos buscando a ti para ayudarnos a poner las primeras piedras.
+
+
+¿Que buscamos?
+
+Buscamos a un Problem Solver con alma de coder y mentalidad de negocio. Serás la pieza clave tecnológica en este nuevo equipo, trabajando junto con perfiles de negocio para prototipar, validar y construir soluciones basadas en IA. Vas a mancharte las manos con código, pero también vas a opinar sobre el modelo de negocio.
+
+
+¿Cómo será tu día a día?
+
+Construir (0 a 1): Desarrollo de la primera versión de "Soluciones IA".
+Backend & Integración: Diseño de arquitecturas ligeras y escalables (APIs, bases de datos) e integrarás LLMs y otros modelos de IA en flujos de negocio reales.
+Producto & Negocio: No recibirás tickets pasivamente. Participarás en la definición del producto: ¿Es esto viable? ¿Aporta valor al cliente?
+Iteración Rápida: Prototipado veloz para validar hipótesis de mercado. Aquí "hecho es mejor que perfecto" al principio, pero con la calidad técnica para escalar después.
+
+
+¿Qué es necesario?
+
+Experiencia: Al menos 3 años en desarrollo de software, con un Backend sólido (Python, Node.js, etc.).
+Interés real por la IA: No hace falta que seas experto, pero sí que hayas hecho cursos, tengas side-projects o hayas jugado con las APIs de OpenAI/Anthropic/HuggingFace por tu cuenta.
+Vena Startupera: Entiendes que en una startup los roles se mezclan. Tienes autonomía y proactividad.
+Problem Solver: Te dan un problema abstracto y devuelves una solución técnica concreta.
+Multidisciplinar: Eres curioso, quizás sabes un poco de Frontend, o te interesa el Marketing, o el Diseño, etc.. No te encasillas en "eso no es mi trabajo".
+Estudios: Es deseable que cuentes con estudios técnicos como Matemáticas, Física, Ingeniería, Informática, Ciencia de Datos, Telecomunicaciones, Aeroespacial, Industriales o similares
+
+
+Qué ofrecemos
+
+Impacto Real: Verás cómo tus desarrollos se convierten directamente en nuevos modelos de negocio y soluciones tangibles. Tu trabajo es el motor que permite validar y lanzar proyectos al mercado. La oportunidad de ser parte del equipo que dará forma al desarrollo de "soluciones IA" dentro de una empresa consolidada.
+Cultura Igeneris: Trabajar en un entorno de aprendizaje continuo junto a un equipo donde la humildad y el talento van de la mano. Aquí se viene a aprender y a compartir (somos “Great Place to Work”).
+Crecimiento: Exposición directa a estrategia de negocio y clientes de primer nivel formando parte de una compañía en crecimiento constante. Hoy somos más de 70 personas distribuidas entre España, Portugal y México.
+Un contrato indefinido, una remuneración competitiva y evolución progresiva en base al nivel de desempeño y responsabilidad.
+
