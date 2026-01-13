@@ -132,7 +132,7 @@
       "languages_label": "Langues",
       "hobbies_label": "Loisirs",
       "skills_label": "Compétences & Outils",
-      "relevant_skills_label": "Compétences Pertinentes",
+      "relevant_skills_label": "Compétences",
       "main_classes_label": "Cours principaux",
       "age_phrase": "ans",
       "value_section_header": "DOMAINES CLÉS OÙ JE PEUX APPORTER DE LA VALEUR À VOTRE ORGANISATION",
@@ -172,10 +172,10 @@
         "role_male": "Ingénieur Logiciel IS en alternance",
         "role_female": "Ingénieure Logiciel IS en alternance",
         "achievements": {
-          "collaboration": "Collaboration avec les équipes Back et Middle Office pour la mise en œuvre de solutions logicielles sur mesure.",
-          "scraping": "Extraction de données depuis les logiciels internes via Playwright pour traiter des informations métier critiques.",
-          "energy_solutions": "Développement de solutions de gestion énergétique : conception d'APIs RESTful en Python pour optimiser l'engagement des unités de production, intégrant efficacité algorithmique et gestion robuste des erreurs.",
-          "docker": "Dockerisation d'applications : création de tâches conteneurisées pour la scalabilité, déployées sur AWS Lambda."
+          "collaboration": "Collaboration avec Back et Middle Office pour créer des solutions logicielles adaptées.",
+          "scraping": "Extraction de données internes via Playwright pour les processus métier critiques.",
+          "energy_solutions": "APIs RESTful Python pour optimiser l'engagement des unités avec gestion robuste des erreurs.",
+          "docker": "Dockerisation de tâches conteneurisées pour scalabilité, déployées sur AWS Lambda."
         }
       },
       "ing": {
@@ -183,8 +183,8 @@
         "role_male": "Stagiaire Analyste de Données FEC",
         "role_female": "Stagiaire Analyste de Données FEC",
         "achievements": {
-          "analytics": "Analyses de données en Python pour identifier des comportements suspects dans un jeu de données de plus de 10 000 enregistrements.",
-          "vba_automation": "Développement de scripts VBA pour automatiser les tâches de traitement de données, réduisant le temps d'analyse de 20%."
+          "analytics": "Analyses Python pour identifier comportements suspects dans 10 000+ enregistrements.",
+          "vba_automation": "Scripts VBA pour automatiser le traitement de données, réduisant le temps d'analyse de 20%."
         }
       }
     },
@@ -251,7 +251,7 @@
       "languages_label": "Idiomas",
       "hobbies_label": "Intereses",
       "skills_label": "Competencias & Herramientas",
-      "relevant_skills_label": "Competencias Relevantes",
+      "relevant_skills_label": "Competencias",
       "main_classes_label": "Clases principales",
       "age_phrase": "años",
       "value_section_header": "ÁREAS CLAVE DONDE PUEDO APORTAR VALOR A SU ORGANIZACIÓN",
@@ -291,10 +291,10 @@
         "role_male": "Becario Ingeniero de Software SI",
         "role_female": "Becaria Ingeniera de Software SI",
         "achievements": {
-          "collaboration": "Colaboración con equipos de Back y Middle Office para implementar soluciones de software personalizadas.",
-          "scraping": "Extracción de datos de software interno mediante Playwright para procesar información crítica del negocio.",
-          "energy_solutions": "Desarrollo de soluciones de gestión energética: diseño de APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas, integrando eficiencia algorítmica y gestión robusta de errores.",
-          "docker": "Dockerización de aplicaciones: desarrollo de tareas contenedorizadas para escalabilidad, desplegadas en AWS Lambda."
+          "collaboration": "Colaboración con Back y Middle Office en soluciones de software personalizadas.",
+          "scraping": "Extracción de datos internos con Playwright para procesar información crítica del negocio.",
+          "energy_solutions": "APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas.",
+          "docker": "Dockerización de tareas para escalabilidad, desplegadas en AWS Lambda."
         }
       },
       "ing": {
@@ -302,8 +302,8 @@
         "role_male": "Becario Analista de Datos FEC",
         "role_female": "Becaria Analista de Datos FEC",
         "achievements": {
-          "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en un conjunto de datos de más de 10.000 registros.",
-          "vba_automation": "Desarrollo de scripts VBA para automatizar tareas de procesamiento de datos, reduciendo el tiempo de análisis en un 20%."
+          "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en 10.000+ registros.",
+          "vba_automation": "Scripts VBA para automatizar procesamiento de datos, reduciendo tiempo de análisis 20%."
         }
       }
     },
