@@ -158,7 +158,7 @@
       "intro_paragraph": "Je vous écris pour exprimer mon intérêt pour le poste de {job_title} chez {company_name}. Fort d'une solide formation en génie logiciel de l'école 42 et d'un Master en Finance de Marché de l'Université de Montpellier, complétée par une expérience professionnelle chez ENGIE, je suis confiant de pouvoir contribuer de manière significative à votre équipe.",
       "intro_paragraph_male": "Je vous écris pour exprimer mon intérêt pour le poste de {job_title} chez {company_name}. Fort d'une solide formation en génie logiciel de l'école 42 et d'un Master en Finance de Marché de l'Université de Montpellier, complétée par une expérience professionnelle chez ENGIE, je suis confiant de pouvoir contribuer de manière significative à votre équipe.",
       "intro_paragraph_female": "Je vous écris pour exprimer mon intérêt pour le poste de {job_title} chez {company_name}. Forte d'une solide formation en génie logiciel de l'école 42 et d'un Master en Finance de Marché de l'Université de Montpellier, complétée par une expérience professionnelle chez ENGIE, je suis confiante de pouvoir contribuer de manière significative à votre équipe.",
-      "experience_paragraph": "En tant qu'Ingénieur Logiciel IS en alternance chez ENGIE à Madrid, j'ai développé des compétences sur plusieurs langages de programmation et frameworks tels que Python, Django, C, C++, et les technologies web full-stack. J'ai collaboré avec des équipes pluridisciplinaires pour concevoir des APIs REST, effectuer l'extraction de données pour des processus critiques et construire des solutions logicielles robustes.",
+      "experience_paragraph": "En tant qu'Ingénieur Logiciel IS en stage chez ENGIE à Madrid, j'ai développé des compétences sur plusieurs langages de programmation et frameworks tels que Python, Django, C, C++, et les technologies web full-stack. J'ai collaboré avec des équipes pluridisciplinaires pour concevoir des APIs REST, effectuer l'extraction de données pour des processus critiques et construire des solutions logicielles robustes.",
       "key_areas_header": "Domaines clés où je peux apporter de la valeur à votre organisation:",
       "closing_paragraph_1": "Je suis particulièrement attiré par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravi de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
       "closing_paragraph_1_male": "Je suis particulièrement attiré par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravi de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
@@ -168,9 +168,9 @@
     },
     "experience": {
       "engie": {
-        "role": "Ingénieur Logiciel IS en alternance",
-        "role_male": "Ingénieur Logiciel IS en alternance",
-        "role_female": "Ingénieure Logiciel IS en alternance",
+        "role": "Stagiaire Ingénieur Logiciel IS",
+        "role_male": "Stagiaire Ingénieur Logiciel IS",
+        "role_female": "Stagiaire Ingénieure Logiciel IS",
         "achievements": {
           "collaboration": "Collaboration avec Back et Middle Office pour créer des solutions logicielles adaptées.",
           "scraping": "Extraction de données internes via Playwright pour les processus métier critiques.",
@@ -228,7 +228,7 @@
         "title": "MeetingFlowAI",
         "description": "Agent d'automatisation alimenté par l'IA qui crée un flux de travail multi-étapes : Gmail → Traitement OpenAI → Intégration Calendrier. Interface améliorée qui met en évidence le flux de travail du programme complet pour une meilleure expérience utilisateur."
       },
-      "Recepcia - Réceptionniste Vocale IA": {
+      "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - Réceptionniste Vocale IA",
         "description": "SaaS B2B automatisant la planification des rendez-vous avec assistants vocaux IA via Vapi. Intégrations Twilio/Telynx, RAG, synchronisation sécurisée des calendriers OAuth (Google/Outlook) et automatisation N8N."
       },
@@ -347,7 +347,7 @@
         "title": "MeetingFlowAI",
         "description": "Agente de automatización impulsado por IA que crea un flujo de trabajo multi-paso: Gmail → Procesamiento OpenAI → Integración de Calendario. Interfaz mejorada que destaca el flujo de trabajo del programa completo para una mejor experiencia del usuario."
       },
-      "Recepcia - Recepcionista de Voz de IA": {
+      "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - Recepcionista de Voz de IA",
         "description": "SaaS B2B automatizando programación de citas con asistentes de voz IA vía Vapi. Integraciones Twilio/Telynx, RAG, sincronización segura de calendarios OAuth (Google/Outlook) y automatización N8N."
       },
