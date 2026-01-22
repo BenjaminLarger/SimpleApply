@@ -69,7 +69,7 @@
       },
       "AI Spreadsheet Analyst - LangChain": {
         "title": "AI Spreadsheet Analyst - LangChain",
-        "description": "Developed an AI agent for spreadsheet analysis using LangGraph, featuring secure sandbox execution, multi-step reasoning, and LangSmith for evaluating agents' performance."
+        "description": "AI agent for spreadsheet analysis using LangGraph with secure sandbox execution, multi-step reasoning, and LangSmith evaluation."
       },
       "MeetingFlowAI": {
         "title": "MeetingFlowAI",
@@ -222,7 +222,7 @@
       },
       "AI Spreadsheet Analyst - LangChain": {
         "title": "Analyseur de Feuille de Calcul IA - LangChain",
-        "description": "Agent IA pour l'analyse de feuilles de calcul utilisant LangGraph, avec exécution sécurisée dans sandbox, raisonnement multi-étapes et LangSmith pour l'évaluation des performances des agents."
+        "description": "Agent IA pour l'analyse de feuilles de calcul avec LangGraph, exécution sécurisée, raisonnement multi-étapes et évaluation LangSmith."
       },
       "MeetingFlowAI": {
         "title": "MeetingFlowAI",
@@ -341,7 +341,7 @@
       },
       "AI Spreadsheet Analyst - LangChain": {
         "title": "Analista de Hojas de Cálculo de IA - LangChain",
-        "description": "Agente de IA para análisis de hojas de cálculo utilizando LangGraph, con ejecución segura en sandbox, razonamiento multi-paso y LangSmith para evaluar el rendimiento de los agentes."
+        "description": "Agente de IA para análisis de hojas de cálculo con LangGraph, ejecución segura en sandbox, razonamiento multi-paso y evaluación LangSmith."
       },
       "MeetingFlowAI": {
         "title": "MeetingFlowAI",
