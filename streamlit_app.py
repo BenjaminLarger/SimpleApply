@@ -8,6 +8,7 @@ import os
 import yaml
 import logging
 import base64
+import subprocess
 from datetime import datetime
 from playwright.sync_api import sync_playwright
 from pathlib import Path
@@ -107,6 +108,59 @@ def display_pdf_preview(pdf_bytes: bytes, pdf_type: str = "PDF") -> None:
     except Exception as e:
         st.error(f"Error displaying {pdf_type} PDF: {str(e)}")
         logger.error(f"PDF preview error for {pdf_type}: {str(e)}")
+
+
+def auto_download_and_play_audio(cv_html: str, cover_letter_html: str, job_offer: object, application_id: int) -> None:
+    """Automatically download CV and Cover Letter PDFs and play audio."""
+    try:
+        # Generate clean filenames
+        company_clean = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
+        position_clean = "".join(c for c in job_offer.job_title if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
+
+        cv_pdf_name = f"CV_{company_clean}_{position_clean}.pdf"
+        cl_pdf_name = f"Cover_Letter_{company_clean}_{position_clean}.pdf"
+
+        # Convert HTML to PDFs
+        logger.info("Converting CVs and cover letters to PDF")
+        cv_pdf = convert_html_to_pdf(cv_html)
+        cl_pdf = convert_html_to_pdf(cover_letter_html)
+
+        # Save files
+        logger.info("Saving PDF files to Applications directory")
+        cv_path = save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
+        cl_path = save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
+
+        # Store in database
+        db = ApplicationDatabase()
+        updated_app = db.get_application(application_id)
+        if updated_app:
+            updated_app.cv_pdf = cv_pdf
+            updated_app.cover_letter_pdf = cl_pdf
+            db.save_application(updated_app)
+            logger.info(f"PDFs stored in database for application {application_id}")
+
+        st.success(f"✅ Files auto-downloaded successfully!")
+        st.info(f"📁 CV saved: {cv_path}")
+        st.info(f"📁 Cover Letter saved: {cl_path}")
+
+        # Play audio
+        logger.info("Playing success audio")
+        try:
+            subprocess.run(
+                ["./audio/play_audio.sh", "audio/franklin-clinton.mp3"],
+                check=True,
+                capture_output=True,
+                timeout=10
+            )
+            logger.info("Audio played successfully")
+        except subprocess.TimeoutExpired:
+            logger.warning("Audio playback timed out")
+        except Exception as audio_error:
+            logger.warning(f"Could not play audio: {str(audio_error)}")
+
+    except Exception as e:
+        logger.error(f"Error in auto-download: {str(e)}")
+        st.error(f"Error during auto-download: {str(e)}")
 
 
 def process_job_application(job_offer_text: str, user_profile: UserProfile) -> tuple[str, str, object, object, int]:
@@ -1123,6 +1177,11 @@ def main():
 
             st.success(f"Documents generated successfully (ID: {application_id})")
 
+            # Auto-download PDFs and play audio
+            auto_download_and_play_audio(cv_html, cover_letter_html, job_offer, application_id)
+
+            st.divider()
+
             # Display cost information
             cost_tracker = get_cost_tracker()
             if cost_tracker.total_calls > 0:
@@ -1170,108 +1229,14 @@ def main():
             st.error(f"Error generating documents: {str(e)}")
             st.exception(e)
 
-    # Download section - available if documents exist in session state
+    # Preview section - available if documents exist in session state
     if hasattr(st.session_state, 'cv_html') and hasattr(st.session_state, 'cover_letter_html'):
-        st.subheader("Download Documents")
+        st.subheader("Document Preview")
 
         # Get data from session state
         cv_html = st.session_state.cv_html
         cover_letter_html = st.session_state.cover_letter_html
-        job_offer = st.session_state.job_offer
-        application_id = st.session_state.application_id
 
-        # Generate clean filenames
-        company_clean = "".join(c for c in job_offer.company_name if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
-        position_clean = "".join(c for c in job_offer.job_title if c.isalnum() or c in (' ', '-', '_')).strip().replace(' ', '_')
-
-        cv_pdf_name = f"CV_{company_clean}_{position_clean}.pdf"
-        cv_html_name = f"CV_{company_clean}_{position_clean}.html"
-        cl_pdf_name = f"Cover_Letter_{company_clean}_{position_clean}.pdf"
-        cl_html_name = f"Cover_Letter_{company_clean}_{position_clean}.html"
-
-        col_cv, col_cl = st.columns(2)
-
-        with col_cv:
-            st.write("**CV**")
-            if st.button("Download PDF", key="cv_pdf_btn", use_container_width=True):
-                try:
-                    cv_pdf = convert_html_to_pdf(cv_html)
-                    saved_path = save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
-                    logger.info(f"CV PDF saved to: {saved_path}")
-
-                    # Also store in database
-                    db = ApplicationDatabase()
-                    updated_app = db.get_application(application_id)
-                    if updated_app:
-                        updated_app.cv_pdf = cv_pdf
-                        db.save_application(updated_app)
-                        logger.info(f"CV PDF stored in database for application {application_id}")
-
-                    st.success(f"Saved to {saved_path} and database")
-                except Exception as e:
-                    logger.error(f"Error saving CV PDF: {str(e)}")
-                    st.error(f"Error: {str(e)}")
-
-            if st.button("Download HTML", key="cv_html_btn", use_container_width=True):
-                try:
-                    saved_path = save_file_to_applications(cv_html.encode('utf-8'), cv_html_name, "CV HTML")
-                    logger.info(f"CV HTML saved to: {saved_path}")
-                    st.success(f"Saved to {saved_path}")
-                except Exception as e:
-                    logger.error(f"Error saving CV HTML: {str(e)}")
-                    st.error(f"Error: {str(e)}")
-
-        with col_cl:
-            st.write("**Cover Letter**")
-            if st.button("Download PDF", key="cl_pdf_btn", use_container_width=True):
-                try:
-                    cl_pdf = convert_html_to_pdf(cover_letter_html)
-                    saved_path = save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-
-                    # Also store in database
-                    db = ApplicationDatabase()
-                    updated_app = db.get_application(application_id)
-                    if updated_app:
-                        updated_app.cover_letter_pdf = cl_pdf
-                        db.save_application(updated_app)
-                        logger.info(f"Cover Letter PDF stored in database for application {application_id}")
-
-                    st.success(f"Saved to {saved_path} and database")
-                except Exception as e:
-                    st.error(f"Error: {str(e)}")
-
-            if st.button("Download HTML", key="cl_html_btn", use_container_width=True):
-                try:
-                    saved_path = save_file_to_applications(cover_letter_html.encode('utf-8'), cl_html_name, "Cover Letter HTML")
-                    st.success(f"Saved to {saved_path}")
-                except Exception as e:
-                    st.error(f"Error: {str(e)}")
-
-        # Combined download button
-        st.divider()
-        if st.button("Download Both (PDF)", key="both_pdf_btn", use_container_width=True):
-            try:
-                logger.info("Combined download button clicked")
-                cv_pdf = convert_html_to_pdf(cv_html)
-                cl_pdf = convert_html_to_pdf(cover_letter_html)
-                save_file_to_applications(cv_pdf, cv_pdf_name, "CV PDF")
-                save_file_to_applications(cl_pdf, cl_pdf_name, "Cover Letter PDF")
-
-                # Also store in database
-                db = ApplicationDatabase()
-                updated_app = db.get_application(application_id)
-                if updated_app:
-                    updated_app.cv_pdf = cv_pdf
-                    updated_app.cover_letter_pdf = cl_pdf
-                    db.save_application(updated_app)
-                    logger.info(f"Both PDFs stored in database for application {application_id}")
-
-                st.success("Documents saved to files and database!")
-            except Exception as e:
-                logger.error(f"Combined download error: {str(e)}")
-                st.error(f"Error: {str(e)}")
-
-        # Preview section
         with st.expander("Preview CV"):
             cv_wrapped = f'<div style="background-color: white; padding: 20px; border-radius: 8px;">{cv_html}</div>'
             st.components.v1.html(cv_wrapped, height=600, scrolling=True)
