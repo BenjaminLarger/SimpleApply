@@ -337,7 +337,7 @@ class TemplateProcessor:
                 replacements["BOOTCAMP42_DATE"] = translate_date("2025-05-01", language)
                 replacements["SCHOOL42_DATE"] = translate_date_range("2023-01-01", "2025-12-31", language)
                 replacements["UNIVERSITY_DATE"] = translate_date_range("2019-01-01", "2025-12-31", language)
-                replacements["ENGIE_DATE"] = translate_date_range("2023-01-01", "2023-06-30", language)
+                replacements["ENGIE_DATE"] = translate_date_range("2025-01-01", "2025-06-30", language)
                 replacements["ING_DATE"] = translate_date_range("2023-05-01", "2023-09-30", language)
 
             except (TranslationError, KeyError) as e:

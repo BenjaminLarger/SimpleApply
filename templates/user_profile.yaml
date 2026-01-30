@@ -24,8 +24,8 @@ experiences:
       - "Dockerized Applications: Built containerized microservices for scalability purpose, deployed on AWS lambdas."
   - company: "ING Brussels, Belgium"
     role: "FEC Data Analyst Intern"
-    start_date: "2023-05-01"
-    end_date: "2023-09-30"
+    start_date: "2025-01-07"
+    end_date: "2025-06-07"
     location: "Brussels, Belgium"
     achievements:
       - "Conducted Python data analytics projects to identify suspicious behaviours in a dataset of 10,000+ records."
@@ -152,7 +152,7 @@ skills:
 
 education:
   - institution: "42 School Málaga, Spain"
-    duration: "2023 – 2024"
+    duration: "2023 – 2025"
     degree: "Peer-to-peer Programming Engineering training – Bachelor equivalent"
     details:
       - "Programming languages: Python, Django, C, C++, HTML, CSS, Solidity"
