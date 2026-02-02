@@ -3,8 +3,13 @@
 Streamlit UI for AI-Powered Job Application System
 """
 
-import streamlit as st
 import os
+
+# Set Playwright browsers path before importing playwright
+if 'PLAYWRIGHT_BROWSERS_PATH' not in os.environ:
+    os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/media/blarger/T7/home-blarger-backup/.cache/ms-playwright'
+
+import streamlit as st
 import yaml
 import logging
 import base64
