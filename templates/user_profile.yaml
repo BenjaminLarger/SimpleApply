@@ -148,7 +148,10 @@ skills:
   - "Clean Architecture"
   - "Hexagonal Architecture (Ports & Adapters)"
   - "Reverse Proxy"
-
+  - "Pytest"
+  - "Integration Testing"
+  - "Unit Testing"
+  - "Team Collaboration"
 
 education:
   - institution: "42 School Málaga, Spain"
