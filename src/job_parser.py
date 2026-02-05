@@ -98,7 +98,7 @@ Job Posting Text:
 
 Please analyze the text and extract the following information in JSON format:
 {{
-    "job_title": "The specific job title/position (with gender agreement applied if applicable)",
+    "job_title": "ONLY the job title/position name. Extract the minimal job title without: company names, project descriptions, 'chez', 'at', 'en', locations, or any descriptive text after dashes. Examples: 'Data Scientist', 'Senior Software Engineer', 'Product Manager' - NOT 'Data Scientist – Project XYZ chez Groupama'",
     "company_name": "The company name",
     "skills_required": ["Array of required skills, technologies, programming languages, frameworks, etc."],
     "location": "Job location (city, state/country, or 'Remote')",
@@ -107,6 +107,7 @@ Please analyze the text and extract the following information in JSON format:
 }}
 
 Guidelines:
+- **CRITICAL FOR JOB TITLE**: Extract ONLY the job role/title itself. Stop before any: ' – ', ' chez ', ' at ', ' en ', ' pour ', ' for '. Remove all context, company names, and project descriptions.
 - Extract all technical skills, programming languages, frameworks, tools, and methodologies mentioned
 - Include both hard and soft skills if clearly stated as requirements
 - For location, include the most specific information available (city, state, country, or Remote/Hybrid)
