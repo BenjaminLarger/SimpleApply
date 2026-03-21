@@ -10,9 +10,17 @@ const WORKDAY_INDICATORS = [
 ];
 
 export function isWorkday(): boolean {
-  return WORKDAY_INDICATORS.some(
+  // Check URL first — most reliable signal
+  const urlMatch = /myworkdayjobs\.com|workday\.com/i.test(window.location.hostname);
+  if (urlMatch) {
+    console.log('[simpleApply:workday] isWorkday=true (URL match:', window.location.hostname, ')');
+    return true;
+  }
+  const domMatch = WORKDAY_INDICATORS.some(
     (sel) => !!document.querySelector(sel) || !!document.querySelector(`[class*="wd-"]`)
   );
+  console.log('[simpleApply:workday] isWorkday=', domMatch, '(DOM indicators)');
+  return domMatch;
 }
 
 function fillInput(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
@@ -56,31 +64,75 @@ async function clickNextPage(timeout = 5000): Promise<boolean> {
   return true;
 }
 
+function getInputSignature(input: HTMLInputElement): string {
+  // Concatenate all identifying attributes into one string for matching
+  return [
+    input.getAttribute('name') ?? '',
+    input.id ?? '',
+    input.getAttribute('aria-label') ?? '',
+    input.getAttribute('placeholder') ?? '',
+    input.getAttribute('data-automation-id') ?? '',
+  ].join(' ').toLowerCase();
+}
+
 function fillPage(profile: ProfileData): void {
   const root = document.documentElement;
   const nameParts = profile.name.split(' ');
 
   // Workday uses shadow DOM — pierce it with queryShadowAll
-  const allInputs = queryShadowAll<HTMLInputElement>(root, 'input[data-automation-id], input[type="text"], input[type="email"], input[type="tel"]');
+  const allInputs = queryShadowAll<HTMLInputElement>(root, 'input[type="text"], input[type="email"], input[type="tel"]');
+
+  console.log(`[simpleApply:workday] fillPage: found ${allInputs.length} inputs, profile:`, {
+    name: profile.name,
+    email: profile.email,
+    phone: profile.phone,
+  });
 
   for (const input of allInputs) {
-    const automationId = input.getAttribute('data-automation-id') ?? '';
-    const label = (
-      input.getAttribute('aria-label') ??
-      input.getAttribute('placeholder') ??
-      automationId
-    ).toLowerCase();
+    const sig = getInputSignature(input);
 
-    if (/first.?name|legal.?first/i.test(label) || automationId === 'firstName') {
+    console.log(`[simpleApply:workday] Checking input: "${sig}"`);
+
+    // Match by name/id patterns (Workday uses legalName--firstName, phoneNumber--phoneNumber, etc.)
+    if (/firstname|first.?name|given.?name/i.test(sig) && !/middle/i.test(sig)) {
+      console.log('[simpleApply:workday] → Filling firstName:', nameParts[0]);
       fillInput(input, nameParts[0] ?? '');
-    } else if (/last.?name|legal.?last/i.test(label) || automationId === 'lastName') {
+    } else if (/lastname|last.?name|family.?name|surname/i.test(sig) && !/secondary/i.test(sig)) {
+      console.log('[simpleApply:workday] → Filling lastName:', nameParts.slice(1).join(' '));
       fillInput(input, nameParts.slice(1).join(' '));
-    } else if (/email/i.test(label) || automationId === 'email') {
-      if (profile.email) fillInput(input, profile.email);
-    } else if (/phone|mobile/i.test(label) || automationId === 'phone') {
-      if (profile.phone) fillInput(input, profile.phone);
-    } else if (/linkedin/i.test(label)) {
-      if (profile.linkedin) fillInput(input, profile.linkedin);
+    } else if (/email/i.test(sig)) {
+      if (profile.email) {
+        console.log('[simpleApply:workday] → Filling email:', profile.email);
+        fillInput(input, profile.email);
+      }
+    } else if (/phonenumber--phonenumber|phone.?number$/i.test(sig) && !/country|extension|ext/i.test(sig)) {
+      // Only fill the actual phone number field, not country code or extension
+      if (profile.phone) {
+        console.log('[simpleApply:workday] → Filling phone:', profile.phone);
+        fillInput(input, profile.phone);
+      }
+    } else if (/addressline1|street.?address/i.test(sig)) {
+      if (profile.address) {
+        console.log('[simpleApply:workday] → Filling address:', profile.address);
+        fillInput(input, profile.address);
+      }
+    } else if (/(?:^|\s|-)city|address--city/i.test(sig) && !/capacity/i.test(sig)) {
+      if (profile.city) {
+        console.log('[simpleApply:workday] → Filling city:', profile.city);
+        fillInput(input, profile.city);
+      }
+    } else if (/postalcode|postal.?code|zip/i.test(sig)) {
+      if (profile.postalCode) {
+        console.log('[simpleApply:workday] → Filling postalCode:', profile.postalCode);
+        fillInput(input, profile.postalCode);
+      }
+    } else if (/linkedin/i.test(sig)) {
+      if (profile.linkedin) {
+        console.log('[simpleApply:workday] → Filling linkedin:', profile.linkedin);
+        fillInput(input, profile.linkedin);
+      }
+    } else {
+      console.log('[simpleApply:workday] → No match for:', sig);
     }
   }
 }

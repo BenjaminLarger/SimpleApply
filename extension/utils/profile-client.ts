@@ -14,6 +14,10 @@ export interface ProfileData {
   linkedin?: string;
   github?: string;
   portfolio?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
   experiences: Experience[];
 }
 

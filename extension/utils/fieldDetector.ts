@@ -126,6 +126,7 @@ export function detectFields(root: Element): DetectedField[] {
   const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea'
   ));
+  console.log(`[simpleApply:fieldDetector] Found ${inputs.length} candidate inputs via querySelectorAll`);
 
   for (const el of inputs) {
     let fieldType: FieldType = 'unknown';
@@ -138,7 +139,17 @@ export function detectFields(root: Element): DetectedField[] {
       confidence = 1.0;
     }
 
-    // 2. name attribute
+    // 2. data-automation-id (Workday)
+    if (fieldType === 'unknown') {
+      const autoId = el.closest('[data-automation-id]')?.getAttribute('data-automation-id') ?? '';
+      const match = scoreByKeywords(autoId);
+      if (match && match.confidence > confidence) {
+        fieldType = match.type;
+        confidence = match.confidence;
+      }
+    }
+
+    // 3. name attribute
     if (fieldType === 'unknown') {
       const nameVal = el.getAttribute('name') ?? '';
       const match = scoreByKeywords(nameVal);
@@ -179,9 +190,16 @@ export function detectFields(root: Element): DetectedField[] {
     }
 
     if (fieldType !== 'unknown') {
+      console.log(`[simpleApply:fieldDetector] Matched: ${fieldType} (${confidence}) ←`, {
+        name: el.getAttribute('name'),
+        id: el.id,
+        'aria-label': el.getAttribute('aria-label'),
+        'data-automation-id': el.getAttribute('data-automation-id'),
+      });
       results.push({ element: el, fieldType, confidence });
     }
   }
 
+  console.log(`[simpleApply:fieldDetector] Total matched: ${results.length}/${inputs.length}`);
   return results;
 }

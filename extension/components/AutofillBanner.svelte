@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let fieldCount: number = 0;
+  let { fieldCount = 0 }: { fieldCount?: number } = $props();
 
-  let visible = true;
+  let visible = $state(true);
 
   function handleAccept() {
     document.dispatchEvent(new CustomEvent('simpleApply:fill', { bubbles: true }));

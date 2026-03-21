@@ -86,6 +86,7 @@
     background: #0f0f1a;
     color: #e0e0e0;
     width: 280px;
+    min-height: 320px;
   }
 
   main {

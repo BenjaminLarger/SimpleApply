@@ -6,6 +6,7 @@ export default defineConfig({
     name: 'simpleApply',
     version: '0.1.0',
     description: 'Auto-fill job application forms using your saved profile.',
+    permissions: ['storage', 'tabs'],
     host_permissions: [
       'http://localhost:8765/*',
       '*://*.linkedin.com/*',
@@ -13,6 +14,7 @@ export default defineConfig({
       '*://*.lever.co/*',
       '*://*.myworkdayjobs.com/*',
       '*://*.smartrecruiters.com/*',
+      '<all_urls>',
     ],
   },
 });
