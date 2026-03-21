@@ -59,10 +59,6 @@
         "title": "Multi-Model Chat Interface",
         "description": "AI chat system integrating OpenAI, Hugging Face, and DistilBERT models. FastAPI backend with WebSocket support, fine-tuning capabilities, and real-time communication."
       },
-      "Weather Prediction Project": {
-        "title": "Weather Prediction Project",
-        "description": "ML system for weather prediction using Random Forest, Gradient Boosting, Ridge Regression, and K-Nearest Neighbors. Interactive web interface with real-time metrics."
-      },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "AI-Powered CV & Cover Letter Generator - CrewAI",
         "description": "Developed a CrewAI-based system that analyzes job postings, matches skills, and generates tailored HTML/PDF CVs and cover letters, featuring Streamlit UI and automated document conversion."
@@ -212,10 +208,6 @@
         "title": "Interface de Chat Multi-Modèles",
         "description": "Système de chat IA intégrant les modèles OpenAI, Hugging Face et DistilBERT. Backend FastAPI avec support WebSocket, fine-tuning et communication en temps réel."
       },
-      "Weather Prediction Project": {
-        "title": "Projet de Prédiction Météorologique",
-        "description": "Système ML pour prédiction météorologique utilisant Random Forest, Gradient Boosting, Ridge Regression et K-Nearest Neighbors. Interface web interactive avec métriques en temps réel."
-      },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "Générateur d'IA pour CV et Lettre de Motivation - CrewAI",
         "description": "Système basé sur CrewAI qui analyse les offres d'emploi, met en correspondance les compétences et génère des CV et lettres de motivation personnalisés en HTML/PDF, avec interface Streamlit et conversion de documents automatisée."
@@ -330,10 +322,6 @@
       "Multi-Model Chat Interface": {
         "title": "Interfaz de Chat Multi-Modelo",
         "description": "Sistema de chat IA que integra modelos de OpenAI, Hugging Face y DistilBERT. Backend FastAPI con soporte WebSocket, fine-tuning y comunicación en tiempo real."
-      },
-      "Weather Prediction Project": {
-        "title": "Proyecto de Predicción del Clima",
-        "description": "Sistema ML para predicción meteorológica usando Random Forest, Gradient Boosting, Ridge Regression y K-Nearest Neighbors. Interfaz web interactiva con métricas en tiempo real."
       },
       "AI-Powered CV & Cover Letter Generator - CrewAI": {
         "title": "Generador de CV y Carta de Presentación Impulsado por IA - CrewAI",
