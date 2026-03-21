@@ -1,0 +1,10 @@
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  testMatch: '**/*.spec.{ts,js}',
+  timeout: 30000,
+  use: {
+    headless: false,
+  },
+});

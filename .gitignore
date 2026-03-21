@@ -5,3 +5,9 @@ CLAUDE.md
 */__pycache__/
 output/*
 app.log
+extension/node_modules/*
+extension/test-results/
+extension/.wxt/
+extension/.output/
+extension/dev/
+.claude/agents/

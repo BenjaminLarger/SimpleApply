@@ -5,9 +5,9 @@
 | Metric | Value |
 |--------|-------|
 | Total features | 22 |
-| Completed | 2 |
-| Remaining | 20 |
-| Next feature | F003 — wxt.config.ts (Extension Scaffold) |
+| Completed | 22 |
+| Remaining | 0 |
+| Next feature | — All features complete! |
 
 ## How to resume a session
 
@@ -21,9 +21,16 @@
 - **F001** — `src/api_server.py`: FastAPI server on port 8765, `/api/health` + `/api/profile` endpoints, CORS for chrome-extension origins, profile flattened to top-level `name`/`email`/`experiences` keys.
 - **F002** — `scripts/run_streamlit.sh`: Launches API server in background before Streamlit, PID file at `/tmp/simpleApply_api.pid`, trap cleanup on EXIT/INT/TERM kills API server when script exits.
 
+## Completed Features (cont.)
+
+- **F003–F016, F020–F022** — Extension scaffold, profile client, field detector, shadow DOM, dynamic filler, content script, background service worker, UI components, unit tests, platform adapters — all passing.
+- **F017** — `tests/e2e/generic-form.spec.js`: Playwright E2E test for standard job form. 3 tests pass.
+- **F018** — `tests/e2e/greenhouse-fixture.spec.js`: Playwright E2E test for Greenhouse-style form. 4 tests pass.
+- **F019** — `tests/e2e/lever-fixture.spec.js`: Playwright E2E test for Lever-style form. 5 tests pass.
+
 ## In-Progress / Blockers
 
-None recorded.
+None. All 22 features complete.
 
 ---
 
