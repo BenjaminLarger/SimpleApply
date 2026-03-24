@@ -56,6 +56,9 @@ if [ -d "$TMP_EXT_PATH" ]; then
 fi
 cp -r "$EXT_PATH" "$TMP_EXT_PATH"
 
+# /tmp supports symlinks, so remove the exFAT workaround
+rm -f "$TMP_EXT_PATH/.npmrc"
+
 # Install dependencies
 cd "$TMP_EXT_PATH"
 if ! npm install --silent > /dev/null 2>&1; then

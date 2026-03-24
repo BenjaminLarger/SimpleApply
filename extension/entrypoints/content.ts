@@ -240,7 +240,8 @@ async function doFill(
   detectedFields: ReturnType<typeof detectFields>
 ): Promise<void> {
   try {
-    const profile = await getProfile();
+    // Skip cache for Workday fills to ensure fresh profile data
+    const profile = await getProfile(workday);
     if (workday) {
       await fillWorkday(profile);
     } else {

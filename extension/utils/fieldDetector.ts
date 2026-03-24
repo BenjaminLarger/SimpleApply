@@ -87,22 +87,47 @@ const AUTOCOMPLETE_MAP: Partial<Record<string, FieldType>> = {
   url: 'portfolioUrl',
 };
 
+// Patterns that should NOT be matched (sub-fields we don't fill)
+const SKIP_PATTERNS = /middle.?name|secondary.?last.?name|country.?phone.?code|phone.?extension|phone.?ext(?:ension)?$/i;
+
 function normalise(text: string): string {
   return text.toLowerCase().replace(/[\s_\-]/g, '');
 }
 
 function scoreByKeywords(text: string): { type: FieldType; confidence: number } | null {
+  // Split compound identifiers (e.g. "address--city", "addressSection_postalCode")
+  // and try the last segment first — it's typically the most specific part
+  const segments = text.split(/--|__|_|-/).filter(Boolean);
+  const lastSegment = segments.length > 1 ? segments[segments.length - 1] : null;
+
+  if (lastSegment) {
+    const lastMatch = matchKeywords(lastSegment);
+    if (lastMatch) return lastMatch;
+  }
+
+  return matchKeywords(text);
+}
+
+function matchKeywords(text: string): { type: FieldType; confidence: number } | null {
   const norm = normalise(text);
+  let best: { type: FieldType; confidence: number } | null = null;
+  let bestLen = 0;
+
   for (const [type, keywords] of Object.entries(FIELD_KEYWORDS) as [FieldType, string[]][]) {
     if (type === 'unknown') continue;
     for (const kw of keywords) {
-      if (norm.includes(normalise(kw))) {
-        const confidence = norm === normalise(kw) ? 0.95 : 0.75;
-        return { type, confidence };
+      const normKw = normalise(kw);
+      if (norm.includes(normKw)) {
+        const confidence = norm === normKw ? 0.95 : 0.75;
+        // Prefer the longest (most specific) keyword match
+        if (normKw.length > bestLen) {
+          best = { type, confidence };
+          bestLen = normKw.length;
+        }
       }
     }
   }
-  return null;
+  return best;
 }
 
 function getLabelText(el: HTMLInputElement | HTMLTextAreaElement): string {
@@ -129,6 +154,11 @@ export function detectFields(root: Element): DetectedField[] {
   console.log(`[simpleApply:fieldDetector] Found ${inputs.length} candidate inputs via querySelectorAll`);
 
   for (const el of inputs) {
+    // Skip fields that are sub-components (middle name, phone country code, extension)
+    const sig = [el.id, el.getAttribute('name'), el.getAttribute('aria-label'),
+      el.closest('[data-automation-id]')?.getAttribute('data-automation-id') ?? ''].join(' ');
+    if (SKIP_PATTERNS.test(sig)) continue;
+
     let fieldType: FieldType = 'unknown';
     let confidence = 0;
 
@@ -139,18 +169,19 @@ export function detectFields(root: Element): DetectedField[] {
       confidence = 1.0;
     }
 
-    // 2. data-automation-id (Workday)
+    // 2. data-automation-id (Workday) — low-priority hint from parent container
     if (fieldType === 'unknown') {
       const autoId = el.closest('[data-automation-id]')?.getAttribute('data-automation-id') ?? '';
       const match = scoreByKeywords(autoId);
       if (match && match.confidence > confidence) {
         fieldType = match.type;
-        confidence = match.confidence;
+        // Mark as tentative (0.5) so element-level signals can override
+        confidence = 0.5;
       }
     }
 
     // 3. name attribute
-    if (fieldType === 'unknown') {
+    if (fieldType === 'unknown' || confidence < 0.9) {
       const nameVal = el.getAttribute('name') ?? '';
       const match = scoreByKeywords(nameVal);
       if (match && match.confidence > confidence) {
@@ -159,8 +190,8 @@ export function detectFields(root: Element): DetectedField[] {
       }
     }
 
-    // 3. id attribute
-    if (fieldType === 'unknown' || confidence < 0.75) {
+    // 4. id attribute
+    if (fieldType === 'unknown' || confidence < 0.9) {
       const idVal = el.id ?? '';
       const match = scoreByKeywords(idVal);
       if (match && match.confidence > confidence) {
@@ -169,7 +200,7 @@ export function detectFields(root: Element): DetectedField[] {
       }
     }
 
-    // 4. placeholder
+    // 5. placeholder
     if (fieldType === 'unknown' || confidence < 0.75) {
       const ph = el.getAttribute('placeholder') ?? '';
       const match = scoreByKeywords(ph);
@@ -179,7 +210,7 @@ export function detectFields(root: Element): DetectedField[] {
       }
     }
 
-    // 5. label text
+    // 6. label text
     if (fieldType === 'unknown' || confidence < 0.75) {
       const label = getLabelText(el);
       const match = scoreByKeywords(label);
@@ -189,7 +220,11 @@ export function detectFields(root: Element): DetectedField[] {
       }
     }
 
-    if (fieldType !== 'unknown') {
+    // Reject matches on inputs with no id, no name, and no autocomplete — these are
+    // typically framework-generated helper inputs (e.g. Workday combobox search triggers)
+    const hasDirectAttr = !!(el.id || el.getAttribute('name') || el.getAttribute('autocomplete')
+      || el.getAttribute('placeholder'));
+    if (fieldType !== 'unknown' && hasDirectAttr) {
       console.log(`[simpleApply:fieldDetector] Matched: ${fieldType} (${confidence}) ←`, {
         name: el.getAttribute('name'),
         id: el.id,

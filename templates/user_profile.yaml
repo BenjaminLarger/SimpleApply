@@ -2,6 +2,13 @@ personal_info:
   name: "Benjamin Larger"
   email: "benjaminlarger.bl@gmail.com"
   gender: "male"
+  phone: "667006863"
+  phoneType: "Mobile"
+  address: "41 calle la Hoz"
+  city: "Malaga"
+  state: "Malaga"
+  postalCode: "29002"
+  country: "Spain"
 
 experiences:
   - company: "ENGIE Madrid, Spain"
