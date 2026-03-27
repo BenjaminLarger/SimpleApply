@@ -106,6 +106,108 @@ function fill(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
 }
 
 /**
+ * Type characters one by one — mirrors Puppeteer's page.keyboard.type(text, {delay}).
+ * Needed for Workday React date inputs that ignore bulk value sets.
+ */
+async function typeChars(el: HTMLInputElement, text: string, charDelay = 100): Promise<void> {
+  el.focus();
+
+  // Clear field first to avoid appending to existing values
+  const proto = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  const setter = proto?.set;
+  if (setter) setter.call(el, '');
+  else el.value = '';
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+
+  for (const ch of text) {
+    el.dispatchEvent(new KeyboardEvent('keydown', { key: ch, bubbles: true }));
+    el.dispatchEvent(new KeyboardEvent('keypress', { key: ch, bubbles: true }));
+
+    // Append character one by one
+    const currentValue = el.value;
+    if (setter) setter.call(el, currentValue + ch);
+    else el.value = currentValue + ch;
+
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new KeyboardEvent('keyup', { key: ch, bubbles: true }));
+    await delay(charDelay);
+  }
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/**
+ * Map long degree strings to standard Workday dropdown values.
+ */
+function mapDegreeToWorkday(degree: string): string {
+  const d = degree.toLowerCase();
+  if (d.includes('master')) return "Master's Degree";
+  if (d.includes('bachelor') || d.includes('licence') || d.includes('engineering')) return "Bachelor's Degree";
+  if (d.includes('phd') || d.includes('doctor')) return 'Doctorate';
+  if (d.includes('associate')) return "Associate's Degree";
+  if (d.includes('mba')) return "Master of Business Administration (M.B.A.)";
+  if (d.includes('high school') || d.includes('ged')) return 'High School or Equivalent';
+  // Return original if no mapping found
+  return degree;
+}
+
+const RESUME_STORAGE_KEY = 'simpleApply_resume';
+
+/**
+ * Inject resume from chrome.storage into a file input via DataTransfer API.
+ */
+async function injectResume(input: HTMLInputElement): Promise<boolean> {
+  const stored = await chrome.storage.local.get(RESUME_STORAGE_KEY);
+  const resume = stored[RESUME_STORAGE_KEY];
+  if (!resume?.fileData) {
+    console.log('[simpleApply:workday] No resume in storage — skipping upload');
+    return false;
+  }
+
+  const binary = atob(resume.fileData);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  const file = new File([bytes], resume.fileName ?? 'resume.pdf', {
+    type: resume.contentType ?? 'application/pdf',
+  });
+
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+
+  input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+  await delay(200);
+  input.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+
+  console.log(`[simpleApply:workday] Resume injected: ${resume.fileName} (${bytes.length} bytes)`);
+  return input.files.length > 0;
+}
+
+/**
+ * Check if Workday already has a resume uploaded.
+ */
+function resumeAlreadyUploaded(): boolean {
+  return !!document.querySelector('[data-automation-id="file-upload-item"]')
+    || document.body.innerText.includes('Successfully Uploaded');
+}
+
+/**
+ * Wait for Workday to confirm the upload.
+ */
+async function waitForUploadConfirmation(timeoutMs = 10_000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (document.querySelector('[data-automation-id="file-upload-item"]')) return true;
+    await delay(300);
+  }
+  return false;
+}
+
+/** Max skills to enter — avoids 10+ minute fills */
+const MAX_SKILLS = 8;
+
+/**
  * Simulate keyboard.type() + Enter on a dropdown/combobox.
  * Mirrors reference repo: el.click() → page.keyboard.type(text) → Enter
  */
@@ -146,6 +248,128 @@ function waitForMutation(root: Element, timeout = 5000): Promise<void> {
     const obs = new MutationObserver(() => { clearTimeout(timer); obs.disconnect(); resolve(); });
     obs.observe(root, { childList: true, subtree: true });
   });
+}
+
+/**
+ * Wait until at least `expected` elements match the selector appear in DOM.
+ * Uses MutationObserver for DOM-stable waiting instead of flat delay.
+ */
+async function waitForFormCount(selector: string, expected: number, timeout = 5000): Promise<void> {
+  const currentCount = document.querySelectorAll(selector).length;
+  console.log(`[simpleApply:workday] [waitForFormCount] Starting wait for selector "${selector}" (current: ${currentCount}, expected: ${expected}, timeout: ${timeout}ms)`);
+
+  if (currentCount >= expected) {
+    console.log(`[simpleApply:workday] [waitForFormCount] Already have enough elements, returning immediately`);
+    return;
+  }
+
+  let mutationFired = false;
+  let finalCount = currentCount;
+
+  await new Promise<void>((resolve) => {
+    const timer = setTimeout(() => {
+      console.log(`[simpleApply:workday] [waitForFormCount] TIMEOUT after ${timeout}ms (mutations: ${mutationFired}, final count: ${finalCount})`);
+      obs.disconnect();
+      resolve();
+    }, timeout);
+
+    const obs = new MutationObserver(() => {
+      mutationFired = true;
+      finalCount = document.querySelectorAll(selector).length;
+      console.log(`[simpleApply:workday] [waitForFormCount] MutationObserver fired - count now: ${finalCount}`);
+
+      if (finalCount >= expected) {
+        console.log(`[simpleApply:workday] [waitForFormCount] Target count reached, resolving`);
+        clearTimeout(timer);
+        obs.disconnect();
+        resolve();
+      }
+    });
+
+    console.log(`[simpleApply:workday] [waitForFormCount] Starting MutationObserver...`);
+    obs.observe(document.body, { childList: true, subtree: true });
+  });
+
+  const afterCount = document.querySelectorAll(selector).length;
+  console.log(`[simpleApply:workday] [waitForFormCount] Wait complete - final count: ${afterCount}`);
+}
+
+/**
+ * Find a section heading element by matching text from a list of candidates.
+ */
+function findSectionHeader(textMatches: string[]): Element | null {
+  const allHeadings = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,[role="heading"]'));
+  return allHeadings.find(el => {
+    const t = el.textContent?.trim().toLowerCase() ?? '';
+    return textMatches.some(m => t === m);
+  }) ?? null;
+}
+
+/**
+ * Find and click the Add/Add Another button for a given section.
+ * Uses Y-position brackets: button must be BELOW the target section header
+ * and ABOVE the next section header (if known).
+ */
+async function clickAddInSection(sectionSel: string, label: string): Promise<boolean> {
+  console.log(`[simpleApply:workday] [clickAddInSection] Looking for: "${label}"`);
+
+  const searchText = label.toLowerCase();
+  const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('button'));
+  const addButtons = buttons.filter(b => /^add/i.test(b.textContent?.trim() ?? ''));
+
+  console.log(`[simpleApply:workday] [clickAddInSection] Found ${buttons.length} total buttons, ${addButtons.length} with "add"`);
+
+  // Identify target + boundary headers for Y-bracket scoping
+  let targetTexts: string[] = [];
+  let boundaryTexts: string[] = [];
+
+  if (searchText.includes('work')) {
+    targetTexts  = ['work experience', 'experience'];
+    boundaryTexts = ['education', 'education history', 'certifications', 'skills'];
+  } else if (searchText.includes('education')) {
+    targetTexts  = ['education', 'education history'];
+    boundaryTexts = ['certifications', 'skills', 'languages', 'websites', 'references'];
+  }
+
+  const targetHeader   = findSectionHeader(targetTexts);
+  const boundaryHeader = findSectionHeader(boundaryTexts);
+
+  const targetY   = targetHeader   ? targetHeader.getBoundingClientRect().bottom   : -Infinity;
+  const boundaryY = boundaryHeader ? boundaryHeader.getBoundingClientRect().top    :  Infinity;
+
+  console.log(`[simpleApply:workday] [clickAddInSection] "${label}" header Y=${targetY.toFixed(0)}, boundary Y=${boundaryY === Infinity ? '∞' : boundaryY.toFixed(0)}`);
+
+  // Collect candidate buttons in the Y-bracket
+  const inRange = addButtons.filter(b => {
+    const y = b.getBoundingClientRect().top;
+    return y > targetY && y < boundaryY;
+  });
+  inRange.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+
+  inRange.forEach(b => console.log(`[simpleApply:workday] [clickAddInSection]   Candidate: "${b.textContent?.trim()}" at Y=${b.getBoundingClientRect().top.toFixed(0)}`));
+
+  let selectedBtn: HTMLButtonElement | null = inRange[0] ?? null;
+
+  // Fallback: if no header found or no in-range button, take first "Add Another" then first "Add"
+  if (!selectedBtn) {
+    const fallback = addButtons.find(b => b.textContent?.trim().toLowerCase() === 'add another')
+                  ?? addButtons.find(b => b.textContent?.trim().toLowerCase() === 'add')
+                  ?? null;
+    console.warn(`[simpleApply:workday] [clickAddInSection] No in-range button found, fallback: "${fallback?.textContent?.trim()}"`);
+    selectedBtn = fallback;
+  }
+
+  if (!selectedBtn) {
+    console.warn(`[simpleApply:workday] [clickAddInSection] Could not find any suitable button for "${label}"`);
+    return false;
+  }
+
+  const btnText  = selectedBtn.textContent?.trim() ?? 'unknown';
+  const isVisible = selectedBtn.offsetParent !== null;
+  console.log(`[simpleApply:workday] [clickAddInSection] Clicking: "${btnText}" at Y=${selectedBtn.getBoundingClientRect().top.toFixed(0)} (visible: ${isVisible})`);
+  selectedBtn.click();
+  console.log(`[simpleApply:workday] [clickAddInSection] Click executed`);
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -315,159 +539,237 @@ async function fillBasicInfo(profile: ProfileData): Promise<void> {
 async function fillExperience(profile: ProfileData): Promise<void> {
   console.log('[simpleApply:workday] Filling experience');
 
-  /* Work Experiences */
+  /* Work Experiences — index-based targeting to prevent overwrite */
   let addedWorks = 0;
+  let weClicksTotal = 0;  // Track total Add clicks for work experience
+  const WE_ANCHOR = 'input[name="jobTitle"]';  // one per form
+
   for (const work of profile.experiences ?? []) {
     addedWorks++;
+    console.log(`[simpleApply:workday] Work experience #${addedWorks}: ${work.role} @ ${work.company} (${work.location})`);
 
-    if (!(await selectorExists(`div[data-automation-id="workExperience-${addedWorks}"]`))) {
-      if (addedWorks === 1) {
-        // add first section (lowercase "add")
-        await withOpt<HTMLButtonElement>(
-          [
-            'div[data-automation-id="workExperienceSection"] button[data-automation-id*="add"]',
-            'button[aria-label*="Add Work Experience"]',
-          ],
-          async (el) => { el.click(); await delay(500); },
-          5000
-        );
+    // Ensure the form for this index exists in DOM before trying to fill
+    const currentCount = document.querySelectorAll(WE_ANCHOR).length;
+    console.log(`[simpleApply:workday] [WE#${addedWorks}] Current jobTitle count: ${currentCount}, need: ${addedWorks}`);
+
+    if (currentCount < addedWorks) {
+      console.log(`[simpleApply:workday] [WE#${addedWorks}] Count insufficient, clicking Add button (click #${weClicksTotal + 1})...`);
+      const ok = await clickAddInSection('div[data-automation-id="workExperienceSection"]', 'Add Work Experience');
+      weClicksTotal++;
+      if (!ok) {
+        console.warn(`[simpleApply:workday] [WE#${addedWorks}] Could not add work experience, skipping remaining`);
+        break;
+      }
+      console.log(`[simpleApply:workday] [WE#${addedWorks}] Waiting for jobTitle count to reach ${addedWorks}...`);
+      await waitForFormCount(WE_ANCHOR, addedWorks, 5000);
+      const afterCount = document.querySelectorAll(WE_ANCHOR).length;
+      console.log(`[simpleApply:workday] [WE#${addedWorks}] After wait: jobTitle count = ${afterCount} (expected ${addedWorks})`);
+    }
+
+    const idx = addedWorks - 1;  // 0-based index for this specific form
+    console.log(`[simpleApply:workday] [WE#${addedWorks}] Starting fill with index=${idx}`);
+
+    // Job Title
+    if (work.role) {
+      const jobTitleEls = document.querySelectorAll<HTMLInputElement>('input[name="jobTitle"]');
+      console.log(`[simpleApply:workday] [WE#${addedWorks}] jobTitle query returned ${jobTitleEls.length} elements, looking for index ${idx}`);
+      if (jobTitleEls[idx]) {
+        console.log(`[simpleApply:workday] [WE#${addedWorks}] -> jobTitle[${idx}]: "${work.role}"`);
+        fill(jobTitleEls[idx], work.role);
       } else {
-        // add additional sections (uppercase "Add")
-        await withOpt<HTMLButtonElement>(
-          [
-            'div[data-automation-id="workExperienceSection"] button[data-automation-id*="Add"]',
-            'button[aria-label*="Add Another"]',
-          ],
-          async (el) => { el.click(); await delay(500); },
-          5000
-        );
+        console.warn(`[simpleApply:workday] [WE#${addedWorks}] No jobTitle element at index ${idx} (only ${jobTitleEls.length} exist)`);
       }
     }
 
-    const prefix = `div[data-automation-id="workExperience-${addedWorks}"]`;
-
-    if (work.role) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} input[data-automation-id="jobTitle"]`],
-        (el) => fill(el, work.role)
-      );
+    // Company
+    if (work.company) {
+      const companyEls = document.querySelectorAll<HTMLInputElement>('input[name="companyName"]');
+      if (companyEls[idx]) {
+        console.log(`[simpleApply:workday] -> company[${idx}]: "${work.company}"`);
+        fill(companyEls[idx], work.company);
+      }
     }
-    await withOpt<HTMLInputElement>(
-      [`${prefix} input[data-automation-id="company"]`],
-      (el) => fill(el, work.company)
-    );
+
+    // Location
     if (work.location) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} input[data-automation-id="location"]`],
-        (el) => fill(el, work.location!)
-      );
+      const locationEls = document.querySelectorAll<HTMLInputElement>('input[name="location"]');
+      if (locationEls[idx]) {
+        console.log(`[simpleApply:workday] -> location[${idx}]: "${work.location}"`);
+        fill(locationEls[idx], work.location);
+      }
     }
 
-    // Dates — parse "YYYY-MM" format
+    // Dates — parse "YYYY-MM" format, type char-by-char for React date inputs
     const [startYear, startMonth] = (work.start ?? '').split('-');
     const [endYear, endMonth] = (work.end ?? '').split('-');
 
-    if (startMonth) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} div[data-automation-id="formField-startDate"] input[data-automation-id="dateSectionMonth-input"]`],
-        async (el) => { el.focus(); fill(el, startMonth); }
+    // Workday month fields normalize to single digit (e.g. "1" not "01")
+    const startMonthNorm = startMonth ? String(parseInt(startMonth, 10)) : '';
+    const endMonthNorm   = endMonth   ? String(parseInt(endMonth,   10)) : '';
+
+    if (startMonthNorm) {
+      const startMonthEls = document.querySelectorAll<HTMLInputElement>(
+        'input[data-automation-id="dateSectionMonth-input"][id*="startDate"]'
       );
-    }
-    if (startYear) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} div[data-automation-id="formField-startDate"] input[data-automation-id="dateSectionYear-input"]`],
-        async (el) => { el.focus(); fill(el, startYear); }
-      );
-    }
-    if (endMonth) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} div[data-automation-id="formField-endDate"] input[data-automation-id="dateSectionMonth-input"]`],
-        async (el) => { el.focus(); fill(el, endMonth); }
-      );
-    }
-    if (endYear) {
-      await withOpt<HTMLInputElement>(
-        [`${prefix} div[data-automation-id="formField-endDate"] input[data-automation-id="dateSectionYear-input"]`],
-        async (el) => { el.focus(); fill(el, endYear); }
-      );
+      if (startMonthEls[idx]) {
+        console.log(`[simpleApply:workday] -> startMonth[${idx}]: "${startMonthNorm}"`);
+        await typeChars(startMonthEls[idx], startMonthNorm);
+      }
     }
 
-    if (work.description) {
-      await withOpt<HTMLTextAreaElement>(
-        [`${prefix} textarea[data-automation-id="description"]`],
-        (el) => fill(el, work.description!)
+    if (startYear) {
+      const startYearEls = document.querySelectorAll<HTMLInputElement>(
+        'input[data-automation-id="dateSectionYear-input"][id*="startDate"]'
       );
+      if (startYearEls[idx]) {
+        console.log(`[simpleApply:workday] -> startYear[${idx}]: "${startYear}"`);
+        await typeChars(startYearEls[idx], startYear);
+      }
+    }
+
+    if (endMonthNorm) {
+      const endMonthEls = document.querySelectorAll<HTMLInputElement>(
+        'input[data-automation-id="dateSectionMonth-input"][id*="endDate"]'
+      );
+      if (endMonthEls[idx]) {
+        console.log(`[simpleApply:workday] -> endMonth[${idx}]: "${endMonthNorm}"`);
+        await typeChars(endMonthEls[idx], endMonthNorm);
+      }
+    }
+
+    if (endYear) {
+      const endYearEls = document.querySelectorAll<HTMLInputElement>(
+        'input[data-automation-id="dateSectionYear-input"][id*="endDate"]'
+      );
+      if (endYearEls[idx]) {
+        console.log(`[simpleApply:workday] -> endYear[${idx}]: "${endYear}"`);
+        await typeChars(endYearEls[idx], endYear);
+      }
+    }
+
+    // Description
+    if (work.description) {
+      const descEls = document.querySelectorAll<HTMLTextAreaElement>('textarea[id*="roleDescription"]');
+      if (descEls[idx]) {
+        console.log(`[simpleApply:workday] -> description[${idx}]`);
+        fill(descEls[idx], work.description);
+      }
     }
   }
 
-  /* Education — Add first education */
-  const edu = profile.education?.[0];
-  if (edu) {
-    await withOpt<HTMLButtonElement>(
-      [
-        'div[data-automation-id="educationSection"] button[data-automation-id="Add"]',
-        'div[data-automation-id="educationSection"] button[data-automation-id*="add"]',
-      ],
-      (el) => el.click()
-    );
-    await delay(500);
+  /* Education — index-based targeting to prevent overwrite */
+  const eduCount = profile.education?.length ?? 0;
+  console.log(`[simpleApply:workday] Filling education (${eduCount} entries)`);
+
+  let addedEdus = 0;
+  let eduClicksTotal = 0;  // Track total Add clicks for education
+  const EDU_ANCHOR = 'input[name="schoolName"]';
+
+  for (const edu of profile.education ?? []) {
+    addedEdus++;
+    console.log(`[simpleApply:workday] [EDU#${addedEdus}] Processing: ${edu.school}`);
+
+    // Ensure the form for this index exists in DOM before trying to fill
+    const currentEduCount = document.querySelectorAll(EDU_ANCHOR).length;
+    console.log(`[simpleApply:workday] [EDU#${addedEdus}] Current school input count: ${currentEduCount}, need: ${addedEdus}`);
+
+    if (currentEduCount < addedEdus) {
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] Count insufficient, clicking Add button (click #${eduClicksTotal + 1})...`);
+      const ok = await clickAddInSection('div[data-automation-id="educationSection"]', 'Add Education');
+      eduClicksTotal++;
+      if (!ok) {
+        console.warn(`[simpleApply:workday] [EDU#${addedEdus}] Could not add education, skipping remaining`);
+        break;
+      }
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] Waiting for school input count to reach ${addedEdus}...`);
+      await waitForFormCount(EDU_ANCHOR, addedEdus, 5000);
+      const afterEduCount = document.querySelectorAll(EDU_ANCHOR).length;
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] After wait: school input count = ${afterEduCount} (expected ${addedEdus})`);
+
+    }
+
+    const idx = addedEdus - 1;  // 0-based index for this specific form
+    console.log(`[simpleApply:workday] [EDU#${addedEdus}] Starting fill with index=${idx}`);
 
     // School input — type and Enter to select from search results
     if (edu.school) {
-      await withOpt<HTMLInputElement>(
-        'div[data-automation-id="formField-schoolItem"] input',
-        async (el) => {
-          console.log('[simpleApply:workday] -> school');
-          fill(el, edu.school);
-          await delay(500);
-          el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-          await delay(1000);
-          el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-        }
-      );
+      const schoolEls = document.querySelectorAll<HTMLInputElement>('input[name="schoolName"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] school query returned ${schoolEls.length} elements, looking for index ${idx}`);
+      if (schoolEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> school[${idx}]: "${edu.school}"`);
+        fill(schoolEls[idx], edu.school);
+        await delay(500);
+        schoolEls[idx].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+        await delay(1000);
+        schoolEls[idx].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+      } else {
+        console.warn(`[simpleApply:workday] [EDU#${addedEdus}] No school input element at index ${idx}`);
+      }
     }
 
-    // Degree dropdown
+    // Degree dropdown — button[name="degree"] confirmed by DOM inspection
     if (edu.degree) {
-      await withOpt<HTMLButtonElement>(
-        'button[data-automation-id="degree"]',
-        async (el) => {
-          console.log('[simpleApply:workday] -> degree');
-          await typeIntoDropdown(el, edu.degree);
-        }
-      );
+      const mappedDegree = mapDegreeToWorkday(edu.degree);
+      const degreeEls = document.querySelectorAll<HTMLButtonElement>('button[name="degree"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] degree query returned ${degreeEls.length} elements`);
+      if (degreeEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> degree[${idx}]: "${edu.degree}" → "${mappedDegree}"`);
+        await typeIntoDropdown(degreeEls[idx], mappedDegree);
+      } else {
+        console.warn(`[simpleApply:workday] [EDU#${addedEdus}] No degree element at index ${idx}`);
+      }
+    }
+
+    // Field of Study / Major
+    if (edu.fieldOfStudy) {
+      const fieldEls = document.querySelectorAll<HTMLInputElement>('input[id*="--fieldOfStudy"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] fieldOfStudy query returned ${fieldEls.length} elements`);
+      if (fieldEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> fieldOfStudy[${idx}]: "${edu.fieldOfStudy}"`);
+        fill(fieldEls[idx], edu.fieldOfStudy);
+      }
     }
 
     // GPA
     if (edu.gpa) {
-      await withOpt<HTMLInputElement>(
-        'input[data-automation-id="gpa"]',
-        (el) => { console.log('[simpleApply:workday] -> gpa'); fill(el, edu.gpa!); }
-      );
+      const gpaEls = document.querySelectorAll<HTMLInputElement>('input[id*="--gradeAverage"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] gpa query returned ${gpaEls.length} elements`);
+      if (gpaEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> gpa[${idx}]: "${edu.gpa}"`);
+        fill(gpaEls[idx], edu.gpa);
+      }
     }
 
     // Start / End years
     if (edu.startYear) {
-      await withOpt<HTMLInputElement>(
-        'div[data-automation-id="formField-firstYearAttended"] input',
-        (el) => fill(el, edu.startYear!)
-      );
+      const startYearEls = document.querySelectorAll<HTMLInputElement>('input[id*="--firstYearAttended"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] startYear query returned ${startYearEls.length} elements`);
+      if (startYearEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> startYear[${idx}]: "${edu.startYear}"`);
+        fill(startYearEls[idx], edu.startYear);
+      }
     }
+
     if (edu.endYear) {
-      await withOpt<HTMLInputElement>(
-        'div[data-automation-id="formField-lastYearAttended"] input',
-        (el) => fill(el, edu.endYear!)
-      );
+      const endYearEls = document.querySelectorAll<HTMLInputElement>('input[id*="--lastYearAttended"]');
+      console.log(`[simpleApply:workday] [EDU#${addedEdus}] endYear query returned ${endYearEls.length} elements`);
+      if (endYearEls[idx]) {
+        console.log(`[simpleApply:workday] [EDU#${addedEdus}] -> endYear[${idx}]: "${edu.endYear}"`);
+        fill(endYearEls[idx], edu.endYear);
+      }
     }
   }
 
-  /* Skills */
+  /* Skills — limited to MAX_SKILLS to avoid 10+ minute fills */
   if (profile.skills?.length) {
+    const skillsToFill = profile.skills.slice(0, MAX_SKILLS);
+    console.log(`[simpleApply:workday] Skills: filling ${skillsToFill.length} of ${profile.skills!.length}`);
     await withOpt<HTMLInputElement>(
       'div[data-automation-id="formField-skillsPrompt"] input',
       async (el) => {
-        console.log('[simpleApply:workday] -> skills:', profile.skills!.length);
-        for (const skill of profile.skills!) {
+        for (let i = 0; i < skillsToFill.length; i++) {
+          const skill = skillsToFill[i];
+          console.log(`[simpleApply:workday] -> skill #${i + 1}: "${skill}"`);
           fill(el, skill);
           await delay(300);
           el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
@@ -478,11 +780,24 @@ async function fillExperience(profile: ProfileData): Promise<void> {
     );
   }
 
-  /* Resume Upload */
-  if (await selectorExists('input[data-automation-id="file-upload-input-ref"]')) {
-    console.log('[simpleApply:workday] Resume upload found — triggering file dialog');
-    const uploadEl = document.querySelector<HTMLInputElement>('input[data-automation-id="file-upload-input-ref"]');
-    if (uploadEl) uploadEl.click();
+  /* Resume Upload — inject from chrome.storage via DataTransfer */
+  if (!resumeAlreadyUploaded()) {
+    const uploadEl = document.querySelector<HTMLInputElement>(
+      'input[data-automation-id="file-upload-input-ref"]'
+    ) ?? document.querySelector<HTMLInputElement>('input[type="file"]');
+
+    if (uploadEl) {
+      console.log('[simpleApply:workday] -> resume: uploading from storage');
+      const injected = await injectResume(uploadEl);
+      if (injected) {
+        const confirmed = await waitForUploadConfirmation();
+        console.log(`[simpleApply:workday] -> resume: ${confirmed ? 'upload confirmed' : 'upload processing'}`);
+      }
+    } else {
+      console.log('[simpleApply:workday] -> resume: no upload input found (skipping)');
+    }
+  } else {
+    console.log('[simpleApply:workday] -> resume: already uploaded (skipping)');
   }
 
   /* Website Links */
@@ -492,21 +807,26 @@ async function fillExperience(profile: ProfileData): Promise<void> {
       'input[data-automation-id="linkedinQuestion"]'
     );
     if (linkedInInput) {
-      console.log('[simpleApply:workday] -> linkedin (dedicated)');
+      console.log(`[simpleApply:workday] -> linkedin: "${profile.linkedin}" (dedicated input)`);
       fill(linkedInInput, profile.linkedin);
     } else {
-      // Must use a generic website box
       addedWebs++;
       if (!(await selectorExists(`div[data-automation-id="websitePanelSet-${addedWebs}"] input`))) {
         await withOpt<HTMLButtonElement>(
-          'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
-          async (el) => { el.click(); await delay(300); }
+          [
+            'button[data-automation-id="add-button"]',
+            'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
+          ],
+          async (el) => { console.log('[simpleApply:workday] -> clicking Add Website'); el.click(); await delay(300); }
         );
       }
       const webInput = document.querySelector<HTMLInputElement>(
         `div[data-automation-id="websitePanelSet-${addedWebs}"] input`
       );
-      if (webInput) fill(webInput, profile.linkedin);
+      if (webInput) {
+        console.log(`[simpleApply:workday] -> linkedin: "${profile.linkedin}" (website panel)`);
+        fill(webInput, profile.linkedin);
+      }
     }
   }
 
@@ -514,15 +834,25 @@ async function fillExperience(profile: ProfileData): Promise<void> {
     addedWebs++;
     if (!(await selectorExists(`div[data-automation-id="websitePanelSet-${addedWebs}"] input`))) {
       await withOpt<HTMLButtonElement>(
-        'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
-        async (el) => { el.click(); await delay(300); }
+        [
+          'button[data-automation-id="add-button"]',
+          'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
+        ],
+        async (el) => { console.log('[simpleApply:workday] -> clicking Add Website'); el.click(); await delay(300); }
       );
     }
     const webInput = document.querySelector<HTMLInputElement>(
       `div[data-automation-id="websitePanelSet-${addedWebs}"] input`
     );
-    if (webInput) fill(webInput, profile.github);
+    if (webInput) {
+      console.log(`[simpleApply:workday] -> github: "${profile.github}"`);
+      fill(webInput, profile.github);
+    }
   }
+
+  // Summary of Add button clicks
+  const totalClicks = weClicksTotal + eduClicksTotal;
+  console.log(`[simpleApply:workday] === Experience filling complete: ${weClicksTotal} WE clicks + ${eduClicksTotal} EDU clicks = ${totalClicks} total ===`);
 
   /* Click Next */
   await clickNext();
@@ -680,15 +1010,26 @@ export async function fillWorkday(profile: ProfileData): Promise<void> {
   }> = [
     {
       name: 'contactInformation',
-      detect: () =>
-        !!document.querySelector('div[data-automation-id="contactInformationPage"]') ||
-        !!document.querySelector('input[name="legalName--firstName"]') ||
-        !!document.querySelector('input[id="name--legalName--firstName"]'),
+      detect: () => {
+        // Bail early if Page 2 section containers are visible — avoids false positive
+        // from lingering Page 1 inputs in Workday's SPA DOM
+        if (
+          document.querySelector('div[data-automation-id="workExperienceSection"]') ||
+          document.querySelector('div[data-automation-id="educationSection"]')
+        ) return false;
+        return (
+          !!document.querySelector('div[data-automation-id="contactInformationPage"]') ||
+          !!document.querySelector('input[name="legalName--firstName"]') ||
+          !!document.querySelector('input[id="name--legalName--firstName"]')
+        );
+      },
       fill: () => fillBasicInfo(profile),
     },
     {
       name: 'myExperience',
       detect: () =>
+        !!document.querySelector('div[data-automation-id="workExperienceSection"]') ||
+        !!document.querySelector('div[data-automation-id="educationSection"]') ||
         !!document.querySelector('div[data-automation-id="myExperiencePage"]') ||
         !!document.querySelector('input[data-automation-id="jobTitle"]') ||
         !!document.querySelector('input[data-automation-id="file-upload-input-ref"]') ||

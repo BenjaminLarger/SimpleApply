@@ -8,6 +8,51 @@ import { isWorkday, fillWorkday } from '../utils/adapters/workday.js';
 const MIN_FIELDS = 3;
 let bannerInjected = false;
 let lastFieldCount = 0;
+let activeObserver: MutationObserver | null = null;
+let observerTimer: ReturnType<typeof setTimeout> | null = null;
+let mutationCount = 0;
+
+function startObserver(): void {
+  // Clean up any existing observer
+  if (activeObserver) {
+    activeObserver.disconnect();
+    activeObserver = null;
+  }
+  if (observerTimer) {
+    clearTimeout(observerTimer);
+    observerTimer = null;
+  }
+
+  mutationCount = 0;
+  const observer = new MutationObserver(debounce(() => {
+    mutationCount++;
+    console.log(`[simpleApply] MutationObserver fired (#${mutationCount}), re-detecting...`);
+    tryDetect();
+  }, 1500));
+
+  observer.observe(document.body ?? document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+
+  activeObserver = observer;
+  observerTimer = setTimeout(() => {
+    observer.disconnect();
+    activeObserver = null;
+    console.log(`[simpleApply] MutationObserver disconnected after 60s (fired ${mutationCount} times)`);
+  }, 60_000);
+}
+
+function onSpaNavigate(): void {
+  const newUrl = location.href;
+  console.log(`[simpleApply] SPA navigation detected → ${newUrl}`);
+  bannerInjected = false;
+  // Small delay to let React render the new page
+  setTimeout(() => {
+    startObserver();
+    tryDetect();
+  }, 500);
+}
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -39,6 +84,21 @@ export default defineContentScript({
       }
     });
 
+    // Intercept history API for SPA navigation detection (React Router / Workday)
+    const originalPushState = history.pushState.bind(history);
+    history.pushState = (...args) => {
+      originalPushState(...args);
+      onSpaNavigate();
+    };
+
+    const originalReplaceState = history.replaceState.bind(history);
+    history.replaceState = (...args) => {
+      originalReplaceState(...args);
+      onSpaNavigate();
+    };
+
+    window.addEventListener('popstate', onSpaNavigate);
+
     if (document.readyState === 'loading') {
       console.log('[simpleApply] Waiting for DOMContentLoaded...');
       document.addEventListener('DOMContentLoaded', () => tryDetect());
@@ -47,23 +107,8 @@ export default defineContentScript({
       tryDetect();
     }
 
-    // Watch for dynamically loaded fields (SPAs like Workday)
-    let mutationCount = 0;
-    const observer = new MutationObserver(debounce(() => {
-      mutationCount++;
-      console.log(`[simpleApply] MutationObserver fired (#${mutationCount}), re-detecting...`);
-      tryDetect();
-    }, 1500));
-    observer.observe(document.body ?? document.documentElement, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Stop observing after 60s to handle slow SPAs
-    setTimeout(() => {
-      observer.disconnect();
-      console.log(`[simpleApply] MutationObserver disconnected after 60s (fired ${mutationCount} times)`);
-    }, 60_000);
+    // Start watching for dynamically loaded fields (SPAs like Workday)
+    startObserver();
   },
 });
 
@@ -103,39 +148,35 @@ function tryDetect(): void {
     url: window.location.href,
   });
 
-  // Log all inputs found on the page for debugging
   if (workday) {
     const allInputs = document.querySelectorAll('input');
     console.log(`[simpleApply] All <input> elements on page: ${allInputs.length}`);
-    allInputs.forEach((input, i) => {
-      console.log(`[simpleApply]   input[${i}]:`, {
-        type: input.type,
-        name: input.name,
-        id: input.id,
-        'data-automation-id': input.getAttribute('data-automation-id'),
-        'aria-label': input.getAttribute('aria-label'),
-        placeholder: input.placeholder,
-        hidden: input.type === 'hidden',
-      });
-    });
   }
 
   // Need either enough detected fields or a known platform with some inputs
   const totalInputs = Math.max(inputCount, shadowInputs);
-  if (detectedFields.length < MIN_FIELDS && !(workday && totalInputs > 0)) {
+
+  // Workday Page 2 section containers are in DOM before any "Add" buttons clicked
+  const workdayPage2 = workday && (
+    !!document.querySelector('div[data-automation-id="workExperienceSection"]') ||
+    !!document.querySelector('div[data-automation-id="educationSection"]')
+  );
+
+  if (detectedFields.length < MIN_FIELDS && !(workday && totalInputs > 0) && !workdayPage2) {
     console.log('[simpleApply] Not enough fields to show banner:', {
       needed: MIN_FIELDS,
       detected: detectedFields.length,
       workdayFallback: workday && totalInputs > 0,
+      workdayPage2,
     });
     return;
   }
 
   bannerInjected = true;
 
-  const fieldCount = workday
-    ? Math.max(totalInputs, detectedFields.length)
-    : detectedFields.length;
+  const fieldCount = workdayPage2
+    ? 8  // LinkedIn, Resume, Work Experience (3+ fields), Education, Skills
+    : workday ? Math.max(totalInputs, detectedFields.length) : detectedFields.length;
   lastFieldCount = fieldCount;
 
   console.log(`[simpleApply] Injecting banner with ${fieldCount} fields`);

@@ -30,7 +30,17 @@
 
 ## In-Progress / Blockers
 
-None. All 22 features complete.
+### BUG-001: Extension non-functional (Svelte 5 + alarms crashes) — FIXED 2026-03-21
+- Svelte 5 `component_api_invalid_new` crash → removed Svelte from content script, use plain DOM banner
+- `chrome.alarms.onAlarm` undefined → removed alarms from background.ts
+- `vite-plugin-svelte@3` incompatible with Svelte 5 → added npm `overrides` for v4
+- Duplicate `content_scripts` in manifest → removed manual entry from wxt.config.ts
+
+### BUG-002: Workday fields not detected or filled — PARTIALLY FIXED 2026-03-21
+- **Detection: FIXED** — MutationObserver + on-demand detection now finds 12/16 inputs on Workday
+- **Filling: FIXED** — Workday adapter now matches by `name`/`id` attributes (not `aria-label` which Workday doesn't use)
+- **Remaining:** middleName misdetected as fullName, dropdowns/radio/checkbox not yet supported, resume upload not implemented
+- See `.context/bugs.md` for full details
 
 ---
 
@@ -67,9 +77,10 @@ F010 + F020 + F021 + F022 (platform adapters — build last)
 ## Architecture Notes
 
 - Extension lives in `extension/` inside the main project root.
-- The extension directory uses `utils/` for library modules (note: the target spec names this `lib/` — the stub files already created use `utils/`, so continue with `utils/`).
+- The extension directory uses `utils/` for library modules.
 - The API server (`src/api_server.py`) must be running locally on port 8765 for the extension to fetch profile data.
-- `background.ts` is missing from the scaffold and must be created at `extension/entrypoints/background.ts`.
-- `profile-client.ts` is missing from the scaffold and must be created at `extension/utils/profile-client.ts`.
-- Platform adapters directory (`extension/utils/adapters/`) does not exist yet — create it as part of F020.
-- E2E test fixtures directory (`extension/tests/e2e/`) does not exist yet — create it as part of F017.
+- Content script uses **plain DOM + closed Shadow DOM** for the banner (no Svelte — avoids Trusted Types CSP on Workday).
+- Workday adapter matches fields by **`name` and `id` attributes** (not `aria-label` or `data-automation-id` which are absent on Workday inputs).
+- `ProfileData` includes address/city/postalCode/country fields for Workday form filling.
+- Build command: `node node_modules/wxt/bin/wxt.mjs build --mode production` (symlink-free due to external drive).
+- `.npmrc` with `bin-links=false` required for external drive without symlink support.
