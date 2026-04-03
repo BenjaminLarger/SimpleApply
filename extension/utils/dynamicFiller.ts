@@ -1,4 +1,4 @@
-import type { ProfileData } from './profile-client.js';
+import type { ProfileData, Experience } from './profile-client.js';
 import type { DetectedField, FieldType } from './fieldDetector.js';
 
 const PROFILE_FIELD_MAP: Partial<Record<FieldType, keyof ProfileData>> = {
@@ -205,10 +205,151 @@ export async function fillForm(
   // Check consent/agreement checkboxes
   checkConsentCheckboxes(root);
 
+  // Fill job-specific information fields
+  fillJobSpecificInformation(root, profile);
+
   // Handle dynamic multi-entry sections (experience, education)
   if (profile.experiences?.length) {
     await fillExperienceSection(root, profile);
   }
+}
+
+/**
+ * Fill job-specific information fields (Gender, Resume URL, experience questions, etc.)
+ */
+function fillJobSpecificInformation(root: Element, profile: ProfileData): void {
+  // Find all combobox elements (UI5 dropdowns) in the job-specific section
+  const comboboxes = root.querySelectorAll<HTMLElement>('[role="combobox"]');
+
+  comboboxes.forEach((combobox) => {
+    const ariaLabel = combobox.getAttribute('aria-label') || '';
+    const placeholder = combobox.getAttribute('placeholder') || '';
+    const title = combobox.getAttribute('title') || '';
+    const combinedLabel = (ariaLabel + ' ' + placeholder + ' ' + title).toLowerCase();
+
+    // Fill Gender dropdown
+    if (combinedLabel.includes('gender')) {
+      const genderValue = profile.voluntaryDisclosures?.gender;
+      if (genderValue) {
+        selectComboboxOption(combobox, genderValue);
+        console.log('[simpleApply:filler] Gender field filled:', genderValue);
+      }
+    }
+
+    // Fill "How did you hear about this position?" - skip for now as we don't have this data
+    if (combinedLabel.includes('hear about')) {
+      console.log('[simpleApply:filler] "How did you hear" field skipped - no profile data available');
+    }
+  });
+
+  // Fill Resume/CV URL field
+  const resumeUrlInput = root.querySelector<HTMLInputElement>(
+    'input[aria-label*="Resume"], input[placeholder*="Resume"], input[name*="resume"]'
+  );
+  if (resumeUrlInput && profile.portfolio) {
+    fillInput(resumeUrlInput, profile.portfolio);
+    console.log('[simpleApply:filler] Resume/CV URL filled');
+  }
+
+  // Fill experience requirement radio groups
+  fillExperienceRadioGroups(root, profile);
+}
+
+/**
+ * Select an option in a UI5 combobox
+ */
+function selectComboboxOption(combobox: HTMLElement, optionText: string): void {
+  // First, click the combobox to open the dropdown
+  combobox.click();
+
+  // Wait briefly for options to render and find the matching option
+  setTimeout(() => {
+    const options = document.querySelectorAll('[role="option"]');
+    for (const option of options) {
+      if (option.textContent?.toLowerCase().includes(optionText.toLowerCase())) {
+        (option as HTMLElement).click();
+        console.log('[simpleApply:filler] Selected option:', optionText);
+        return;
+      }
+    }
+  }, 100);
+}
+
+/**
+ * Fill radio groups for experience requirements
+ */
+function fillExperienceRadioGroups(root: Element, profile: ProfileData): void {
+  const radioGroups = root.querySelectorAll<HTMLElement>('[role="radiogroup"]');
+
+  radioGroups.forEach((group) => {
+    const groupLabel = group.previousElementSibling?.textContent ||
+                      group.parentElement?.querySelector('label')?.textContent || '';
+    const groupLabelLower = groupLabel.toLowerCase();
+
+    // Check for 8+ years experience as Data Modeler
+    if (groupLabelLower.includes('8+') && groupLabelLower.includes('data modeler')) {
+      const yearsOfExp = calculateYearsOfExperience(profile.experiences);
+      const shouldSelect = yearsOfExp >= 8;
+      selectRadioInGroup(group, shouldSelect ? 'Yes' : 'No');
+      console.log(`[simpleApply:filler] Data Modeler experience (8+ years) set to: ${shouldSelect ? 'Yes' : 'No'} (${yearsOfExp} years)`);
+    }
+
+    // Check for 5+ years experience in financial services data modeling
+    if (groupLabelLower.includes('5+') && groupLabelLower.includes('financial services')) {
+      const hasFinancialExp = hasExperienceInFinancialDataModeling(profile.experiences);
+      selectRadioInGroup(group, hasFinancialExp ? 'Yes' : 'No');
+      console.log(`[simpleApply:filler] Financial services experience set to: ${hasFinancialExp ? 'Yes' : 'No'}`);
+    }
+  });
+}
+
+/**
+ * Select a radio button in a radio group
+ */
+function selectRadioInGroup(group: HTMLElement, option: 'Yes' | 'No'): void {
+  const radios = group.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  radios.forEach((radio) => {
+    const label = radio.nextElementSibling?.textContent || '';
+    if (label.trim() === option) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+}
+
+/**
+ * Calculate total years of experience from experience entries
+ */
+function calculateYearsOfExperience(experiences: Experience[] | undefined): number {
+  if (!experiences || experiences.length === 0) return 0;
+
+  let totalYears = 0;
+  const now = new Date();
+
+  experiences.forEach((exp) => {
+    const startYear = exp.start ? parseInt(exp.start.split('-')[0]) : new Date().getFullYear();
+    const endYear = exp.end ? parseInt(exp.end.split('-')[0]) : now.getFullYear();
+    totalYears += Math.max(0, endYear - startYear);
+  });
+
+  return Math.round(totalYears);
+}
+
+/**
+ * Check if user has experience in data modeling for financial services
+ */
+function hasExperienceInFinancialDataModeling(experiences: Experience[] | undefined): boolean {
+  if (!experiences) return false;
+
+  return experiences.some((exp) => {
+    const text = `${exp.company} ${exp.role} ${exp.description || ''}`.toLowerCase();
+    const hasDataModeling = text.includes('data model') || text.includes('modeler');
+    const hasFinancial = text.includes('financial') || text.includes('banking') ||
+                        text.includes('insurance') || text.includes('fsb') ||
+                        text.includes('customer') || text.includes('household') ||
+                        text.includes('account') || text.includes('interaction');
+    return hasDataModeling && hasFinancial;
+  });
 }
 
 /**
