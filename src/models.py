@@ -79,9 +79,8 @@ class MatchedSkills(BaseModel):
 
 class SelectedProjects(BaseModel):
     """Selected projects for CV/cover letter."""
-    project1: Project = Field(..., description="First selected project")
-    project2: Project = Field(..., description="Second selected project")
-    selection_reasoning: str = Field(..., description="Why these projects were selected")
+    project: Project = Field(..., description="Selected project")
+    selection_reasoning: str = Field(..., description="Why this project was selected")
 
 
 class GeneratedContent(BaseModel):

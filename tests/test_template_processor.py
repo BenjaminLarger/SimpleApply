@@ -51,9 +51,9 @@ def sample_matched_skills():
 
 @pytest.fixture
 def sample_selected_projects():
-    """Sample selected projects for testing."""
+    """Sample selected project for testing."""
     return SelectedProjects(
-        project1=Project(
+        project=Project(
             title="E-commerce Platform",
             description="A full-stack e-commerce platform built with Django and React, featuring user authentication, payment processing, and real-time inventory management.",
             technologies=["Python", "Django", "React", "PostgreSQL"],
@@ -62,16 +62,7 @@ def sample_selected_projects():
             end_date="2023-06",
             status="completed"
         ),
-        project2=Project(
-            title="Data Analytics Dashboard",
-            description="Interactive dashboard for business analytics using Python, pandas, and visualization libraries to process large datasets and generate insights.",
-            technologies=["Python", "pandas", "plotly", "Flask"],
-            url="https://github.com/user/analytics",
-            start_date="2023-07",
-            end_date="2023-12",
-            status="completed"
-        ),
-        selection_reasoning="Both projects demonstrate strong Python and web development skills relevant to the position."
+        selection_reasoning="This project demonstrates strong Python and web development skills relevant to the position."
     )
 
 

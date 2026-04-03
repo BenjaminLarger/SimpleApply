@@ -41,8 +41,8 @@ def validate_projects_input(projects: List[Project]) -> None:
     Raises:
         ProjectSelectorError: If insufficient projects available
     """
-    if len(projects) < 2:
-        raise ProjectSelectorError(f"Need at least 2 projects, but only {len(projects)} available")
+    if len(projects) < 1:
+        raise ProjectSelectorError(f"Need at least 1 project, but only {len(projects)} available")
 
 
 def prepare_projects_data(projects: List[Project]) -> List[dict]:
@@ -91,7 +91,7 @@ def create_project_selection_prompt(job_offer: JobOffer, projects_data: List[dic
     target_language = language_map.get(job_offer.language, "English")
 
     return f"""
-You are an expert career counselor specializing in project selection for job applications. Analyze the job requirements and select the 2 most relevant projects that best demonstrate the candidate's suitability for this role.
+You are an expert career counselor specializing in project selection for job applications. Analyze the job requirements and select the 1 most relevant project that best demonstrates the candidate's suitability for this role.
 
 **IMPORTANT**: The job offer is in {target_language}. The selection_reasoning MUST be written in {target_language}.
 
@@ -109,9 +109,8 @@ Note: The project descriptions already include relevant technologies used in eac
 
 Please analyze and return a JSON object with the following structure:
 {{
-    "project1_index": <index of first selected project>,
-    "project2_index": <index of second selected project>,
-    "selection_reasoning": "Detailed explanation in {target_language} of why these two projects were selected for this specific job role"
+    "project_index": <index of selected project>,
+    "selection_reasoning": "Detailed explanation in {target_language} of why this project was selected for this specific job role"
 }}
 
 Selection Criteria:
@@ -120,12 +119,10 @@ Selection Criteria:
 3. **Project Complexity**: More comprehensive projects that show advanced skills
 4. **Recent Activity**: More recent projects generally preferred unless older ones are significantly more relevant
 5. **Demonstrable Impact**: Projects with clear outcomes, URLs, or measurable results
-6. **Complementary Skills**: Select projects that together cover different aspects of the job requirements
-7. **Project Type Balance**: Prefer freelance projects when available as they show real-world client experience, but include side projects if they better match the job requirements
+6. **Project Type Balance**: Prefer freelance projects when available as they show real-world client experience
 
 Guidelines:
-- Choose projects that best showcase the candidate's fit for this specific role
-- Ensure the two selected projects complement each other (don't pick two very similar projects)
+- Choose the project that best showcases the candidate's fit for this specific role
 - Prioritize showing client/freelance work experience when relevant to the role
 - The reasoning should be specific to this job and explain the strategic thinking behind the selection
 - Write all reasoning in {target_language}
@@ -164,33 +161,26 @@ def call_openai_for_project_selection(prompt: str):
     return response
 
 
-def validate_selection_indices(selection_data: dict, projects: List[Project]) -> tuple[int, int]:
+def validate_selection_index(selection_data: dict, projects: List[Project]) -> int:
     """
-    Validate project selection indices.
+    Validate project selection index.
 
     Args:
         selection_data: Parsed selection response data
         projects: List of available projects
 
     Returns:
-        Tuple of validated (project1_index, project2_index)
+        Validated project_index
 
     Raises:
-        ProjectSelectorError: If indices are invalid
+        ProjectSelectorError: If index is invalid
     """
-    project1_index = selection_data["project1_index"]
-    project2_index = selection_data["project2_index"]
+    project_index = selection_data["project_index"]
 
-    if not (0 <= project1_index < len(projects)):
-        raise ProjectSelectorError(f"Invalid project1_index: {project1_index}")
+    if not (0 <= project_index < len(projects)):
+        raise ProjectSelectorError(f"Invalid project_index: {project_index}")
 
-    if not (0 <= project2_index < len(projects)):
-        raise ProjectSelectorError(f"Invalid project2_index: {project2_index}")
-
-    if project1_index == project2_index:
-        raise ProjectSelectorError("Cannot select the same project twice")
-
-    return project1_index, project2_index
+    return project_index
 
 
 def parse_selection_response(response_text: str, projects: List[Project]) -> SelectedProjects:
@@ -210,19 +200,16 @@ def parse_selection_response(response_text: str, projects: List[Project]) -> Sel
     try:
         selection_data = json.loads(response_text)
 
-        required_fields = ["project1_index", "project2_index", "selection_reasoning"]
+        required_fields = ["project_index", "selection_reasoning"]
         for field in required_fields:
             if field not in selection_data:
                 raise ProjectSelectorError(f"Missing required field: {field}")
 
-        project1_index, project2_index = validate_selection_indices(selection_data, projects)
-
-        selected_project1 = projects[project1_index]
-        selected_project2 = projects[project2_index]
+        project_index = validate_selection_index(selection_data, projects)
+        selected_project = projects[project_index]
 
         return SelectedProjects(
-            project1=selected_project1,
-            project2=selected_project2,
+            project=selected_project,
             selection_reasoning=selection_data["selection_reasoning"]
         )
 
@@ -315,8 +302,7 @@ if __name__ == "__main__":
         selected_projects = select_projects(job_offer, projects)
 
         print("Project Selection Results:")
-        print(f"Selected Project 1: {selected_projects.project1.title}")
-        print(f"Selected Project 2: {selected_projects.project2.title}")
+        print(f"Selected Project: {selected_projects.project.title}")
         print(f"\nSelection Reasoning:")
         print(selected_projects.selection_reasoning)
 

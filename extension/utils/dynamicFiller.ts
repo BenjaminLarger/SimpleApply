@@ -57,6 +57,82 @@ function waitForNewNodes(
   });
 }
 
+function fillDateField(element: any, profile: ProfileData): void {
+  // Determine what type of date this should be based on context
+  const title = element.getAttribute?.('title') || '';
+  const ariaLabel = element.getAttribute?.('aria-label') || '';
+  const searchText = (title + ' ' + ariaLabel).toLowerCase();
+
+  // Walk up DOM tree to find section context (employment vs education)
+  let sectionContext = '';
+  const actualElement = element._actualElement;
+  if (actualElement) {
+    let parent = actualElement.parentElement;
+    while (parent && !sectionContext) {
+      const parentText = parent.textContent?.toLowerCase() || '';
+      if (parentText.includes('employment') || parentText.includes('experience')) {
+        sectionContext = 'employment';
+      } else if (parentText.includes('education')) {
+        sectionContext = 'education';
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  const fullSearchText = (searchText + ' ' + sectionContext).toLowerCase();
+  console.log('[simpleApply:filler] Date field context:', { title, sectionContext, searchText: fullSearchText });
+
+  let dateValue: string | undefined;
+  let expIndex = 0;
+  let eduIndex = 0;
+
+  if (searchText.includes('from')) {
+    // Start date
+    if (sectionContext === 'employment') {
+      dateValue = profile.experiences?.[expIndex]?.start || '';
+    } else if (sectionContext === 'education') {
+      dateValue = profile.education?.[eduIndex]?.startYear || '';
+    }
+  } else if (searchText.includes('end')) {
+    // End date
+    if (sectionContext === 'employment') {
+      dateValue = profile.experiences?.[expIndex]?.end || '';
+    } else if (sectionContext === 'education') {
+      dateValue = profile.education?.[eduIndex]?.endYear || '';
+    }
+  }
+
+  if (dateValue) {
+    // Format the date to MM/DD/YYYY
+    // Handle various formats: YYYY, YYYY-MM, YYYY-MM-DD, MM/DD/YYYY
+    let formatted = dateValue;
+    if (dateValue.includes('-') && dateValue.length > 4) {
+      const [year, month, day] = dateValue.split('-');
+      // If only YYYY-MM, assume last day of month
+      if (!day) {
+        const nextMonth = new Date(parseInt(year), parseInt(month), 1);
+        const lastDay = new Date(nextMonth.getTime() - 1).getDate();
+        formatted = `${month}/${lastDay}/${year}`;
+      } else {
+        formatted = `${month}/${day}/${year}`;
+      }
+    } else if (dateValue.length === 4) {
+      // Just a year - assume 01/01/YYYY for start dates, 12/31/YYYY for end dates
+      if (searchText.includes('end')) {
+        formatted = `12/31/${dateValue}`;
+      } else {
+        formatted = `01/01/${dateValue}`;
+      }
+    }
+
+    console.log('[simpleApply:filler] Setting UI5 date:', { original: dateValue, formatted, title, sectionContext });
+    // Use the wrapper's setAttribute which handles nested shadow DOM
+    element.setAttribute?.('value', formatted);
+  } else {
+    console.log('[simpleApply:filler] No date value found for context:', { title, searchText, sectionContext });
+  }
+}
+
 async function fillExperienceSection(
   root: Element,
   profile: ProfileData
@@ -105,6 +181,11 @@ export async function fillForm(
     } else if (fieldType === 'password') {
       // Generate secure password for account creation forms
       value = generateSecurePassword();
+    } else if (fieldType === 'date') {
+      // Handle date fields (especially UI5 date pickers in SuccessFactors)
+      console.log('[simpleApply:filler] Processing date field:', element);
+      fillDateField(element, profile);
+      continue; // Skip normal fillInput for date fields
     } else {
       const key = PROFILE_FIELD_MAP[fieldType];
       if (key) {

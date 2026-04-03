@@ -36,51 +36,40 @@ class TemplateProcessor:
 
     def _apply_project_translations(self, selected_projects: SelectedProjects, target_language: str) -> SelectedProjects:
         """
-        Apply pre-translated project titles and descriptions from translation dictionary.
+        Apply pre-translated project title and description from translation dictionary.
 
         Args:
-            selected_projects: Projects to translate
+            selected_projects: Project to translate
             target_language: Target language code (fr, es, etc.)
 
         Returns:
-            SelectedProjects with translated titles/descriptions (if available)
+            SelectedProjects with translated title/description (if available)
         """
         if target_language == "en" or not self.translation_loader:
             return selected_projects
 
         try:
-            # Look up translations for both projects
-            p1_translation = self.translation_loader.get_project_translation(
+            # Look up translation for project
+            p_translation = self.translation_loader.get_project_translation(
                 target_language,
-                selected_projects.project1.title
-            )
-            p2_translation = self.translation_loader.get_project_translation(
-                target_language,
-                selected_projects.project2.title
+                selected_projects.project.title
             )
 
-            # Create new projects with translated content (if available)
-            p1_data = selected_projects.project1.model_dump()
-            if p1_translation:
-                p1_data["title"] = p1_translation.get("title", p1_data["title"])
-                p1_data["description"] = p1_translation.get("description", p1_data["description"])
+            # Create new project with translated content (if available)
+            p_data = selected_projects.project.model_dump()
+            if p_translation:
+                p_data["title"] = p_translation.get("title", p_data["title"])
+                p_data["description"] = p_translation.get("description", p_data["description"])
 
-            p2_data = selected_projects.project2.model_dump()
-            if p2_translation:
-                p2_data["title"] = p2_translation.get("title", p2_data["title"])
-                p2_data["description"] = p2_translation.get("description", p2_data["description"])
-
-            translated_p1 = Project(**p1_data)
-            translated_p2 = Project(**p2_data)
+            translated_p = Project(**p_data)
 
             return SelectedProjects(
-                project1=translated_p1,
-                project2=translated_p2,
+                project=translated_p,
                 selection_reasoning=selected_projects.selection_reasoning
             )
 
         except TranslationError as e:
-            logger.warning(f"Failed to apply project translations: {e}. Using original projects.")
+            logger.warning(f"Failed to apply project translations: {e}. Using original project.")
             return selected_projects
 
     def load_template(self, template_name: str) -> str:
@@ -251,12 +240,12 @@ class TemplateProcessor:
 
         replacements = {
             "CV_SUMMARY": summary_text,
-            "PROJECT 1 TITLE": projects_to_use.project1.title,
-            "PROJECT 1 TYPE": projects_to_use.project1.type,
-            "PROJECT 1 DESCRIPTION": projects_to_use.project1.description,
-            "PROJECT 2 TITLE": projects_to_use.project2.title,
-            "PROJECT 2 TYPE": projects_to_use.project2.type,
-            "PROJECT 2 DESCRIPTION": projects_to_use.project2.description,
+            "PROJECT 1 TITLE": projects_to_use.project.title,
+            "PROJECT 1 TYPE": projects_to_use.project.type,
+            "PROJECT 1 DESCRIPTION": projects_to_use.project.description,
+            "PROJECT 2 TITLE": "",
+            "PROJECT 2 TYPE": "",
+            "PROJECT 2 DESCRIPTION": "",
             "20 relevant skills/tools": skills_text,
             "SKILLS_LIST": skills_text
         }
@@ -268,8 +257,8 @@ class TemplateProcessor:
 
                 # Load education translations
                 education_trans = self.translation_loader.get_section_translations(language, "cv").get("education", {})
-                replacements["BOOTCAMP42_DESCRIPTION"] = education_trans.get("bootcamp_description", "")
                 replacements["SCHOOL42_TRAINING"] = education_trans.get("school_42_training", "")
+                replacements["BOOTCAMP42_DESCRIPTION"] = education_trans.get("bootcamp_description", "")
                 replacements["UNIVERSITY_DEGREE"] = education_trans.get("university_degree", "")
 
                 # Load experience translations with gender support
@@ -291,20 +280,35 @@ class TemplateProcessor:
                 replacements["ENGIE_ACHIEVEMENT_1"] = engie_achievements.get("collaboration", "")
                 replacements["ENGIE_ACHIEVEMENT_2"] = engie_achievements.get("scraping", "")
                 replacements["ENGIE_ACHIEVEMENT_3"] = engie_achievements.get("energy_solutions", "")
-                replacements["ENGIE_ACHIEVEMENT_4"] = engie_achievements.get("docker", "")
 
-                # ING role (gender-aware)
-                ing_data = experience_trans.get("ing", {})
+                # ModPilot role (gender-aware)
+                modpilot_data = experience_trans.get("modpilot", {})
                 if gender in ["male", "female"]:
-                    ing_role = ing_data.get(f"role_{gender}", ing_data.get("role", ""))
+                    modpilot_role = modpilot_data.get(f"role_{gender}", modpilot_data.get("role", ""))
                 else:
-                    ing_role = ing_data.get("role", "")
-                replacements["ING_ROLE"] = ing_role
+                    modpilot_role = modpilot_data.get("role", "")
+                replacements["MODPILOT_ROLE"] = modpilot_role
 
-                # ING achievements
-                ing_achievements = ing_data.get("achievements", {})
-                replacements["ING_ACHIEVEMENT_1"] = ing_achievements.get("analytics", "")
-                replacements["ING_ACHIEVEMENT_2"] = ing_achievements.get("vba_automation", "")
+                # ModPilot achievements
+                modpilot_achievements = modpilot_data.get("achievements", {})
+                replacements["MODPILOT_ACHIEVEMENT_1"] = modpilot_achievements.get("ai_integration", "")
+                replacements["MODPILOT_ACHIEVEMENT_2"] = modpilot_achievements.get("backend_architecture", "")
+                replacements["MODPILOT_ACHIEVEMENT_3"] = modpilot_achievements.get("production_infrastructure", "")
+
+                # Recepcia role (gender-aware)
+                recepcia_data = experience_trans.get("recepcia", {})
+                if gender in ["male", "female"]:
+                    recepcia_role = recepcia_data.get(f"role_{gender}", recepcia_data.get("role", ""))
+                else:
+                    recepcia_role = recepcia_data.get("role", "")
+                replacements["RECEPCIA_ROLE"] = recepcia_role
+
+                # Recepcia achievements
+                recepcia_achievements = recepcia_data.get("achievements", {})
+                replacements["RECEPCIA_ACHIEVEMENT_1"] = recepcia_achievements.get("saas_platform", "")
+                replacements["RECEPCIA_ACHIEVEMENT_2"] = recepcia_achievements.get("voice_integration", "")
+                replacements["RECEPCIA_ACHIEVEMENT_3"] = recepcia_achievements.get("calendar_integration", "")
+                replacements["RECEPCIA_ACHIEVEMENT_4"] = recepcia_achievements.get("workflow_automation", "")
 
                 # Load hobbies and languages
                 hobbies_trans = self.translation_loader.get_section_translations(language, "cv").get("hobbies", {})
@@ -335,10 +339,10 @@ class TemplateProcessor:
 
                 # Translate dates
                 replacements["BOOTCAMP42_DATE"] = translate_date("2025-05-01", language)
-                replacements["SCHOOL42_DATE"] = translate_date_range("2023-01-01", "2025-12-31", language)
                 replacements["UNIVERSITY_DATE"] = translate_date_range("2019-01-01", "2025-12-31", language)
+                replacements["MODPILOT_DATE"] = translate_date_range("2025-11-01", "2026-03-25", language)
+                replacements["RECEPCIA_DATE"] = translate_date_range("2025-09-01", "2025-12-31", language)
                 replacements["ENGIE_DATE"] = translate_date_range("2025-01-01", "2025-06-30", language)
-                replacements["ING_DATE"] = translate_date_range("2023-05-01", "2023-09-30", language)
 
             except (TranslationError, KeyError) as e:
                 logger.debug(f"Could not load some translations: {e}. Using defaults.")
@@ -384,19 +388,19 @@ class TemplateProcessor:
         """
         language_defaults = {
             "en": {
-                "company_excitement": f"the opportunity to work with cutting-edge technology at {job_offer.company_name}",
+                "company_excitement": f"the opportunity to work with cutting-edge technology.",
                 "role_attraction": f"it aligns perfectly with my experience in {', '.join(matched_skills.matched_skills[:3])}",
                 "specific_goal": "innovative software solutions that drive business growth",
                 "relevant_skills": ", ".join(matched_skills.relevant_technologies[:5])
             },
             "fr": {
-                "company_excitement": f"l'opportunité de travailler avec la technologie de pointe chez {job_offer.company_name}",
+                "company_excitement": f"l'opportunité de travailler avec la technologie de pointe.",
                 "role_attraction": f"elle s'aligne parfaitement avec mon expérience en {', '.join(matched_skills.matched_skills[:3])}",
                 "specific_goal": "des solutions logicielles innovantes qui stimulent la croissance commerciale",
                 "relevant_skills": ", ".join(matched_skills.relevant_technologies[:5])
             },
             "es": {
-                "company_excitement": f"la oportunidad de trabajar con tecnología de vanguardia en {job_offer.company_name}",
+                "company_excitement": f"la oportunidad de trabajar con tecnología de vanguardia.",
                 "role_attraction": f"se alinea perfectamente con mi experiencia en {', '.join(matched_skills.matched_skills[:3])}",
                 "specific_goal": "soluciones de software innovadoras que impulsen el crecimiento empresarial",
                 "relevant_skills": ", ".join(matched_skills.relevant_technologies[:5])

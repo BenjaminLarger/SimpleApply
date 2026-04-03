@@ -13,11 +13,12 @@ export type FieldType =
   | 'postalCode'
   | 'coverLetter'
   | 'password'
+  | 'date'
   | 'checkbox'
   | 'unknown';
 
 export interface DetectedField {
-  element: HTMLInputElement | HTMLTextAreaElement;
+  element: HTMLInputElement | HTMLTextAreaElement | HTMLElement; // Also supports UI5 web components
   fieldType: FieldType;
   confidence: number; // 0–1
 }
@@ -76,6 +77,14 @@ const FIELD_KEYWORDS: Record<FieldType, string[]> = {
     'password', 'passwd', 'pwd', 'pass', 'retype', 'confirm_password',
     'mot de passe', 'contraseña',
   ],
+  date: [
+    'date', 'startdate', 'start_date', 'start-date', 'enddate', 'end_date', 'end-date',
+    'from_date', 'from-date', 'fromdate', 'to_date', 'todate',
+    'dob', 'dateofbirth', 'date_of_birth', 'birthdate', 'birth_date',
+    'date_joined', 'datejoined', 'hire_date', 'hiredate', 'joindate', 'join_date',
+    'expiry_date', 'expirydate', 'expiry', 'mm/dd/yyyy', 'dd/mm/yyyy',
+    'date de naissance', 'fecha de nacimiento', 'geburtsdatum',
+  ],
   checkbox: [
     'agreement', 'consent', 'accept', 'agree', 'subscribe', 'notification',
     'checkbox', 'accep', 'consentement',
@@ -128,7 +137,7 @@ function matchKeywords(text: string): { type: FieldType; confidence: number } | 
   let bestIsGeneric = false;
 
   // Keywords to prioritize (high-specificity fields)
-  const priorityKeywords = new Set(['firstname', 'lastname', 'fname', 'lname', 'email', 'username', 'user_name', 'password', 'phone', 'linkedinurl', 'githuburl', 'portfoliourl']);
+  const priorityKeywords = new Set(['firstname', 'lastname', 'fname', 'lname', 'email', 'username', 'user_name', 'password', 'phone', 'linkedinurl', 'githuburl', 'portfoliourl', 'date', 'startdate', 'enddate']);
   // Generic keywords that lose to priority ones
   const genericKeywords = new Set(['name', 'address', 'city', 'country']);
 
@@ -183,8 +192,108 @@ function getLabelText(el: HTMLInputElement | HTMLTextAreaElement): string {
   return '';
 }
 
+// Expand collapsible form sections (for SuccessFactors forms with employment/education sections)
+function expandFormSections(root: Element): void {
+  const sectionKeywords = [
+    'employment', 'experience', 'job history',
+    'education', 'formal education', 'degree',
+    'language', 'skills', 'mobility',
+  ];
+
+  // Find all section headers/buttons that might be collapsed
+  const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[class*="topBar"], button[class*="section"], h2[role="button"], h3[role="button"]'));
+
+  let expandedCount = 0;
+  for (const btn of buttons) {
+    const text = btn.textContent?.toLowerCase() || '';
+
+    // Check if this button controls a section that needs expansion
+    if (sectionKeywords.some(kw => text.includes(kw))) {
+      // Check if section is collapsed by looking for collapsed indicators
+      const isCollapsed = btn.classList.contains('collapsed') ||
+                         btn.getAttribute('aria-expanded') === 'false' ||
+                         !btn.nextElementSibling?.classList.contains('expanded');
+
+      if (isCollapsed) {
+        console.log(`[simpleApply:fieldDetector] Expanding section: ${text.substring(0, 50)}`);
+        btn.click();
+        expandedCount++;
+      }
+    }
+  }
+
+  if (expandedCount > 0) {
+    console.log(`[simpleApply:fieldDetector] Expanded ${expandedCount} sections`);
+  }
+}
+
+// Detect UI5 date picker components (for SuccessFactors and similar SAP systems)
+function detectUI5DatePickers(root: Element): DetectedField[] {
+  const results: DetectedField[] = [];
+  const datePickerComponents = Array.from(
+    root.querySelectorAll<any>('ui5-date-picker-xweb-calendar-widget, ui5-datepicker')
+  );
+
+  if (datePickerComponents.length > 0) {
+    console.log(`[simpleApply:fieldDetector] Found ${datePickerComponents.length} UI5 date picker components`);
+  }
+
+  for (const picker of datePickerComponents) {
+    const title = picker.getAttribute('title') || picker.getAttribute('accessible-name') || '';
+    const ariaLabel = picker.getAttribute('aria-label') || '';
+    const searchText = [title, ariaLabel].join(' ').toLowerCase();
+
+    // Check if this is a date field based on title/label
+    if (searchText.includes('date') || searchText.includes('from') || searchText.includes('end') ||
+        searchText.includes('start') || searchText.includes('birth')) {
+
+      // Create a wrapper object with custom getAttribute/setAttribute to handle nested shadow DOM
+      const wrappedElement = {
+        ...picker,
+        _actualElement: picker, // Store reference to actual DOM element for context detection
+        getAttribute: (attr: string) => picker.getAttribute(attr),
+        setAttribute: (attr: string, val: string) => {
+          picker.setAttribute(attr, val);
+          // Also set the inner input value when setAttribute is called
+          if (attr === 'value' && picker.shadowRoot) {
+            const ui5Input = picker.shadowRoot.querySelector<any>('ui5-input-xweb-calendar-widget');
+            if (ui5Input && ui5Input.shadowRoot) {
+              const innerInput = ui5Input.shadowRoot.querySelector<HTMLInputElement>('input[type="text"]');
+              if (innerInput) {
+                innerInput.value = val;
+                innerInput.dispatchEvent(new Event('input', { bubbles: true }));
+                innerInput.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+          }
+        },
+        tagName: picker.tagName,
+        id: picker.id,
+      } as any as HTMLInputElement;
+
+      results.push({
+        element: wrappedElement,
+        fieldType: 'date',
+        confidence: 0.95,
+      });
+
+      console.log(`[simpleApply:fieldDetector] Detected UI5 date picker: ${title || ariaLabel}`);
+    }
+  }
+
+  return results;
+}
+
 export function detectFields(root: Element): DetectedField[] {
   const results: DetectedField[] = [];
+
+  // First, expand any collapsed form sections (employment, education, etc.)
+  expandFormSections(root);
+
+  // Then, detect UI5 date picker components
+  const datePickerResults = detectUI5DatePickers(root);
+  results.push(...datePickerResults);
+
   const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea, input[type="password"]'
   ));

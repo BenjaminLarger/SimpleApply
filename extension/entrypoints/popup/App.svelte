@@ -5,10 +5,14 @@
   let enabled = true;
   let fieldCount = 0;
   let statusMessage = 'Checking…';
+  let resumeFileName = '';
+
+  const RESUME_STORAGE_KEY = 'simpleApply_resume';
 
   onMount(async () => {
     await checkApiStatus();
     await getFieldCount();
+    await loadResumeInfo();
   });
 
   async function checkApiStatus() {
@@ -48,6 +52,23 @@
       }
     });
   }
+
+  async function loadResumeInfo() {
+    const stored = await chrome.storage.local.get(RESUME_STORAGE_KEY);
+    const resume = stored[RESUME_STORAGE_KEY];
+    if (resume?.fileName) {
+      resumeFileName = resume.fileName;
+    }
+  }
+
+  function openUploadPage() {
+    chrome.tabs.create({ url: chrome.runtime.getURL('/resume-upload.html') });
+  }
+
+  async function handleRemoveResume() {
+    await chrome.storage.local.remove(RESUME_STORAGE_KEY);
+    resumeFileName = '';
+  }
 </script>
 
 <main>
@@ -72,6 +93,18 @@
       <input type="checkbox" bind:checked={enabled} onchange={handleToggle} />
       Enable auto-fill
     </label>
+  </section>
+
+  <section class="resume-section">
+    <span class="label">Resume</span>
+    {#if resumeFileName}
+      <div class="resume-info">
+        <span class="resume-name" title={resumeFileName}>{resumeFileName}</span>
+        <button class="sa-remove" onclick={handleRemoveResume}>&#x2715;</button>
+      </div>
+    {:else}
+      <button class="upload-btn" onclick={openUploadPage}>Upload</button>
+    {/if}
   </section>
 
   <button class="fill-btn" onclick={handleManualFill} disabled={!connected}>
@@ -161,5 +194,57 @@
   .fill-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+
+  .resume-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .resume-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .resume-name {
+    font-size: 12px;
+    color: #6ee7b7;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sa-remove {
+    all: initial;
+    font-family: inherit;
+    font-size: 12px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+  }
+
+  .sa-remove:hover {
+    color: #fca5a5;
+    background: #7f1d1d;
+  }
+
+  .upload-btn {
+    font-size: 12px;
+    padding: 4px 10px;
+    background: #2d2d4e;
+    border: 1px solid #4a4a6a;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #a5b4fc;
+    transition: background 0.15s;
+  }
+
+  .upload-btn:hover {
+    background: #3d3d6e;
   }
 </style>

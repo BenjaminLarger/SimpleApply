@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>simpleApply — Resume Upload</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f0f1a;
+        color: #e0e0e0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container {
+        background: #1a1a2e;
+        border: 1px solid #4a4a6a;
+        border-radius: 12px;
+        padding: 32px;
+        width: 420px;
+        max-width: 90vw;
+      }
+      h1 {
+        font-size: 20px;
+        color: #a5b4fc;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-bottom: 24px;
+      }
+      .current-resume {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #065f46;
+        border: 1px solid #10b981;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .current-resume .name {
+        color: #6ee7b7;
+        font-size: 14px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 280px;
+      }
+      .current-resume .size {
+        color: #a7f3d0;
+        font-size: 12px;
+      }
+      .remove-btn {
+        background: transparent;
+        border: 1px solid #6ee7b7;
+        color: #6ee7b7;
+        border-radius: 5px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .remove-btn:hover {
+        background: #7f1d1d;
+        border-color: #fca5a5;
+        color: #fca5a5;
+      }
+      .upload-area {
+        border: 2px dashed #4a4a6a;
+        border-radius: 8px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        margin-bottom: 16px;
+      }
+      .upload-area:hover, .upload-area.dragover {
+        border-color: #a5b4fc;
+        background: #1e1e3a;
+      }
+      .upload-area p {
+        font-size: 14px;
+        color: #9ca3af;
+        margin-top: 8px;
+      }
+      .upload-area .icon {
+        font-size: 32px;
+        color: #a5b4fc;
+      }
+      .upload-area .formats {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+      }
+      .status {
+        font-size: 13px;
+        text-align: center;
+        padding: 8px;
+        border-radius: 6px;
+        display: none;
+      }
+      .status.success {
+        display: block;
+        background: #065f46;
+        color: #6ee7b7;
+      }
+      .status.error {
+        display: block;
+        background: #7f1d1d;
+        color: #fca5a5;
+      }
+      .status.uploading {
+        display: block;
+        background: #1e1e3a;
+        color: #a5b4fc;
+      }
+      input[type="file"] { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Resume Upload</h1>
+      <p class="subtitle">Upload your resume once — it will be used for all auto-filled applications.</p>
+
+      <div id="currentResume" class="current-resume" style="display:none">
+        <div>
+          <div class="name" id="resumeName"></div>
+          <div class="size" id="resumeSize"></div>
+        </div>
+        <button class="remove-btn" id="removeBtn">Remove</button>
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="icon">+</div>
+        <p>Click to select or drag & drop your resume</p>
+        <div class="formats">PDF, DOC, DOCX</div>
+      </div>
+
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx" />
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <script type="module" src="./upload.js"></script>
+  </body>
+</html>

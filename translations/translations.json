@@ -3,12 +3,12 @@
     "cv": {
       "summary_header": "SUMMARY",
       "education_header": "EDUCATION",
-      "projects_header": "FREELANCE / SIDE PROJECTS",
+      "projects_header": "FREELANCE",
       "experience_header": "PROFESSIONAL EXPERIENCE",
       "skills_header": "SKILLS, LANGUAGES & HOBBIES",
-      "summary_text": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team. I am open to relocate.",
-      "summary_text_male": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team. I am open to relocate.",
-      "summary_text_female": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team. I am open to relocate.",
+      "summary_text": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team.",
+      "summary_text_male": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team.",
+      "summary_text_female": "Tech-savvy engineer with dual expertise in software development and market finance. Trained at 42 School and the University of Montpellier, with hands-on experience in data science, AI Agents and Software Development. Looking to drive impact as a {job_title} in a fast-paced, innovation-driven team.",
       "languages_label": "Languages",
       "hobbies_label": "Hobbies",
       "skills_label": "Skills & Tools",
@@ -17,7 +17,7 @@
       "age_phrase": "years old",
       "value_section_header": "KEY AREAS WHERE I CAN ADD VALUE TO YOUR ORGANIZATION",
       "education": {
-        "bootcamp_description": "Machine learning with Scikit-Learn (supervised/unsupervised), data analysis with Pandas/NumPy, and visualization using Matplotlib/Seaborn. Solid grounding in regression, hypothesis testing, and time series. Completed projects in predictive modeling, segmentation, and decision support.",
+        "bootcamp_description": "Machine Learning with Scikit-Learn",
         "school_42_training": "Programming Engineering training – Common Core",
         "university_degree": "Master's degree in Market Finance - Bachelor of Economics"
       },
@@ -43,14 +43,10 @@
       "closing_paragraph_1": "I am particularly drawn to {company_name} because of {company_excitement}. The opportunity to {specific_goal} aligns directly with my professional goals and expertise. I am eager to discuss how my background and skills can contribute to your team's success.",
       "closing_paragraph_1_male": "I am particularly drawn to {company_name} because of {company_excitement}. The opportunity to {specific_goal} aligns directly with my professional goals and expertise. I am eager to discuss how my background and skills can contribute to your team's success.",
       "closing_paragraph_1_female": "I am particularly drawn to {company_name} because of {company_excitement}. The opportunity to {specific_goal} aligns directly with my professional goals and expertise. I am eager to discuss how my background and skills can contribute to your team's success.",
-      "closing_paragraph_2": "Thank you for considering my application. I look forward to speaking with you about how I can contribute to {company_name}.",
+      "closing_paragraph_2": "Thank you for considering my application. I look forward to speaking with you about how I can contribute to the project.",
       "sign_off": "Sincerely"
     },
     "projects": {
-      "ModPilot: AI Content Moderation Platform": {
-        "title": "ModPilot: AI Content Moderation Platform",
-        "description": "Enterprise moderation SaaS with real-time AI processing. Go backend, Astro frontend, Kafka/Redis architecture. Handles 1000s of posts/sec with intelligent model escalation and concurrent moderator support."
-      },
       "AI-Powered WhatsApp Bot": {
         "title": "AI-Powered WhatsApp Bot",
         "description": "Intelligent WhatsApp bot using Meta Cloud API with Flask backend. Features real-time webhook integration, OpenAI Assistant API, secure message handling, and production-ready phone management."
@@ -73,7 +69,7 @@
       },
       "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - AI Voice Receptionist",
-        "description": "B2B SaaS automating appointment scheduling with AI voice assistants via Vapi. Features Twilio/Telynx integration, RAG, secure OAuth calendar sync (Google/Outlook), and N8N automation."
+        "description": "B2B SaaS automating appointment scheduling with AI voice assistants via Vapi. Features Twilio/Telynx integration, RAG, secure OAuth calendar sync (Google), and N8N automation."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Personal Trainer Mobile Platform",
@@ -81,7 +77,7 @@
       }
     },
     "education": {
-      "bootcamp_description": "Machine learning with Scikit-Learn (supervised/unsupervised), data analysis with Pandas/NumPy, and visualization using Matplotlib/Seaborn. Solid grounding in regression, hypothesis testing, and time series. Completed projects in predictive modeling, segmentation, and decision support.",
+      "bootcamp_description": "Machine learning with Scikit-Learn.",
       "school_42_training": "Programming Engineering training – Common Core",
       "university_degree": "Master's degree in Market Finance - Bachelor of Economics"
     },
@@ -91,15 +87,24 @@
         "achievements": {
           "collaboration": "Collaborated with Back and Middle Office teams to implement tailored software solutions.",
           "scraping": "Scraped data from internal software using Playwright to process business-critical information.",
-          "energy_solutions": "Developed Energy Management Solutions: Designed RESTful APIs in Python to optimize powerplant unit-commitment, integrating algorithmic efficiency and robust error handling.",
-          "docker": "Dockerized Apps: Built containerized tasks for scalability purpose, deployed on AWS lambdas."
+          "energy_solutions": "Developed Energy Management Solutions: Designed RESTful APIs in Python to optimize powerplant unit-commitment, integrating algorithmic efficiency and robust error handling."
         }
       },
-      "ing": {
-        "role": "FEC Data Analyst Intern",
+      "modpilot": {
+        "role": "Backend Software Engineer (Freelance)",
         "achievements": {
-          "analytics": "Conducted Python data analytics to identify suspicious behaviours in a dataset of 10,000+ records.",
-          "vba_automation": "Developed VBA scripts to automate data processing tasks, reducing analysis time by 20%."
+          "ai_integration": "Developed adaptive moderation system integrating OpenAI APIs with intelligent model escalation for context-aware content classification.",
+          "backend_architecture": "Built scalable Go/GoFiber backend processing thousands of moderation requests per second with real-time updates via Kafka/Redis event-driven architecture.",
+          "production_infrastructure": "Containerized deployment (Docker Compose), reverse proxy (Traefik), and comprehensive API security."
+        }
+      },
+      "recepcia": {
+        "role": "Full-Stack Developer (Freelance)",
+        "achievements": {
+          "saas_platform": "Built a B2B SaaS platform automating appointment using AI-powered voice assistants.",
+          "voice_integration": "Integrated Vapi for voice AI, Twilio and Telynx for telephony, and implemented advanced Prompt Engineering with RAG for context-aware conversations.",
+          "calendar_integration": "Implemented secure OAuth calendar integrations for Google",
+          "workflow_automation": "Developed N8N workflow automation for business process optimization."
         }
       }
     },
@@ -119,12 +124,12 @@
     "cv": {
       "summary_header": "RÉSUMÉ",
       "education_header": "FORMATION",
-      "projects_header": "PROJETS FREELANCE / PERSONNELS",
+      "projects_header": "SIDE PROJECTS",
       "experience_header": "EXPÉRIENCE PROFESSIONNELLE",
       "skills_header": "COMPÉTENCES, LANGUES & LOISIRS",
       "summary_text": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
       "summary_text_male": "Ingénieur passionné par les technologies avec double expertise en développement logiciel et finance de marché. Formé à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
-      "summary_text_female": "Ingénieure passionnée par les technologies avec double expertise en développement logiciel et finance de marché. Formée à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation. Je suis ouverte à la relocalisation.",
+      "summary_text_female": "Ingénieure passionnée par les technologies avec double expertise en développement logiciel et finance de marché. Formée à l'école 42 et à l'Université de Montpellier, avec une expérience pratique en science des données, Agents IA et Développement Logiciel. Je cherche à avoir un impact en tant que {job_title} au sein d'une équipe dynamique orientée innovation.",
       "languages_label": "Langues",
       "hobbies_label": "Loisirs",
       "skills_label": "Compétences & Outils",
@@ -133,7 +138,7 @@
       "age_phrase": "ans",
       "value_section_header": "DOMAINES CLÉS OÙ JE PEUX APPORTER DE LA VALEUR À VOTRE ORGANISATION",
       "education": {
-        "bootcamp_description": "Apprentissage automatique avec Scikit-Learn (supervisé/non supervisé), analyse de données avec Pandas/NumPy, et visualisation avec Matplotlib/Seaborn. Solides bases en régression, tests d'hypothèses et séries temporelles. Réalisation de projets en modélisation prédictive, segmentation et aide à la décision.",
+        "bootcamp_description": "ML avec Scikit-Learn",
         "school_42_training": "Formation en Ingénierie Informatique – Tronc Commun",
         "university_degree": "Master en Finance de Marché - Licence en Sciences Économiques"
       },
@@ -159,7 +164,7 @@
       "closing_paragraph_1": "Je suis particulièrement attiré par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravi de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
       "closing_paragraph_1_male": "Je suis particulièrement attiré par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravi de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
       "closing_paragraph_1_female": "Je suis particulièrement attirée par {company_name} en raison de {company_excitement}. L'opportunité de {specific_goal} s'aligne directement avec mes objectifs professionnels et mon expertise. Je serais ravie de discuter de la façon dont mon parcours et mes compétences peuvent contribuer au succès de votre équipe.",
-      "closing_paragraph_2": "Je vous remercie d'avoir examiné ma candidature. J'attends avec intérêt de pouvoir discuter de ma contribution potentielle à {company_name}.",
+      "closing_paragraph_2": "Je vous remercie d'avoir examiné ma candidature. J'attends avec intérêt de pouvoir discuter de ma contribution potentielle au projet.",
       "sign_off": "Cordialement"
     },
     "experience": {
@@ -170,17 +175,28 @@
         "achievements": {
           "collaboration": "Collaboration avec Back et Middle Office pour créer des solutions logicielles adaptées.",
           "scraping": "Extraction de données internes via Playwright pour les processus métier critiques.",
-          "energy_solutions": "APIs RESTful Python pour optimiser l'engagement des unités avec gestion robuste des erreurs.",
-          "docker": "Dockerisation de tâches conteneurisées pour scalabilité, déployées sur AWS Lambda."
+          "energy_solutions": "APIs RESTful Python pour optimiser l'engagement des unités avec gestion robuste des erreurs."
         }
       },
-      "ing": {
-        "role": "Stagiaire Analyste de Données FEC",
-        "role_male": "Stagiaire Analyste de Données FEC",
-        "role_female": "Stagiaire Analyste de Données FEC",
+      "modpilot": {
+        "role": "Ingénieur Logiciel Backend",
+        "role_male": "Ingénieur Logiciel Backend",
+        "role_female": "Ingénieure Logiciel Backend",
         "achievements": {
-          "analytics": "Analyses Python pour identifier comportements suspects dans 10 000+ enregistrements.",
-          "vba_automation": "Scripts VBA pour automatiser le traitement de données, réduisant le temps d'analyse de 20%."
+          "ai_integration": "Développé un système de modération adaptatif intégrant les APIs OpenAI avec escalade intelligente des modèles pour une classification de contenu contextuelle.",
+          "backend_architecture": "Construit un backend Go/GoFiber scalable traitant des milliers de demandes de modération par seconde avec mises à jour en temps réel via architecture pilotée par événements Kafka/Redis.",
+          "production_infrastructure": "Déploiement conteneurisé (Docker Compose), reverse proxy (Traefik) et sécurité API complète."
+        }
+      },
+      "recepcia": {
+        "role": "Développeur Full-Stack (Freelance)",
+        "role_male": "Développeur Full-Stack (Freelance)",
+        "role_female": "Développeuse Full-Stack (Freelance)",
+        "achievements": {
+          "saas_platform": "Développé une plateforme SaaS B2B automatisant la planification des rendez-vous avec des assistants vocaux IA.",
+          "voice_integration": "Intégré Vapi pour l'IA vocale, Twilio et Telynx pour la téléphonie, et implémenté l'Ingénierie des Prompts Avancée avec RAG pour des conversations contextuelles.",
+          "calendar_integration": "Implémenté des intégrations de calendrier OAuth sécurisées pour Google.",
+          "workflow_automation": "Développé l'automatisation des flux de travail N8N pour l'optimisation des processus métier."
         }
       }
     },
@@ -196,10 +212,6 @@
       "spanish_fluent": "Espagnol (courant)"
     },
     "projects": {
-      "ModPilot: AI Content Moderation Platform": {
-        "title": "ModPilot: Plateforme de Modération de Contenu Alimentée par l'IA",
-        "description": "SaaS de modération d'entreprise avec traitement en temps réel alimenté par l'IA. Backend Go, frontend Astro, architecture Kafka/Redis. Traite des milliers de publications par seconde avec escalade intelligente des modèles et support concurrent des modérateurs."
-      },
       "AI-Powered WhatsApp Bot": {
         "title": "Bot WhatsApp Alimenté par l'IA",
         "description": "Bot WhatsApp intelligent avec API Cloud Meta et backend Flask. Webhooks en temps réel, API Assistant OpenAI, gestion sécurisée des messages et gestion des numéros prête pour la production."
@@ -222,7 +234,7 @@
       },
       "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - Réceptionniste Vocale IA",
-        "description": "SaaS B2B automatisant la planification des rendez-vous avec assistants vocaux IA via Vapi. Intégrations Twilio/Telynx, RAG, synchronisation sécurisée des calendriers OAuth (Google/Outlook) et automatisation N8N."
+        "description": "SaaS B2B automatisant la planification des rendez-vous avec assistants vocaux IA via Vapi. Intégrations Twilio/Telynx, RAG, synchronisation sécurisée des calendriers OAuth (Google) et automatisation N8N."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Plateforme Mobile d'Entraîneur Personnel",
@@ -234,12 +246,12 @@
     "cv": {
       "summary_header": "RESUMEN",
       "education_header": "FORMACIÓN",
-      "projects_header": "PROYECTOS FREELANCE / PERSONALES",
+      "projects_header": "SIDE PROJECTS",
       "experience_header": "EXPERIENCIA PROFESIONAL",
       "skills_header": "COMPETENCIAS, IDIOMAS & INTERESES",
       "summary_text": "Ingeniero apasionado por la tecnología con doble experiencia en desarrollo de software y finanzas de mercado. Formado en la escuela 42 y en la Universidad de Montpellier, con experiencia práctica en ciencia de datos, Agentes IA y Desarrollo de Software. Busco tener un impacto como {job_title} en un equipo dinámico orientado a la innovación.",
       "summary_text_male": "Ingeniero apasionado por la tecnología con doble experiencia en desarrollo de software y finanzas de mercado. Formado en la escuela 42 y en la Universidad de Montpellier, con experiencia práctica en ciencia de datos, Agentes IA y Desarrollo de Software. Busco tener un impacto como {job_title} en un equipo dinámico orientado a la innovación.",
-      "summary_text_female": "Ingeniera apasionada por la tecnología con doble experiencia en desarrollo de software y finanzas de mercado. Formada en la escuela 42 y en la Universidad de Montpellier, con experiencia práctica en ciencia de datos, Agentes IA y Desarrollo de Software. Busco tener un impacto como {job_title} en un equipo dinámico orientado a la innovación. Estoy abierta a cambio de ubicación.",
+      "summary_text_female": "Ingeniera apasionada por la tecnología con doble experiencia en desarrollo de software y finanzas de mercado. Formada en la escuela 42 y en la Universidad de Montpellier, con experiencia práctica en ciencia de datos, Agentes IA y Desarrollo de Software. Busco tener un impacto como {job_title} en un equipo dinámico orientado a la innovación.",
       "languages_label": "Idiomas",
       "hobbies_label": "Intereses",
       "skills_label": "Competencias & Herramientas",
@@ -248,7 +260,7 @@
       "age_phrase": "años",
       "value_section_header": "ÁREAS CLAVE DONDE PUEDO APORTAR VALOR A SU ORGANIZACIÓN",
       "education": {
-        "bootcamp_description": "Aprendizaje automático con Scikit-Learn (supervisado/no supervisado), análisis de datos con Pandas/NumPy, y visualización con Matplotlib/Seaborn. Sólidos fundamentos en regresión, pruebas de hipótesis y series temporales. Proyectos completados en modelización predictiva, segmentación y apoyo a la toma de decisiones.",
+        "bootcamp_description": "Machine Learning con Scikit-Learn",
         "school_42_training": "Formación en Ingeniería Informática – Tronco Común",
         "university_degree": "Máster en Finanzas de Mercado - Licenciatura en Ciencias Económicas"
       },
@@ -274,7 +286,7 @@
       "closing_paragraph_1": "Me atrae especialmente {company_name} por {company_excitement}. La oportunidad de {specific_goal} se alinea directamente con mis objetivos profesionales y experiencia. Estoy ansioso por discutir cómo mi formación y habilidades pueden contribuir al éxito de su equipo.",
       "closing_paragraph_1_male": "Me atrae especialmente {company_name} por {company_excitement}. La oportunidad de {specific_goal} se alinea directamente con mis objetivos profesionales y experiencia. Estoy ansioso por discutir cómo mi formación y habilidades pueden contribuir al éxito de su equipo.",
       "closing_paragraph_1_female": "Me atrae especialmente {company_name} por {company_excitement}. La oportunidad de {specific_goal} se alinea directamente con mis objetivos profesionales y experiencia. Estoy ansiosa por discutir cómo mi formación y habilidades pueden contribuir al éxito de su equipo.",
-      "closing_paragraph_2": "Agradezco su consideración de mi solicitud. Espero poder hablar con usted sobre cómo puedo contribuir a {company_name}.",
+      "closing_paragraph_2": "Agradezco su consideración de mi solicitud. Espero poder hablar con usted sobre cómo puedo contribuir al proyecto.",
       "sign_off": "Atentamente"
     },
     "experience": {
@@ -285,17 +297,28 @@
         "achievements": {
           "collaboration": "Colaboración con Back y Middle Office en soluciones de software personalizadas.",
           "scraping": "Extracción de datos internos con Playwright para procesar información crítica del negocio.",
-          "energy_solutions": "APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas.",
-          "docker": "Dockerización de tareas para escalabilidad, desplegadas en AWS Lambda."
+          "energy_solutions": "APIs RESTful en Python para optimizar la asignación de unidades de centrales eléctricas."
         }
       },
-      "ing": {
-        "role": "Becario Analista de Datos FEC",
-        "role_male": "Becario Analista de Datos FEC",
-        "role_female": "Becaria Analista de Datos FEC",
+      "modpilot": {
+        "role": "Ingeniero de Software Backend",
+        "role_male": "Ingeniero de Software Backend",
+        "role_female": "Ingeniera de Software Backend",
         "achievements": {
-          "analytics": "Análisis de datos en Python para identificar comportamientos sospechosos en 10.000+ registros.",
-          "vba_automation": "Scripts VBA para automatizar procesamiento de datos, reduciendo tiempo de análisis 20%."
+          "ai_integration": "Desarrollé sistema de moderación adaptativo integrando APIs de OpenAI, Google AI, Anthropic y Groq con escalado inteligente de modelos para clasificación contextual de contenido.",
+          "backend_architecture": "Construí backend escalable Go/GoFiber procesando miles de solicitudes de moderación por segundo con actualizaciones en tiempo real mediante arquitectura impulsada por eventos Kafka/Redis.",
+          "production_infrastructure": "Despliegue conteneurizado (Docker Compose), proxy inverso (Traefik) y seguridad API integral."
+        }
+      },
+      "recepcia": {
+        "role": "Desarrollador Full-Stack (Freelance)",
+        "role_male": "Desarrollador Full-Stack (Freelance)",
+        "role_female": "Desarrolladora Full-Stack (Freelance)",
+        "achievements": {
+          "saas_platform": "Desarrollé una plataforma SaaS B2B automatizando la programación de citas con asistentes de voz IA.",
+          "voice_integration": "Integré Vapi para IA de voz, Twilio y Telynx para telefonía, e implementé Ingeniería de Prompts Avanzada con RAG para conversaciones contextuales.",
+          "calendar_integration": "Implementé integraciones seguras de calendario OAuth para Google.",
+          "workflow_automation": "Desarrollé automatización de flujo de trabajo N8N para optimización de procesos empresariales."
         }
       }
     },
@@ -311,10 +334,6 @@
       "spanish_fluent": "Español (fluido)"
     },
     "projects": {
-      "ModPilot: AI Content Moderation Platform": {
-        "title": "ModPilot: Plataforma de Moderación de Contenido Impulsada por IA",
-        "description": "SaaS de moderación empresarial con procesamiento en tiempo real impulsado por IA. Backend Go, frontend Astro, arquitectura Kafka/Redis. Maneja miles de publicaciones por segundo con escalada inteligente de modelos y soporte concurrente de moderadores."
-      },
       "AI-Powered WhatsApp Bot": {
         "title": "Bot de WhatsApp Impulsado por IA",
         "description": "Bot inteligente de WhatsApp con API Cloud de Meta y backend Flask. Webhooks en tiempo real, API de Asistente OpenAI, manejo seguro de mensajes y gestión lista para producción."
@@ -337,7 +356,7 @@
       },
       "Recepcia - AI Voice Receptionist": {
         "title": "Recepcia - Recepcionista de Voz de IA",
-        "description": "SaaS B2B automatizando programación de citas con asistentes de voz IA vía Vapi. Integraciones Twilio/Telynx, RAG, sincronización segura de calendarios OAuth (Google/Outlook) y automatización N8N."
+        "description": "SaaS B2B automatizando programación de citas con asistentes de voz IA vía Vapi. Integraciones Twilio/Telynx, RAG, sincronización segura de calendarios OAuth (Google) y automatización N8N."
       },
       "Personal Trainer Mobile Platform": {
         "title": "Plataforma Móvil de Entrenador Personal",

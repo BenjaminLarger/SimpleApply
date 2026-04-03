@@ -31,8 +31,8 @@ experiences:
       - "Dockerized Applications: Built containerized microservices for scalability purpose, deployed on AWS lambdas."
   - company: "ING Brussels, Belgium"
     role: "FEC Data Analyst Intern"
-    start_date: "2025-01-07"
-    end_date: "2025-06-07"
+    start_date: "2022-05-07"
+    end_date: "2022-09-07"
     location: "Brussels, Belgium"
     achievements:
       - "Conducted Python data analytics projects to identify suspicious behaviours in a dataset of 10,000+ records."
@@ -44,6 +44,25 @@ experiences:
       - "Matplotlib"
       - "VBA"
       - "Excel"
+  - company: "Recepcia"
+    role: "Full-Stack Developer (Freelance)"
+    start_date: "2025-07-01"
+    end_date: "2025-12-31"
+    location: "Remote"
+    achievements:
+      - "Built a B2B SaaS platform automating appointment using AI-powered voice assistants."
+      - "Integrated Vapi for voice AI, Twilio and Telynx for telephony, and implemented advanced Prompt Engineering with RAG for context-aware conversations."
+      - "Implemented secure OAuth calendar integrations for Google and Outlook, enabling seamless appointment sync."
+      - "Developed N8N workflow automation for business process optimization."
+    technologies:
+      - "Vapi"
+      - "Twilio"
+      - "Telynx"
+      - "Prompt Engineering"
+      - "RAG"
+      - "OAuth"
+      - "N8N"
+      - "SaaS"
 
 skills:
   - "Full Stack Web Application"
@@ -174,36 +193,6 @@ education:
       - "Inter-University Exchange Agreement at University of Nebraska at Omaha, United States"
 
 projects:
-  - title: "ModPilot: AI Content Moderation Platform"
-    type: Side Project
-    description: Enterprise moderation SaaS with real-time AI processing. Go backend, Astro frontend, Kafka/Redis architecture. Handles 1000s of posts/sec with intelligent model escalation and concurrent moderator support.
-    status: "in progress"
-    technologies:
-      - "Go"
-      - "GoFiber"
-      - "Cobra CLI"
-      - "MongoDB"
-      - "Apache Kafka"
-      - "Redis"
-      - "Go Playground Validator v10"
-      - "Viper"
-      - "Docker Compose"
-      - "Traefik v3"
-      - "Astro"
-      - "CSS"
-      - "OpenAI API"
-      - "Google AI API"
-      - "Anthropic API"
-      - "Groq API"
-      - "Ollama"
-      - "API Key Authentication"
-      - "IP Whitelisting"
-      - "JWT (JSON Web Tokens)"
-      - "REST API"
-      - "Event-Driven Architecture"
-      - "Clean Architecture"
-      - "Hexagonal Architecture (Ports & Adapters)"
-      - "Reverse Proxy"
   - title: "AI-Powered WhatsApp Bot"
     type: Side Project 
     description: "Developed an intelligent WhatsApp bot using Meta Cloud API with Flask backend, featuring real-time webhook integration, OpenAI Assistant API for AI responses, and secure message handling. Implemented comprehensive security with payload validation, ngrok tunneling for local development, and production-ready phone number management."
@@ -306,22 +295,6 @@ projects:
     url: "https://github.com/BenjaminLarger/MeetingFlowAI"
     start_date: "2024-01-01"
     end_date: "2024-02-28"
-    status: "completed"
-  - title: Recepcia - AI Voice Receptionist
-    type: Freelance
-    description: I built a B2B SaaS platform that automates appointment scheduling for SMEs, using AI-powered voice assistants with Vapi, telephony integrations via Twilio/Telynx, advanced Prompt Engineering, and RAG for context-aware conversations, along with secure OAuth calendar integrations (Google/Outlook) and N8N workflow automation.
-    technologies:
-      - "Vapi"
-      - "Twilio"
-      - "Telynx"
-      - "Prompt Engineering"
-      - "RAG"
-      - "OAuth"
-      - "N8N"
-      - "SaaS"
-    url: "https://www.recepcia.tech"
-    start_date: ""
-    end_date: ""
     status: "completed"
   - title: Personal Trainer Mobile Platform
     type: Freelance

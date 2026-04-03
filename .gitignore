@@ -11,3 +11,6 @@ extension/.wxt/
 extension/.output/
 extension/dev/
 .claude/agents/
+.context/*
+.playwright-mcp/*
+.claude/*

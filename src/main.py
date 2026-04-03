@@ -224,11 +224,10 @@ def match_and_display_skills(job_offer, user_profile, verbose: bool):
 
 
 def select_and_display_projects(job_offer, projects):
-    """Select projects and display selection results."""
-    print("\n📋 Step 5: Selecting relevant projects...")
+    """Select project and display selection results."""
+    print("\n📋 Step 5: Selecting relevant project...")
     selected_projects = select_projects(job_offer, projects)
-    print(f"   Selected Project 1: {selected_projects.project1.title}")
-    print(f"   Selected Project 2: {selected_projects.project2.title}")
+    print(f"   Selected Project: {selected_projects.project.title}")
     return selected_projects
 
 
@@ -362,7 +361,7 @@ def save_and_display_files(generated_content, job_offer, matched_skills, selecte
         print(f"   CV file: {cv_filename} ({len(generated_content.cv_html):,} chars)")
         print(f"   Cover Letter file: {cover_letter_filename} ({len(generated_content.cover_letter_html):,} chars)")
         print(f"   Total processing time: Complete")
-        print(f"   Selected projects: {selected_projects.project1.title}, {selected_projects.project2.title}")
+        print(f"   Selected project: {selected_projects.project.title}")
         print(f"   Match quality: {len(matched_skills.matched_skills)}/{len(job_offer.skills_required)} skills matched")
 
 

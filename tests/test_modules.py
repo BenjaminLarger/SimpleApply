@@ -71,12 +71,11 @@ def test_complete_pipeline():
 
         print(f"\n   Top matched skills: {matched_skills.matched_skills[:5]}")
 
-        # Step 4: Select projects
-        print("\n📂 Step 4: Selecting relevant projects...")
+        # Step 4: Select project
+        print("\n📂 Step 4: Selecting relevant project...")
         selected_projects = select_projects(job_offer, user_profile.projects)
         print(f"✅ Project selection complete:")
-        print(f"   📌 Project 1: {selected_projects.project1.title}")
-        print(f"   📌 Project 2: {selected_projects.project2.title}")
+        print(f"   📌 Project: {selected_projects.project.title}")
 
         print(f"\n   Selection reasoning: {selected_projects.selection_reasoning[:150]}...")
 
@@ -85,7 +84,7 @@ def test_complete_pipeline():
         print("=" * 50)
         print(f"✅ Job Parser: Successfully parsed {job_offer.company_name} position")
         print(f"✅ Skills Matcher: Found {len(matched_skills.matched_skills)} skill matches")
-        print(f"✅ Project Selector: Selected 2 most relevant projects")
+        print(f"✅ Project Selector: Selected most relevant project")
         print(f"\n💡 The system is ready to generate tailored applications!")
 
         return True

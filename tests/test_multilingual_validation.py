@@ -88,10 +88,8 @@ class TestMultilingualValidation:
         job_offer = parse_job_offer(english_job_offer_text)
         selected_projects = select_projects(job_offer, user_profile.projects)
 
-        assert selected_projects.project1 is not None
-        assert selected_projects.project2 is not None
+        assert selected_projects.project is not None
         assert selected_projects.selection_reasoning is not None
-        assert selected_projects.project1.title != selected_projects.project2.title
 
     def test_english_translations_available(self, translation_loader):
         """Test English translations are available."""
@@ -142,10 +140,8 @@ class TestMultilingualValidation:
         job_offer = parse_job_offer(french_job_offer_text)
         selected_projects = select_projects(job_offer, user_profile.projects)
 
-        assert selected_projects.project1 is not None
-        assert selected_projects.project2 is not None
+        assert selected_projects.project is not None
         assert selected_projects.selection_reasoning is not None
-        assert selected_projects.project1.title != selected_projects.project2.title
 
     def test_french_translations_available(self, translation_loader):
         """Test French translations are available."""
@@ -202,10 +198,8 @@ class TestMultilingualValidation:
         job_offer = parse_job_offer(spanish_job_offer_text)
         selected_projects = select_projects(job_offer, user_profile.projects)
 
-        assert selected_projects.project1 is not None
-        assert selected_projects.project2 is not None
+        assert selected_projects.project is not None
         assert selected_projects.selection_reasoning is not None
-        assert selected_projects.project1.title != selected_projects.project2.title
 
     def test_spanish_translations_available(self, translation_loader):
         """Test Spanish translations are available."""
