@@ -611,9 +611,13 @@ async function fillExperience(profile: ProfileData): Promise<void> {
       const startMonthEls = document.querySelectorAll<HTMLInputElement>(
         'input[data-automation-id="dateSectionMonth-input"][id*="startDate"]'
       );
+      console.log(`[simpleApply:workday] [date] startMonth els found: ${startMonthEls.length}, need idx=${idx}, value="${startMonthNorm}"`);
       if (startMonthEls[idx]) {
-        console.log(`[simpleApply:workday] -> startMonth[${idx}]: "${startMonthNorm}"`);
+        console.log(`[simpleApply:workday] -> startMonth[${idx}]: "${startMonthNorm}" (before: "${startMonthEls[idx].value}")`);
         await typeChars(startMonthEls[idx], startMonthNorm);
+        console.log(`[simpleApply:workday] [date] startMonth[${idx}] after fill: "${startMonthEls[idx].value}"`);
+      } else {
+        console.warn(`[simpleApply:workday] [date] startMonth[${idx}] NOT FOUND — ${startMonthEls.length} el(s) available`);
       }
     }
 
@@ -621,9 +625,13 @@ async function fillExperience(profile: ProfileData): Promise<void> {
       const startYearEls = document.querySelectorAll<HTMLInputElement>(
         'input[data-automation-id="dateSectionYear-input"][id*="startDate"]'
       );
+      console.log(`[simpleApply:workday] [date] startYear els found: ${startYearEls.length}, need idx=${idx}, value="${startYear}"`);
       if (startYearEls[idx]) {
-        console.log(`[simpleApply:workday] -> startYear[${idx}]: "${startYear}"`);
+        console.log(`[simpleApply:workday] -> startYear[${idx}]: "${startYear}" (before: "${startYearEls[idx].value}")`);
         await typeChars(startYearEls[idx], startYear);
+        console.log(`[simpleApply:workday] [date] startYear[${idx}] after fill: "${startYearEls[idx].value}"`);
+      } else {
+        console.warn(`[simpleApply:workday] [date] startYear[${idx}] NOT FOUND — ${startYearEls.length} el(s) available`);
       }
     }
 
@@ -631,9 +639,13 @@ async function fillExperience(profile: ProfileData): Promise<void> {
       const endMonthEls = document.querySelectorAll<HTMLInputElement>(
         'input[data-automation-id="dateSectionMonth-input"][id*="endDate"]'
       );
+      console.log(`[simpleApply:workday] [date] endMonth els found: ${endMonthEls.length}, need idx=${idx}, value="${endMonthNorm}"`);
       if (endMonthEls[idx]) {
-        console.log(`[simpleApply:workday] -> endMonth[${idx}]: "${endMonthNorm}"`);
+        console.log(`[simpleApply:workday] -> endMonth[${idx}]: "${endMonthNorm}" (before: "${endMonthEls[idx].value}")`);
         await typeChars(endMonthEls[idx], endMonthNorm);
+        console.log(`[simpleApply:workday] [date] endMonth[${idx}] after fill: "${endMonthEls[idx].value}"`);
+      } else {
+        console.warn(`[simpleApply:workday] [date] endMonth[${idx}] NOT FOUND — ${endMonthEls.length} el(s) available`);
       }
     }
 
@@ -641,9 +653,13 @@ async function fillExperience(profile: ProfileData): Promise<void> {
       const endYearEls = document.querySelectorAll<HTMLInputElement>(
         'input[data-automation-id="dateSectionYear-input"][id*="endDate"]'
       );
+      console.log(`[simpleApply:workday] [date] endYear els found: ${endYearEls.length}, need idx=${idx}, value="${endYear}"`);
       if (endYearEls[idx]) {
-        console.log(`[simpleApply:workday] -> endYear[${idx}]: "${endYear}"`);
+        console.log(`[simpleApply:workday] -> endYear[${idx}]: "${endYear}" (before: "${endYearEls[idx].value}")`);
         await typeChars(endYearEls[idx], endYear);
+        console.log(`[simpleApply:workday] [date] endYear[${idx}] after fill: "${endYearEls[idx].value}"`);
+      } else {
+        console.warn(`[simpleApply:workday] [date] endYear[${idx}] NOT FOUND — ${endYearEls.length} el(s) available`);
       }
     }
 
@@ -760,24 +776,82 @@ async function fillExperience(profile: ProfileData): Promise<void> {
     }
   }
 
-  /* Skills — limited to MAX_SKILLS to avoid 10+ minute fills */
+  /* Skills — limited to MAX_SKILLS to avoid very long fills */
   if (profile.skills?.length) {
     const skillsToFill = profile.skills.slice(0, MAX_SKILLS);
     console.log(`[simpleApply:workday] Skills: filling ${skillsToFill.length} of ${profile.skills!.length}`);
-    await withOpt<HTMLInputElement>(
-      'div[data-automation-id="formField-skillsPrompt"] input',
-      async (el) => {
-        for (let i = 0; i < skillsToFill.length; i++) {
-          const skill = skillsToFill[i];
-          console.log(`[simpleApply:workday] -> skill #${i + 1}: "${skill}"`);
-          fill(el, skill);
-          await delay(300);
-          el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
-          await delay(5000);
-          el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true }));
+
+    const skillInputSelectors = 'input[id="skills--skills"]';
+    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+
+    // Confirm the input exists before looping
+    const firstEl = await waitForSelector<HTMLInputElement>(skillInputSelectors, 3000);
+    if (!firstEl) {
+      console.warn('[simpleApply:workday] Skills input NOT found — skipping');
+    } else {
+      console.log(`[simpleApply:workday] Skills input confirmed: id="${firstEl.id}"`);
+
+      for (let i = 0; i < skillsToFill.length; i++) {
+        const skill = skillsToFill[i];
+
+        // Re-query EVERY iteration — React remounts the input after each selection
+        const el = document.querySelector<HTMLInputElement>(skillInputSelectors);
+        console.log(`[simpleApply:workday] -> skill #${i + 1}/${skillsToFill.length}: "${skill}" — el.isConnected=${el?.isConnected}`);
+        if (!el) { console.warn(`[simpleApply:workday] -> skill #${i + 1}: input gone, stopping`); break; }
+
+        el.scrollIntoView({ block: 'center' });
+        el.focus();
+        await delay(200);
+
+        // Set value via native setter
+        if (nativeSetter) nativeSetter.call(el, skill); else el.value = skill;
+        el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        console.log(`[simpleApply:workday] -> skill #${i + 1}: typed "${el.value}"`);
+
+        // Press Enter to open dropdown (Workday shows matching options on Enter)
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+        console.log(`[simpleApply:workday] -> skill #${i + 1}: Enter key pressed, waiting for dropdown...`);
+
+        // Wait for dropdown to appear
+        await delay(800);
+
+        // Find available options: all promptOption elements NOT in selectedItemList
+        const allPromptOptions = document.querySelectorAll('[data-automation-id="promptOption"]');
+        const selectedItemsLists = document.querySelectorAll('[data-automation-id="selectedItemList"]');
+
+        const availableOptions = Array.from(allPromptOptions).filter(option => {
+          // Skip if this option is in a selected items list (already selected)
+          for (const selectedList of selectedItemsLists) {
+            if (selectedList.contains(option)) return false;
+          }
+          const text = option.textContent?.trim() || '';
+          // Skip empty or "No Items" results
+          return text !== '' && text !== 'No Items.';
+        });
+
+        console.log(`[simpleApply:workday] -> skill #${i + 1}: found ${availableOptions.length} dropdown options`);
+
+        // Find best match: exact match or first result
+        const skillLower = skill.toLowerCase();
+        const bestMatch = availableOptions.find(
+          option => (option.textContent?.trim().toLowerCase() || '') === skillLower
+        ) || availableOptions[0];
+
+        if (bestMatch) {
+          const selectedText = bestMatch.textContent?.trim();
+          console.log(`[simpleApply:workday] -> skill #${i + 1}: ✓ selecting "${selectedText}"`);
+          (bestMatch as HTMLElement).click();
+          await delay(500);
+        } else {
+          console.warn(`[simpleApply:workday] -> skill #${i + 1}: "${skill}" — no dropdown options found, skipping`);
+          // Clear input for next skill
+          if (nativeSetter) nativeSetter.call(el, ''); else el.value = '';
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          await delay(150);
         }
       }
-    );
+    }
   }
 
   /* Resume Upload — inject from chrome.storage via DataTransfer */
@@ -801,52 +875,84 @@ async function fillExperience(profile: ProfileData): Promise<void> {
   }
 
   /* Website Links */
-  let addedWebs = 0;
-  if (profile.linkedin) {
-    const linkedInInput = document.querySelector<HTMLInputElement>(
-      'input[data-automation-id="linkedinQuestion"]'
-    );
-    if (linkedInInput) {
-      console.log(`[simpleApply:workday] -> linkedin: "${profile.linkedin}" (dedicated input)`);
-      fill(linkedInInput, profile.linkedin);
-    } else {
-      addedWebs++;
-      if (!(await selectorExists(`div[data-automation-id="websitePanelSet-${addedWebs}"] input`))) {
-        await withOpt<HTMLButtonElement>(
-          [
-            'button[data-automation-id="add-button"]',
-            'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
-          ],
-          async (el) => { console.log('[simpleApply:workday] -> clicking Add Website'); el.click(); await delay(300); }
-        );
+  // Selector for all URL inputs inside the Websites group
+  const websiteGroupInputSel = '[role="group"][aria-labelledby="Websites-section"] input, [aria-labelledby="Websites-section"] input';
+  const websiteAddBtnSels = [
+    '[role="group"][aria-labelledby="Websites-section"] button[data-automation-id="add-button"]',
+    '[aria-labelledby="Websites-section"] button[data-automation-id="add-button"]',
+  ];
+
+  // Check if there is a dedicated LinkedIn input (some Workday forms have it)
+  const dedicatedLinkedIn = document.querySelector<HTMLInputElement>(
+    'input[name="linkedInAccount"], input[id*="linkedInAccount"], input[data-automation-id="linkedinQuestion"]'
+  );
+  if (dedicatedLinkedIn && profile.linkedin) {
+    console.log(`[simpleApply:workday] -> linkedin: "${profile.linkedin}" (dedicated input)`);
+    fill(dedicatedLinkedIn, profile.linkedin);
+
+    // Clear any website panel that duplicates the LinkedIn URL (leftover from previous application)
+    const linkedinNorm = profile.linkedin.toLowerCase().replace(/\/+$/, '');
+    document.querySelectorAll<HTMLInputElement>(websiteGroupInputSel).forEach(inp => {
+      if (inp.value.trim().toLowerCase().replace(/\/+$/, '') === linkedinNorm) {
+        console.log(`[simpleApply:workday] [website] clearing duplicate LinkedIn from website panel`);
+        fill(inp, '');
       }
-      const webInput = document.querySelector<HTMLInputElement>(
-        `div[data-automation-id="websitePanelSet-${addedWebs}"] input`
-      );
-      if (webInput) {
-        console.log(`[simpleApply:workday] -> linkedin: "${profile.linkedin}" (website panel)`);
-        fill(webInput, profile.linkedin);
-      }
-    }
+    });
   }
 
-  if (profile.github) {
-    addedWebs++;
-    if (!(await selectorExists(`div[data-automation-id="websitePanelSet-${addedWebs}"] input`))) {
-      await withOpt<HTMLButtonElement>(
-        [
-          'button[data-automation-id="add-button"]',
-          'div[data-automation-id="websiteSection"] button[data-automation-id="Add"]',
-        ],
-        async (el) => { console.log('[simpleApply:workday] -> clicking Add Website'); el.click(); await delay(300); }
-      );
-    }
-    const webInput = document.querySelector<HTMLInputElement>(
-      `div[data-automation-id="websitePanelSet-${addedWebs}"] input`
+  // Read existing website panel values — Workday persists them from previous applications
+  const existingWebInputs = Array.from(document.querySelectorAll<HTMLInputElement>(websiteGroupInputSel));
+  const existingValues = existingWebInputs.map(inp => inp.value.trim().toLowerCase()).filter(v => v !== '');
+  console.log(`[simpleApply:workday] [website] existing values: [${existingValues.join(' | ')}]`);
+
+  // Build the list of URLs that need a website panel entry (skip already-filled ones)
+  const allWebsiteUrls: Array<{ name: string; url: string }> = [];
+  if (!dedicatedLinkedIn && profile.linkedin) allWebsiteUrls.push({ name: 'linkedin',  url: profile.linkedin });
+  if (profile.portfolio)                       allWebsiteUrls.push({ name: 'portfolio', url: profile.portfolio });
+  if (profile.github)                          allWebsiteUrls.push({ name: 'github',    url: profile.github });
+
+  const websiteUrls = allWebsiteUrls.filter(entry => {
+    const normalised = entry.url.toLowerCase().replace(/\/+$/, '');
+    const alreadyFilled = existingValues.some(v => v.replace(/\/+$/, '') === normalised);
+    if (alreadyFilled) console.log(`[simpleApply:workday] [website] ${entry.name}: already filled — skipping`);
+    return !alreadyFilled;
+  });
+
+  for (const entry of websiteUrls) {
+    const prevCount = document.querySelectorAll(websiteGroupInputSel).length;
+    console.log(`[simpleApply:workday] [website] ${entry.name}: current input count=${prevCount}`);
+
+    // Click Add only if there is no pre-existing panel for this slot
+    const clicked = await withOpt<HTMLButtonElement>(
+      websiteAddBtnSels,
+      async (el) => {
+        const rect = el.getBoundingClientRect();
+        console.warn(`[simpleApply:workday] [website] ⚠️ Clicking Add for ${entry.name}: text="${el.textContent?.trim()}" Y=${Math.round(rect.top)}`);
+        el.click();
+      }
     );
-    if (webInput) {
-      console.log(`[simpleApply:workday] -> github: "${profile.github}"`);
-      fill(webInput, profile.github);
+
+    if (!clicked) {
+      console.warn(`[simpleApply:workday] [website] Add button NOT found for ${entry.name} — skipping`);
+      continue;
+    }
+
+    // Wait (with MutationObserver) until a new input appears in the group
+    await waitForFormCount(websiteGroupInputSel, prevCount + 1, 5000);
+
+    const groupInputs = document.querySelectorAll<HTMLInputElement>(websiteGroupInputSel);
+    console.log(`[simpleApply:workday] [website] After Add for ${entry.name}: ${groupInputs.length} input(s) in group`);
+    groupInputs.forEach((inp, i) =>
+      console.log(`[simpleApply:workday] [website]   group input[${i}]: name="${inp.name}" automation-id="${inp.getAttribute('data-automation-id')}"`)
+    );
+
+    // The newly added input is at index prevCount
+    const newInput = groupInputs[prevCount] ?? null;
+    if (newInput) {
+      console.log(`[simpleApply:workday] -> ${entry.name}: "${entry.url}"`);
+      fill(newInput, entry.url);
+    } else {
+      console.warn(`[simpleApply:workday] [website] ${entry.name} input NOT found after Add click (got ${groupInputs.length} inputs)`);
     }
   }
 
@@ -984,7 +1090,15 @@ async function fillSelfIdentify(profile: ProfileData): Promise<void> {
 // Main entry — mirrors reference repo apply() function flow
 // ---------------------------------------------------------------------------
 
+let _fillWorkdayRunning = false;
+
 export async function fillWorkday(profile: ProfileData): Promise<void> {
+  if (_fillWorkdayRunning) {
+    console.warn('[simpleApply:workday] ⚠️ CONCURRENT CALL BLOCKED — fillWorkday already running. Ignoring this call.');
+    console.warn('[simpleApply:workday]   Triggered by page:', document.querySelector('[data-automation-id]')?.getAttribute('data-automation-id') ?? '(unknown)');
+    return;
+  }
+  _fillWorkdayRunning = true;
   console.log('[simpleApply:workday] Starting fillWorkday — profile:', {
     name: profile.name,
     email: profile.email,
@@ -1088,5 +1202,6 @@ export async function fillWorkday(profile: ProfileData): Promise<void> {
     await delay(300);
   }
 
+  _fillWorkdayRunning = false;
   console.log('[simpleApply:workday] fillWorkday complete');
 }
