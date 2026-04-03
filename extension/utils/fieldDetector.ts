@@ -25,11 +25,11 @@ export interface DetectedField {
 // Multilingual keyword lookup table
 const FIELD_KEYWORDS: Record<FieldType, string[]> = {
   firstName: [
-    'firstname', 'first_name', 'first-name', 'givenname', 'given_name', 'given-name',
+    'firstname', 'first_name', 'first-name', 'fname', 'f_name', 'f-name', 'givenname', 'given_name', 'given-name',
     'prénom', 'prenom', 'nombre', 'vorname',
   ],
   lastName: [
-    'lastname', 'last_name', 'last-name', 'surname', 'familyname', 'family_name',
+    'lastname', 'last_name', 'last-name', 'lname', 'l_name', 'l-name', 'surname', 'familyname', 'family_name',
     'nom', 'apellido', 'nachname',
   ],
   fullName: [
@@ -125,28 +125,41 @@ function matchKeywords(text: string): { type: FieldType; confidence: number } | 
   const norm = normalise(text);
   let best: { type: FieldType; confidence: number } | null = null;
   let bestLen = 0;
+  let bestIsGeneric = false;
 
-  // Keywords to prioritize (more specific, shouldn't be overridden by generic 'name')
-  const priorityKeywords = new Set(['email', 'password', 'phone', 'address', 'country', 'city']);
+  // Keywords to prioritize (high-specificity fields)
+  const priorityKeywords = new Set(['firstname', 'lastname', 'fname', 'lname', 'email', 'password', 'phone', 'linkedinurl', 'githuburl', 'portfoliourl']);
+  // Generic keywords that lose to priority ones
+  const genericKeywords = new Set(['name', 'address', 'city', 'country']);
 
   for (const [type, keywords] of Object.entries(FIELD_KEYWORDS) as [FieldType, string[]][]) {
     if (type === 'unknown') continue;
     for (const kw of keywords) {
       const normKw = normalise(kw);
       if (norm.includes(normKw)) {
+        const isGeneric = genericKeywords.has(kw);
+        const isPriority = priorityKeywords.has(kw);
+
         let confidence = norm === normKw ? 0.95 : 0.75;
         let keywordLen = normKw.length;
 
-        // Boost priority keywords to prevent generic 'name' from overriding
-        if (priorityKeywords.has(kw)) {
+        // Boost priority keywords
+        if (isPriority) {
           confidence = Math.min(1.0, confidence + 0.2);
-          keywordLen += 100; // Virtual length boost to win priority
+          keywordLen += 100; // Virtual boost
         }
 
-        // Prefer the longest (most specific) keyword match
-        if (keywordLen > bestLen) {
+        // Skip generic keywords if we already have a priority keyword match
+        if (isGeneric && bestIsGeneric === false && bestLen > 0) {
+          continue;
+        }
+
+        // Prefer the longest (most specific) keyword match, but priority over generic
+        const shouldUpdate = isPriority && bestIsGeneric ? true : keywordLen > bestLen;
+        if (shouldUpdate) {
           best = { type, confidence };
           bestLen = keywordLen;
+          bestIsGeneric = isGeneric;
         }
       }
     }
