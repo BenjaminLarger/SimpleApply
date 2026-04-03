@@ -12,6 +12,8 @@ export type FieldType =
   | 'country'
   | 'postalCode'
   | 'coverLetter'
+  | 'password'
+  | 'checkbox'
   | 'unknown';
 
 export interface DetectedField {
@@ -70,6 +72,14 @@ const FIELD_KEYWORDS: Record<FieldType, string[]> = {
     'coverletter', 'cover_letter', 'cover-letter', 'lettre de motivation',
     'carta de presentación', 'motivation',
   ],
+  password: [
+    'password', 'passwd', 'pwd', 'pass', 'retype', 'confirm_password',
+    'mot de passe', 'contraseña',
+  ],
+  checkbox: [
+    'agreement', 'consent', 'accept', 'agree', 'subscribe', 'notification',
+    'checkbox', 'accep', 'consentement',
+  ],
   unknown: [],
 };
 
@@ -85,6 +95,9 @@ const AUTOCOMPLETE_MAP: Partial<Record<string, FieldType>> = {
   country: 'country',
   'postal-code': 'postalCode',
   url: 'portfolioUrl',
+  'current-password': 'password',
+  'new-password': 'password',
+  password: 'password',
 };
 
 // Patterns that should NOT be matched (sub-fields we don't fill)
@@ -149,7 +162,7 @@ function getLabelText(el: HTMLInputElement | HTMLTextAreaElement): string {
 export function detectFields(root: Element): DetectedField[] {
   const results: DetectedField[] = [];
   const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
-    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea'
+    'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea, input[type="password"]'
   ));
   console.log(`[simpleApply:fieldDetector] Found ${inputs.length} candidate inputs via querySelectorAll`);
 
