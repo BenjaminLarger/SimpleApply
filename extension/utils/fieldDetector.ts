@@ -37,8 +37,8 @@ const FIELD_KEYWORDS: Record<FieldType, string[]> = {
     'nom complet', 'nombre completo',
   ],
   email: [
-    'email', 'e-mail', 'emailaddress', 'email_address', 'courriel',
-    'correo', 'correo electronico',
+    'email', 'e-mail', 'emailaddress', 'email_address', 'username', 'user_name',
+    'courriel', 'correo', 'correo electronico',
   ],
   phone: [
     'phone', 'telephone', 'tel', 'mobile', 'cell', 'phonenumber', 'phone_number',
@@ -128,7 +128,7 @@ function matchKeywords(text: string): { type: FieldType; confidence: number } | 
   let bestIsGeneric = false;
 
   // Keywords to prioritize (high-specificity fields)
-  const priorityKeywords = new Set(['firstname', 'lastname', 'fname', 'lname', 'email', 'password', 'phone', 'linkedinurl', 'githuburl', 'portfoliourl']);
+  const priorityKeywords = new Set(['firstname', 'lastname', 'fname', 'lname', 'email', 'username', 'user_name', 'password', 'phone', 'linkedinurl', 'githuburl', 'portfoliourl']);
   // Generic keywords that lose to priority ones
   const genericKeywords = new Set(['name', 'address', 'city', 'country']);
 
