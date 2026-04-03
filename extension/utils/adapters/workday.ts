@@ -4,9 +4,9 @@
  * Mirrors the flow from https://github.com/ubangura/Workday-Application-Automator
  * Adapted from Puppeteer to content-script DOM APIs.
  *
- * Reference repo flow:
+ * Reference repo flow (adapted):
  *   signIn → startApp → fillBasicInfo → fillExperience →
- *   fillVoluntaryDisclosures → fillSelfIdentify
+ *   fillApplicationQuestions → fillVoluntaryDisclosures → fillSelfIdentify
  *
  * Each page is filled by targeting elements directly via selectors
  * (data-automation-id first, then name/id fallback), NOT by looping inputs.
@@ -965,6 +965,94 @@ async function fillExperience(profile: ProfileData): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// fillApplicationQuestions — auto-fill application questions (Step 3 of 5)
+// ---------------------------------------------------------------------------
+
+async function fillApplicationQuestions(profile: ProfileData): Promise<void> {
+  console.log('[simpleApply:workday] Filling application questions');
+
+  // Map of question text patterns to expected answers
+  // Based on standard Workday application questions
+  const questionAnswers = [
+    // Q1: Would you consider relocating for this role?
+    { pattern: /relocat/i, answer: 'Yes' },
+    // Q2: Are you subject to any non-compete or non-solicitation restrictions?
+    { pattern: /non-compet|non-solicit/i, answer: 'No' },
+    // Q3: In your current job, do you use or work on the Workday system?
+    { pattern: /workday.*system|workday.*current job/i, answer: 'No' },
+    // Q4: Are you authorized to work in the country where this job is located?
+    { pattern: /authorized.*work.*countr/i, answer: 'Yes' },
+    // Q5: Do you require immigration filing or visa sponsorship?
+    { pattern: /immigration|visa.*sponsorship/i, answer: 'No' },
+    // Q6: Are you a current or former employee of the United States government?
+    { pattern: /government.*employee|US.*government/i, answer: 'No' },
+    // Q7: Are you a current citizen/resident of [restricted countries]?
+    { pattern: /Iran|Cuba|North Korea|Syria|Crimea|DNR|LNR/i, answer: 'No' },
+    // Q8: Are you related to a current Workday employee?
+    { pattern: /related.*workday.*employee/i, answer: 'No' },
+    // Q9: Are you related to a customer employee or government official?
+    { pattern: /related.*customer.*government/i, answer: 'No' },
+    // Q10: Acknowledgment checkbox
+    { pattern: /acknowledge.*read.*truthfully/i, answer: 'No' },
+  ];
+
+  // Get all required select buttons (these are the application questions)
+  const selectButtons = document.querySelectorAll<HTMLButtonElement>('button[aria-label*="Required"]');
+  if (selectButtons.length === 0) {
+    console.log('[simpleApply:workday] No application questions found (no required buttons), skipping');
+    await clickNext();
+    return;
+  }
+
+  console.log(`[simpleApply:workday] Found ${selectButtons.length} application question buttons`);
+
+  // Fill each question button
+  for (let i = 0; i < Math.min(selectButtons.length, questionAnswers.length); i++) {
+    const button = selectButtons[i];
+    const expectedAnswer = questionAnswers[i].answer;
+
+    console.log(`[simpleApply:workday] [Q${i + 1}/${selectButtons.length}] Selecting: "${expectedAnswer}"`);
+
+    // Click button to open dropdown
+    button.click();
+    await delay(600);
+
+    // Find and click the matching option
+    const options = document.querySelectorAll<HTMLElement>('[role="option"]');
+    let found = false;
+
+    for (const option of options) {
+      const optionText = option.textContent?.trim() || '';
+      // Check if option starts with the expected answer
+      if (optionText.startsWith(expectedAnswer)) {
+        console.log(`[simpleApply:workday] [Q${i + 1}] ✓ Found option: "${optionText.substring(0, 60)}"`);
+
+        // Perform multi-event click to ensure selection registers
+        option.click();
+        option.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        option.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+        option.focus();
+        option.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+        option.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
+
+        found = true;
+        await delay(400);
+        break;
+      }
+    }
+
+    if (!found) {
+      console.warn(`[simpleApply:workday] [Q${i + 1}] ✗ Could not find option for "${expectedAnswer}"`);
+    }
+  }
+
+  console.log('[simpleApply:workday] Application questions complete');
+
+  /* Click Next */
+  await clickNext();
+}
+
+// ---------------------------------------------------------------------------
 // fillVoluntaryDisclosures — mirrors reference repo fillVoluntaryDisclosures()
 // ---------------------------------------------------------------------------
 
@@ -1149,6 +1237,14 @@ export async function fillWorkday(profile: ProfileData): Promise<void> {
         !!document.querySelector('input[data-automation-id="file-upload-input-ref"]') ||
         !!document.querySelector('input[type="file"]'),
       fill: () => fillExperience(profile),
+    },
+    {
+      name: 'applicationQuestions',
+      detect: () =>
+        !!document.querySelector('button[aria-label*="Select One Required"]') &&
+        !document.querySelector('button[data-automation-id="gender"]') &&
+        !document.querySelector('button[data-automation-id="ethnicityDropdown"]'),
+      fill: () => fillApplicationQuestions(profile),
     },
     {
       name: 'voluntaryDisclosures',
