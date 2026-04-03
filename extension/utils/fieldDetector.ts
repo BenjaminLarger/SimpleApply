@@ -126,16 +126,27 @@ function matchKeywords(text: string): { type: FieldType; confidence: number } | 
   let best: { type: FieldType; confidence: number } | null = null;
   let bestLen = 0;
 
+  // Keywords to prioritize (more specific, shouldn't be overridden by generic 'name')
+  const priorityKeywords = new Set(['email', 'password', 'phone', 'address', 'country', 'city']);
+
   for (const [type, keywords] of Object.entries(FIELD_KEYWORDS) as [FieldType, string[]][]) {
     if (type === 'unknown') continue;
     for (const kw of keywords) {
       const normKw = normalise(kw);
       if (norm.includes(normKw)) {
-        const confidence = norm === normKw ? 0.95 : 0.75;
+        let confidence = norm === normKw ? 0.95 : 0.75;
+        let keywordLen = normKw.length;
+
+        // Boost priority keywords to prevent generic 'name' from overriding
+        if (priorityKeywords.has(kw)) {
+          confidence = Math.min(1.0, confidence + 0.2);
+          keywordLen += 100; // Virtual length boost to win priority
+        }
+
         // Prefer the longest (most specific) keyword match
-        if (normKw.length > bestLen) {
+        if (keywordLen > bestLen) {
           best = { type, confidence };
-          bestLen = normKw.length;
+          bestLen = keywordLen;
         }
       }
     }
