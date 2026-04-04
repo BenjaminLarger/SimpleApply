@@ -439,7 +439,7 @@ function fillSelectFields(root: Element, profile: ProfileData): void {
       if (countryCode) {
         select.value = countryCode;
         select.dispatchEvent(new Event('change', { bubbles: true }));
-        console.log('[simpleApply:filler] Country select filled:', countryCode);
+        console.log('[simpleApply:filler] Country select filled with code:', countryCode);
       }
     }
   });
@@ -514,8 +514,22 @@ function findCountryOption(select: HTMLSelectElement, countryName: string): stri
     'United Kingdom': 'GB',
     'Germany': 'DE',
     'France': 'FR',
+    'Spain': 'ES',
+    'España': 'ES',
     'Australia': 'AU',
     'India': 'IN',
+    'Mexico': 'MX',
+    'Brazil': 'BR',
+    'Italy': 'IT',
+    'Netherlands': 'NL',
+    'Belgium': 'BE',
+    'Switzerland': 'CH',
+    'Austria': 'AT',
+    'Sweden': 'SE',
+    'Norway': 'NO',
+    'Denmark': 'DK',
+    'Poland': 'PL',
+    'Portugal': 'PT',
   };
 
   const countryCode = countryMap[countryName];
