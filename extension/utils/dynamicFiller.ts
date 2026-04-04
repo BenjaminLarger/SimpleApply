@@ -510,6 +510,61 @@ function getCheckboxLabel(checkbox: HTMLInputElement): string {
 }
 
 /**
+ * Type text into a cascading picklist dropdown (mimics Workday pattern).
+ * Approach: click button → wait for input focus → type text → press Enter
+ * Adapted from workday.ts typeIntoDropdown function.
+ */
+async function typeIntoPicklist(button: HTMLElement, text: string): Promise<void> {
+  button.click();
+  await new Promise(resolve => setTimeout(resolve, 400));
+
+  const activeEl = document.activeElement;
+  if (activeEl instanceof HTMLInputElement) {
+    // Use native value setter to trigger framework change handlers
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value'
+    )?.set;
+
+    if (nativeInputValueSetter) {
+      nativeInputValueSetter.call(activeEl, text);
+    } else {
+      activeEl.value = text;
+    }
+
+    activeEl.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Press Enter to confirm selection
+    activeEl.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true })
+    );
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return;
+  }
+
+  // Fallback: char-by-char keyboard input
+  for (const ch of text) {
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: ch, bubbles: true })
+    );
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent('keypress', { key: ch, bubbles: true })
+    );
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent('keyup', { key: ch, bubbles: true })
+    );
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 400));
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true })
+  );
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+
+/**
  * Fill Language Skills section with user's languages
  */
 async function fillLanguageSkills(
@@ -539,7 +594,7 @@ async function fillLanguageSkills(
     return;
   }
 
-  // Find the "Add new row" button - look for div with class containing "addRowButton"
+  // Find the "Add new row" button
   const addBtn = languageSection.querySelector<HTMLElement>(
     'div[class*="addRowButton"]'
   );
@@ -560,10 +615,9 @@ async function fillLanguageSkills(
       console.log('[simpleApply:filler] Timeout waiting for language row to render');
     }
 
-    // Wait a bit more for inputs to be interactive
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Find the newest row (last row with cascading picklist inputs)
+    // Find the newest row
     const rowContainers = languageSection.querySelectorAll('[id*="_sectionComponent"]');
     if (rowContainers.length === 0) {
       console.log('[simpleApply:filler] No row containers found');
@@ -571,89 +625,39 @@ async function fillLanguageSkills(
     }
 
     const lastRow = rowContainers[rowContainers.length - 1];
-    const languageInput = lastRow.querySelector<HTMLInputElement>(
-      'input[aria-label*="Language"][class*="rcmpaginatedselectinput"]'
+
+    // Fill Language using the typeIntoPicklist pattern
+    const languageBtn = lastRow.querySelector<HTMLButtonElement>(
+      'button[class*="rcmpaginatedselectbutton"][title="Language"]'
     );
 
-    if (languageInput) {
-      // Click to open dropdown
-      languageInput.click();
-      languageInput.focus();
-
-      // Wait for options to appear
-      await new Promise(resolve => setTimeout(resolve, 250));
-
-      // Find and select the language option
-      const options = document.querySelectorAll('[role="option"]');
-      let found = false;
-      for (const option of options) {
-        if (option.textContent?.toLowerCase().includes(lang.language.toLowerCase())) {
-          (option as HTMLElement).click();
-          console.log(`[simpleApply:filler] Selected language: ${lang.language}`);
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        console.log(`[simpleApply:filler] Language option not found for: ${lang.language}`);
-      }
-
-      // Wait for the dropdown to close and cascade to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
+    if (languageBtn) {
+      console.log(`[simpleApply:filler] Filling language: ${lang.language}`);
+      await typeIntoPicklist(languageBtn, lang.language);
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Fill proficiency fields if proficiency is provided
+    // Fill proficiency fields (Speaking, Reading, Writing)
     if (lang.proficiency) {
-      const proficiencyInputs = lastRow.querySelectorAll<HTMLInputElement>(
-        'input[aria-label*="Proficiency"][class*="rcmpaginatedselectinput"]'
+      const proficiencyMap: Record<string, string> = {
+        'native': 'Native',
+        'fluent': 'Native',
+        'advanced': 'Advanced',
+        'intermediate': 'Intermediate',
+        'basic': 'Basic',
+      };
+
+      const targetProficiency = proficiencyMap[lang.proficiency.toLowerCase()] || lang.proficiency;
+
+      // Query for all proficiency buttons in this row
+      const proficiencyBtns = lastRow.querySelectorAll<HTMLButtonElement>(
+        'button[class*="rcmpaginatedselectbutton"][title*="Proficiency"]'
       );
 
-      for (const profInput of proficiencyInputs) {
-        // Click to open dropdown
-        profInput.click();
-        profInput.focus();
-
-        // Wait for options to appear
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        // Find and select the proficiency option
-        const options = document.querySelectorAll('[role="option"]');
-        let profFound = false;
-        for (const option of options) {
-          if (option.textContent?.toLowerCase().includes(lang.proficiency.toLowerCase())) {
-            (option as HTMLElement).click();
-            console.log(`[simpleApply:filler] Selected proficiency: ${lang.proficiency}`);
-            profFound = true;
-            break;
-          }
-        }
-
-        if (!profFound) {
-          // Try common proficiency levels as fallback
-          const fallbackLevels: Record<string, string> = {
-            'fluent': 'Native',
-            'native': 'Native',
-            'advanced': 'Advanced',
-            'intermediate': 'Intermediate',
-            'basic': 'Basic',
-          };
-
-          const fallbackLevel = fallbackLevels[lang.proficiency.toLowerCase()];
-          if (fallbackLevel) {
-            const optionsArray = Array.from(options);
-            for (const option of optionsArray) {
-              if (option.textContent?.includes(fallbackLevel)) {
-                (option as HTMLElement).click();
-                console.log(`[simpleApply:filler] Selected fallback proficiency: ${fallbackLevel}`);
-                break;
-              }
-            }
-          }
-        }
-
-        // Wait for the dropdown to close
-        await new Promise(resolve => setTimeout(resolve, 150));
+      for (const btn of proficiencyBtns) {
+        console.log(`[simpleApply:filler] Filling ${btn.title}: ${targetProficiency}`);
+        await typeIntoPicklist(btn, targetProficiency);
+        await new Promise(resolve => setTimeout(resolve, 400));
       }
     }
   }
