@@ -9,6 +9,7 @@ export type FieldType =
   | 'portfolioUrl'
   | 'address'
   | 'city'
+  | 'state'
   | 'country'
   | 'postalCode'
   | 'coverLetter'
@@ -61,6 +62,9 @@ const FIELD_KEYWORDS: Record<FieldType, string[]> = {
   ],
   city: [
     'city', 'ville', 'ciudad', 'stadt', 'locality',
+  ],
+  state: [
+    'state', 'province', 'région', 'region', 'región', 'stato', 'bundesland', 'departement', 'departamento',
   ],
   country: [
     'country', 'pays', 'país', 'pais', 'land',
@@ -227,6 +231,41 @@ function expandFormSections(root: Element): void {
   }
 }
 
+/**
+ * Detect cascading picklist fields (Successfactors combobox dropdowns)
+ */
+function detectCascadingPicklists(root: Element): DetectedField[] {
+  const results: DetectedField[] = [];
+  const picklistInputs = root.querySelectorAll<HTMLInputElement>('.rcmpaginatedselectinput');
+
+  picklistInputs.forEach((input) => {
+    const ariaLabel = input.getAttribute('aria-label') || '';
+    const label = ariaLabel.toLowerCase();
+
+    let fieldType: FieldType = 'unknown';
+
+    // Map aria-label to field type
+    if (label.includes('country') || label.includes('país')) {
+      fieldType = 'country';
+    } else if (label.includes('state') || label.includes('province') || label.includes('región') || label.includes('region')) {
+      fieldType = 'state';
+    } else if (label.includes('city') || label.includes('ciudad')) {
+      fieldType = 'city';
+    }
+
+    if (fieldType !== 'unknown') {
+      console.log(`[simpleApply:fieldDetector] Cascading picklist detected: ${fieldType} (${ariaLabel})`);
+      results.push({
+        element: input,
+        fieldType,
+        confidence: 0.95,
+      });
+    }
+  });
+
+  return results;
+}
+
 // Detect UI5 date picker components (for SuccessFactors and similar SAP systems)
 function detectUI5DatePickers(root: Element): DetectedField[] {
   const results: DetectedField[] = [];
@@ -293,6 +332,10 @@ export function detectFields(root: Element): DetectedField[] {
   // Then, detect UI5 date picker components
   const datePickerResults = detectUI5DatePickers(root);
   results.push(...datePickerResults);
+
+  // Detect cascading picklist fields (Successfactors)
+  const picklistResults = detectCascadingPicklists(root);
+  results.push(...picklistResults);
 
   const inputs = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
     'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea, input[type="password"]'

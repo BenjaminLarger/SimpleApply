@@ -7,6 +7,11 @@ const PROFILE_FIELD_MAP: Partial<Record<FieldType, keyof ProfileData>> = {
   linkedinUrl: 'linkedin',
   githubUrl: 'github',
   portfolioUrl: 'portfolio',
+  country: 'country',
+  state: 'state',
+  city: 'city',
+  address: 'address',
+  postalCode: 'postalCode',
   // password and checkbox types don't map to profile fields
 };
 
@@ -205,6 +210,9 @@ export async function fillForm(
   // Check consent/agreement checkboxes
   checkConsentCheckboxes(root);
 
+  // Fill cascading picklists (Successfactors country, state, etc.)
+  await fillCascadingPicklists(root, profile);
+
   // Fill job-specific information fields
   fillJobSpecificInformation(root, profile);
 
@@ -350,6 +358,69 @@ function hasExperienceInFinancialDataModeling(experiences: Experience[] | undefi
                         text.includes('account') || text.includes('interaction');
     return hasDataModeling && hasFinancial;
   });
+}
+
+/**
+ * Fill cascading picklist fields (Successfactors combobox dropdowns with pagination)
+ */
+async function fillCascadingPicklists(root: Element, profile: ProfileData): Promise<void> {
+  // Find all cascading picklist inputs (identified by class name)
+  const picklistInputs = root.querySelectorAll<HTMLInputElement>('.rcmpaginatedselectinput');
+
+  for (const input of picklistInputs) {
+    const ariaLabel = input.getAttribute('aria-label') || '';
+    const hiddenInput = input.closest('td')?.querySelector<HTMLInputElement>('input[type="hidden"]');
+    const ariaOwns = input.getAttribute('aria-owns') || '';
+
+    const fieldLabel = ariaLabel.toLowerCase();
+
+    // Determine what value to fill based on aria-label
+    let valueToFill: string | null = null;
+
+    if (fieldLabel.includes('country') || fieldLabel.includes('país')) {
+      valueToFill = profile.country || null;
+    } else if (fieldLabel.includes('state') || fieldLabel.includes('province') || fieldLabel.includes('región')) {
+      valueToFill = profile.state || null;
+    } else if (fieldLabel.includes('city') || fieldLabel.includes('ciudad')) {
+      valueToFill = profile.city || null;
+    }
+
+    if (!valueToFill) continue;
+
+    // Click the input to open the picklist
+    input.click();
+    input.focus();
+
+    // Wait for options to appear
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Find and click the matching option
+    const listId = ariaOwns;
+    let listContainer = document.getElementById(listId);
+    if (!listContainer) {
+      listContainer = input.closest('.fd-input-group')?.querySelector('.rcmpaginatedselect_list') || null;
+    }
+
+    if (listContainer) {
+      const options = listContainer.querySelectorAll('[role="option"]');
+      for (const option of options) {
+        const optionText = option.textContent?.trim() || '';
+        if (optionText.toLowerCase().includes(valueToFill.toLowerCase())) {
+          (option as HTMLElement).click();
+          console.log(`[simpleApply:filler] Cascading picklist "${ariaLabel}" selected: "${optionText}"`);
+
+          // Update the hidden input field
+          if (hiddenInput) {
+            hiddenInput.value = optionText;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 100));
+          break;
+        }
+      }
+    }
+  }
 }
 
 /**
