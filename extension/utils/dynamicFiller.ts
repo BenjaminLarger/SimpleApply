@@ -521,14 +521,15 @@ async function fillLanguageSkills(
     return;
   }
 
-  // Find the Language Skills section by looking for the heading that contains "Language"
-  const sections = root.querySelectorAll('[role="group"]');
+  // Find the Language Skills section by searching for content with "Language" and "Proficiency"
+  const allSections = root.querySelectorAll('[id*="sectionContent"]');
   let languageSection: Element | null = null;
 
-  for (const section of sections) {
-    const heading = section.querySelector('[id*="headerLabel"]');
-    if (heading?.textContent?.includes('Language')) {
+  for (const section of allSections) {
+    const content = section.textContent || '';
+    if (content.includes('Language') && content.includes('Proficiency')) {
       languageSection = section;
+      console.log('[simpleApply:filler] Language Skills section found');
       break;
     }
   }
@@ -538,9 +539,9 @@ async function fillLanguageSkills(
     return;
   }
 
-  // Find the "Add new row" button in this section
+  // Find the "Add new row" button - look for div with class containing "addRowButton"
   const addBtn = languageSection.querySelector<HTMLElement>(
-    'div[role="button"][class*="addRowButton"]'
+    'div[class*="addRowButton"]'
   );
 
   if (!addBtn) {
