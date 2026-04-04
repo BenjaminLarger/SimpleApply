@@ -18,6 +18,11 @@ export interface Education {
   endYear?: string;
 }
 
+export interface Language {
+  language: string;
+  proficiency?: string;
+}
+
 export interface VoluntaryDisclosures {
   gender?: string;
   ethnicity?: string;
@@ -42,6 +47,7 @@ export interface ProfileData {
   experiences: Experience[];
   education?: Education[];
   skills?: string[];
+  languages?: Language[];
   resumeFilePath?: string;
   voluntaryDisclosures?: VoluntaryDisclosures;
 }

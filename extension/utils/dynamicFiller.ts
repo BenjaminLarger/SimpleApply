@@ -1,4 +1,4 @@
-import type { ProfileData, Experience } from './profile-client.js';
+import type { ProfileData, Experience, Language } from './profile-client.js';
 import type { DetectedField, FieldType } from './fieldDetector.js';
 
 const PROFILE_FIELD_MAP: Partial<Record<FieldType, keyof ProfileData>> = {
@@ -219,6 +219,11 @@ export async function fillForm(
   // Handle dynamic multi-entry sections (experience, education)
   if (profile.experiences?.length) {
     await fillExperienceSection(root, profile);
+  }
+
+  // Fill Language Skills section
+  if (profile.languages?.length) {
+    await fillLanguageSkills(root, profile);
   }
 }
 
@@ -502,6 +507,157 @@ function getCheckboxLabel(checkbox: HTMLInputElement): string {
   if (parentLabel) return parentLabel.textContent || '';
 
   return checkbox.getAttribute('name') || '';
+}
+
+/**
+ * Fill Language Skills section with user's languages
+ */
+async function fillLanguageSkills(
+  root: Element,
+  profile: ProfileData
+): Promise<void> {
+  if (!profile.languages || profile.languages.length === 0) {
+    console.log('[simpleApply:filler] No languages in profile, skipping Language Skills section');
+    return;
+  }
+
+  // Find the Language Skills section by looking for the heading that contains "Language"
+  const sections = root.querySelectorAll('[role="group"]');
+  let languageSection: Element | null = null;
+
+  for (const section of sections) {
+    const heading = section.querySelector('[id*="headerLabel"]');
+    if (heading?.textContent?.includes('Language')) {
+      languageSection = section;
+      break;
+    }
+  }
+
+  if (!languageSection) {
+    console.log('[simpleApply:filler] Language Skills section not found');
+    return;
+  }
+
+  // Find the "Add new row" button in this section
+  const addBtn = languageSection.querySelector<HTMLElement>(
+    'div[role="button"][class*="addRowButton"]'
+  );
+
+  if (!addBtn) {
+    console.log('[simpleApply:filler] Add row button not found in Language Skills section');
+    return;
+  }
+
+  // Add and fill a row for each language
+  for (const lang of profile.languages) {
+    addBtn.click();
+
+    // Wait for new row to render
+    try {
+      await waitForNewNodes(languageSection, 2000);
+    } catch {
+      console.log('[simpleApply:filler] Timeout waiting for language row to render');
+    }
+
+    // Wait a bit more for inputs to be interactive
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Find the newest row (last row with cascading picklist inputs)
+    const rowContainers = languageSection.querySelectorAll('[id*="_sectionComponent"]');
+    if (rowContainers.length === 0) {
+      console.log('[simpleApply:filler] No row containers found');
+      continue;
+    }
+
+    const lastRow = rowContainers[rowContainers.length - 1];
+    const languageInput = lastRow.querySelector<HTMLInputElement>(
+      'input[aria-label*="Language"][class*="rcmpaginatedselectinput"]'
+    );
+
+    if (languageInput) {
+      // Click to open dropdown
+      languageInput.click();
+      languageInput.focus();
+
+      // Wait for options to appear
+      await new Promise(resolve => setTimeout(resolve, 250));
+
+      // Find and select the language option
+      const options = document.querySelectorAll('[role="option"]');
+      let found = false;
+      for (const option of options) {
+        if (option.textContent?.toLowerCase().includes(lang.language.toLowerCase())) {
+          (option as HTMLElement).click();
+          console.log(`[simpleApply:filler] Selected language: ${lang.language}`);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        console.log(`[simpleApply:filler] Language option not found for: ${lang.language}`);
+      }
+
+      // Wait for the dropdown to close and cascade to complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    // Fill proficiency fields if proficiency is provided
+    if (lang.proficiency) {
+      const proficiencyInputs = lastRow.querySelectorAll<HTMLInputElement>(
+        'input[aria-label*="Proficiency"][class*="rcmpaginatedselectinput"]'
+      );
+
+      for (const profInput of proficiencyInputs) {
+        // Click to open dropdown
+        profInput.click();
+        profInput.focus();
+
+        // Wait for options to appear
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Find and select the proficiency option
+        const options = document.querySelectorAll('[role="option"]');
+        let profFound = false;
+        for (const option of options) {
+          if (option.textContent?.toLowerCase().includes(lang.proficiency.toLowerCase())) {
+            (option as HTMLElement).click();
+            console.log(`[simpleApply:filler] Selected proficiency: ${lang.proficiency}`);
+            profFound = true;
+            break;
+          }
+        }
+
+        if (!profFound) {
+          // Try common proficiency levels as fallback
+          const fallbackLevels: Record<string, string> = {
+            'fluent': 'Native',
+            'native': 'Native',
+            'advanced': 'Advanced',
+            'intermediate': 'Intermediate',
+            'basic': 'Basic',
+          };
+
+          const fallbackLevel = fallbackLevels[lang.proficiency.toLowerCase()];
+          if (fallbackLevel) {
+            const optionsArray = Array.from(options);
+            for (const option of optionsArray) {
+              if (option.textContent?.includes(fallbackLevel)) {
+                (option as HTMLElement).click();
+                console.log(`[simpleApply:filler] Selected fallback proficiency: ${fallbackLevel}`);
+                break;
+              }
+            }
+          }
+        }
+
+        // Wait for the dropdown to close
+        await new Promise(resolve => setTimeout(resolve, 150));
+      }
+    }
+  }
+
+  console.log(`[simpleApply:filler] Language Skills section completed. Added ${profile.languages.length} language(s)`);
 }
 
 /**
