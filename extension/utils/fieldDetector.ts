@@ -299,6 +299,57 @@ export function detectFields(root: Element): DetectedField[] {
   ));
   console.log(`[simpleApply:fieldDetector] Found ${inputs.length} candidate inputs via querySelectorAll`);
 
+  // Define detection sources in priority order
+  interface DetectorConfig {
+    source: string;
+    getValue: (element: HTMLInputElement | HTMLTextAreaElement) => string;
+    confidenceMultiplier: number;
+    minConfidenceToStopSearch: number;
+  }
+
+  const detectors: DetectorConfig[] = [
+    {
+      source: 'autocomplete',
+      getValue: (el) => {
+        const ac = el.getAttribute('autocomplete');
+        const acType = ac && AUTOCOMPLETE_MAP[ac];
+        return acType ? `[AUTOCOMPLETE:${acType}]` : '';
+      },
+      confidenceMultiplier: 1.0,
+      minConfidenceToStopSearch: 1.0,
+    },
+    {
+      source: 'data-automation-id',
+      getValue: (el) => el.closest('[data-automation-id]')?.getAttribute('data-automation-id') ?? '',
+      confidenceMultiplier: 1.0,
+      minConfidenceToStopSearch: 0.5,
+    },
+    {
+      source: 'name',
+      getValue: (el) => el.getAttribute('name') ?? '',
+      confidenceMultiplier: 1.0,
+      minConfidenceToStopSearch: 0.9,
+    },
+    {
+      source: 'id',
+      getValue: (el) => el.id ?? '',
+      confidenceMultiplier: 1.0,
+      minConfidenceToStopSearch: 0.9,
+    },
+    {
+      source: 'placeholder',
+      getValue: (el) => el.getAttribute('placeholder') ?? '',
+      confidenceMultiplier: 0.85,
+      minConfidenceToStopSearch: 0.75,
+    },
+    {
+      source: 'label',
+      getValue: (el) => getLabelText(el),
+      confidenceMultiplier: 0.9,
+      minConfidenceToStopSearch: 0.75,
+    },
+  ];
+
   for (const el of inputs) {
     // Skip fields that are sub-components (middle name, phone country code, extension)
     const sig = [el.id, el.getAttribute('name'), el.getAttribute('aria-label'),
@@ -308,61 +359,29 @@ export function detectFields(root: Element): DetectedField[] {
     let fieldType: FieldType = 'unknown';
     let confidence = 0;
 
-    // 1. autocomplete attribute (highest priority)
-    const ac = el.getAttribute('autocomplete');
-    if (ac && AUTOCOMPLETE_MAP[ac]) {
-      fieldType = AUTOCOMPLETE_MAP[ac]!;
-      confidence = 1.0;
-    }
-
-    // 2. data-automation-id (Workday) — low-priority hint from parent container
-    if (fieldType === 'unknown') {
-      const autoId = el.closest('[data-automation-id]')?.getAttribute('data-automation-id') ?? '';
-      const match = scoreByKeywords(autoId);
-      if (match && match.confidence > confidence) {
-        fieldType = match.type;
-        // Mark as tentative (0.5) so element-level signals can override
-        confidence = 0.5;
+    // Try each detector in order until we find a match above the threshold
+    for (const detector of detectors) {
+      // Skip if we already have high enough confidence
+      if (fieldType !== 'unknown' && confidence >= detector.minConfidenceToStopSearch) {
+        break;
       }
-    }
 
-    // 3. name attribute
-    if (fieldType === 'unknown' || confidence < 0.9) {
-      const nameVal = el.getAttribute('name') ?? '';
-      const match = scoreByKeywords(nameVal);
-      if (match && match.confidence > confidence) {
-        fieldType = match.type;
-        confidence = match.confidence;
+      const value = detector.getValue(el);
+      if (!value) continue;
+
+      // Special case: autocomplete with direct mapping
+      if (detector.source === 'autocomplete' && value.startsWith('[AUTOCOMPLETE:')) {
+        const acType = value.slice(14, -1) as FieldType;
+        fieldType = acType;
+        confidence = 1.0;
+        break; // Highest priority — stop searching
       }
-    }
 
-    // 4. id attribute
-    if (fieldType === 'unknown' || confidence < 0.9) {
-      const idVal = el.id ?? '';
-      const match = scoreByKeywords(idVal);
-      if (match && match.confidence > confidence) {
+      // Standard keyword matching
+      const match = scoreByKeywords(value);
+      if (match && match.confidence * detector.confidenceMultiplier > confidence) {
         fieldType = match.type;
-        confidence = match.confidence;
-      }
-    }
-
-    // 5. placeholder
-    if (fieldType === 'unknown' || confidence < 0.75) {
-      const ph = el.getAttribute('placeholder') ?? '';
-      const match = scoreByKeywords(ph);
-      if (match && match.confidence > confidence) {
-        fieldType = match.type;
-        confidence = match.confidence * 0.85;
-      }
-    }
-
-    // 6. label text
-    if (fieldType === 'unknown' || confidence < 0.75) {
-      const label = getLabelText(el);
-      const match = scoreByKeywords(label);
-      if (match && match.confidence > confidence) {
-        fieldType = match.type;
-        confidence = match.confidence * 0.9;
+        confidence = match.confidence * detector.confidenceMultiplier;
       }
     }
 
