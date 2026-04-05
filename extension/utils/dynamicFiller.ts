@@ -1,5 +1,6 @@
 import type { ProfileData, Experience, Language } from './profile-client.js';
 import type { DetectedField, FieldType } from './fieldDetector.js';
+import { isSuccessFactors } from './adapters/successfactors.js';
 
 const PROFILE_FIELD_MAP: Partial<Record<FieldType, keyof ProfileData>> = {
   email: 'email',
@@ -221,8 +222,8 @@ export async function fillForm(
     await fillExperienceSection(root, profile);
   }
 
-  // Fill Language Skills section
-  if (profile.languages?.length) {
+  // Fill Language Skills section (SuccessFactors only)
+  if (profile.languages?.length && isSuccessFactors()) {
     await fillLanguageSkills(root, profile);
   }
 }

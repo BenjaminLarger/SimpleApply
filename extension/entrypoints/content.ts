@@ -4,6 +4,7 @@ import { queryShadowAll } from '../utils/shadowDom.js';
 import { fillForm } from '../utils/dynamicFiller.js';
 import { getProfile } from '../utils/profile-client.js';
 import { isWorkday, fillWorkday } from '../utils/adapters/workday.js';
+import { isSuccessFactors } from '../utils/adapters/successfactors.js';
 
 const MIN_FIELDS = 3;
 let bannerInjected = false;
