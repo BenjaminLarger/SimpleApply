@@ -16,6 +16,7 @@ export type FieldType =
   | 'password'
   | 'date'
   | 'checkbox'
+  | 'gender'
   | 'unknown';
 
 export interface DetectedField {
@@ -93,6 +94,11 @@ const FIELD_KEYWORDS: Record<FieldType, string[]> = {
     'agreement', 'consent', 'accept', 'agree', 'subscribe', 'notification',
     'checkbox', 'accep', 'consentement',
   ],
+  gender: [
+    'gender', 'sex', 'sexe', 'género', 'genero',
+  ],
+  // Note: These field types are job-specific or context-specific and may not have profile data available
+  // They are detected but may not be filled if profile data is missing
   unknown: [],
 };
 
@@ -360,6 +366,12 @@ export function detectFields(root: Element): DetectedField[] {
       },
       confidenceMultiplier: 1.0,
       minConfidenceToStopSearch: 1.0,
+    },
+    {
+      source: 'aria-label',
+      getValue: (el) => el.getAttribute('aria-label') ?? '',
+      confidenceMultiplier: 1.0,
+      minConfidenceToStopSearch: 0.9,
     },
     {
       source: 'data-automation-id',
