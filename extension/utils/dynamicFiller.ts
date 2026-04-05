@@ -565,6 +565,72 @@ async function typeIntoPicklist(button: HTMLElement, text: string): Promise<void
 }
 
 /**
+ * Select a value from a SuccessFactors cascading picklist by clicking the input,
+ * waiting for options to load, then clicking the matching option.
+ */
+async function selectPicklistOption(input: HTMLInputElement, value: string): Promise<boolean> {
+  // Close any previously open dropdown by clicking on the document body
+  (document.activeElement as HTMLElement)?.blur();
+  document.body.click();
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Click input to open the picklist dropdown
+  input.click();
+  input.focus();
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  // Retry loop: options may need time to load via AJAX (especially first time)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    // Find the options list via aria-owns
+    const ariaOwns = input.getAttribute('aria-owns') || '';
+    let listContainer: HTMLElement | null = document.getElementById(ariaOwns);
+    if (!listContainer) {
+      listContainer = input.closest('.rcmpaginatedselect')?.querySelector('.rcmpaginatedselect_list') as HTMLElement | null;
+    }
+    if (!listContainer) {
+      const allLists = document.querySelectorAll('[role="listbox"]');
+      for (const list of allLists) {
+        if ((list as HTMLElement).offsetParent !== null) {
+          listContainer = list as HTMLElement;
+          break;
+        }
+      }
+    }
+
+    if (listContainer) {
+      const options = listContainer.querySelectorAll('[role="option"]');
+      if (options.length === 0 && attempt < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        continue;
+      }
+      console.log(`[simpleApply:filler] Picklist has ${options.length} options, looking for "${value}" (attempt ${attempt + 1})`);
+      for (const option of options) {
+        const optionText = option.textContent?.trim() || '';
+        if (optionText.toLowerCase().includes(value.toLowerCase())) {
+          (option as HTMLElement).click();
+          console.log(`[simpleApply:filler] Selected option: "${optionText}"`);
+          await new Promise(resolve => setTimeout(resolve, 200));
+          return true;
+        }
+      }
+      console.log(`[simpleApply:filler] No matching option found for "${value}"`);
+      return false;
+    }
+
+    // No list container found yet, wait and re-click
+    if (attempt < 2) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      input.click();
+      input.focus();
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+
+  console.log(`[simpleApply:filler] No option list found for picklist after retries`);
+  return false;
+}
+
+/**
  * Fill Language Skills section with user's languages
  */
 async function fillLanguageSkills(
@@ -706,45 +772,77 @@ async function fillLanguageSkills(
     const lastRow = rows[rows.length - 1] as HTMLElement;
     console.log('[simpleApply:filler] Processing new row. Total rows:', rows.length);
 
-    // Find ALL buttons in this row with class "rcmpaginatedselectbutton"
-    const allBtns = Array.from(lastRow.querySelectorAll<HTMLButtonElement>('button.rcmpaginatedselectbutton'));
-    console.log('[simpleApply:filler] Found', allBtns.length, 'select buttons in the new row');
+    // Find ALL inputs in this row with class "rcmpaginatedselectinput"
+    const allInputs = Array.from(lastRow.querySelectorAll<HTMLInputElement>('input.rcmpaginatedselectinput'));
+    console.log('[simpleApply:filler] Found', allInputs.length, 'picklist inputs in the new row');
 
-    // First button should be the language picker
-    if (allBtns.length > 0) {
-      const languageBtn = allBtns[0];
-      console.log(`[simpleApply:filler] Filling language field with: ${lang.language}`);
-      await typeIntoPicklist(languageBtn, lang.language);
+    // Map English language names to Spanish equivalents for Spanish-locale forms
+    const languageNameMap: Record<string, string[]> = {
+      'french': ['Francés', 'French'],
+      'english': ['Inglés', 'English'],
+      'spanish': ['Español', 'Spanish'],
+      'german': ['Alemán', 'German'],
+      'portuguese': ['Portugués', 'Portuguese'],
+      'italian': ['Italiano', 'Italian'],
+      'chinese': ['Chino', 'Chinese'],
+      'japanese': ['Japonés', 'Japanese'],
+      'arabic': ['Árabe', 'Arabic'],
+      'russian': ['Ruso', 'Russian'],
+      'dutch': ['Holandés', 'Dutch'],
+      'korean': ['Coreano', 'Korean'],
+      'hindi': ['Hindi', 'Hindi'],
+    };
+
+    // First input should be the language picker
+    if (allInputs.length > 0) {
+      // Try Spanish name first, then English name
+      const langKey = lang.language.toLowerCase();
+      const namesToTry = languageNameMap[langKey] || [lang.language];
+      let filled = false;
+      for (const name of namesToTry) {
+        console.log(`[simpleApply:filler] Trying language name: ${name}`);
+        filled = await selectPicklistOption(allInputs[0], name);
+        if (filled) break;
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      if (!filled) {
+        console.log(`[simpleApply:filler] Could not select language "${lang.language}"`);
+      }
       await new Promise(resolve => setTimeout(resolve, 800));
     } else {
-      console.log('[simpleApply:filler] No select buttons found in row');
+      console.log('[simpleApply:filler] No picklist inputs found in row');
       continue;
     }
 
-    // Fill proficiency buttons if available
-    if (lang.proficiency && allBtns.length > 1) {
-      // Map common proficiency levels to SuccessFactors options: Beginner, Fluent, Intermediate
-      const proficiencyMap: Record<string, string> = {
-        'native': 'Fluent',
-        'fluent': 'Fluent',
-        'advanced': 'Fluent',
-        'intermediate': 'Intermediate',
-        'basic': 'Beginner',
-        'beginner': 'Beginner',
+    // Fill proficiency inputs if available
+    if (lang.proficiency && allInputs.length > 1) {
+      // Map proficiency levels to both English and Spanish SuccessFactors options
+      const proficiencyMap: Record<string, string[]> = {
+        'native': ['Fluido', 'Fluent'],
+        'fluent': ['Fluido', 'Fluent'],
+        'advanced': ['Fluido', 'Fluent'],
+        'intermediate': ['Intermedio', 'Intermediate'],
+        'basic': ['Principiante', 'Beginner'],
+        'beginner': ['Principiante', 'Beginner'],
       };
 
-      const targetProficiency = proficiencyMap[lang.proficiency.toLowerCase()] || 'Intermediate';
+      const proficiencyOptions = proficiencyMap[lang.proficiency.toLowerCase()] || ['Intermedio', 'Intermediate'];
 
-      // Fill remaining buttons (proficiency fields: Speaking, Reading, Writing, etc.)
-      const proficiencyButtons = Array.from(allBtns).slice(1);
+      // Fill remaining inputs (proficiency fields: Speaking, Reading, Writing)
+      const proficiencyInputs = allInputs.slice(1);
 
-      for (let j = 0; j < proficiencyButtons.length; j++) {
-        console.log(`[simpleApply:filler] Filling proficiency field ${j + 1}: ${targetProficiency}`);
-        await typeIntoPicklist(proficiencyButtons[j], targetProficiency);
+      for (let j = 0; j < proficiencyInputs.length; j++) {
+        let filled = false;
+        for (const profName of proficiencyOptions) {
+          console.log(`[simpleApply:filler] Filling proficiency field ${j + 1}: trying "${profName}"`);
+          filled = await selectPicklistOption(proficiencyInputs[j], profName);
+          if (filled) break;
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
         await new Promise(resolve => setTimeout(resolve, 700));
       }
     } else if (lang.proficiency) {
-      console.log('[simpleApply:filler] No proficiency buttons found in row (only 1 button detected)');
+      console.log('[simpleApply:filler] No proficiency inputs found in row (only 1 input detected)');
     }
 
     // Brief pause before adding next language
