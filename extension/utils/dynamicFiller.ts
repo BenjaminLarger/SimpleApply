@@ -652,8 +652,8 @@ async function fillLanguageSkills(
     const lang = profile.languages[i];
     console.log(`[simpleApply:filler] Processing language ${i + 1}/${profile.languages.length}: ${lang.language}`);
 
-    // Get the current row count before clicking add
-    const rowsBefore = languageSection.querySelectorAll('tr').length;
+    // Get the current row count before clicking add (count divs with class "layoutWrapper row")
+    const rowsBefore = languageSection.querySelectorAll('div.layoutWrapper.row').length;
     console.log(`[simpleApply:filler] Rows before add: ${rowsBefore}`);
 
     // Click the add button using multiple methods to ensure it works with SAP UI5
@@ -685,30 +685,30 @@ async function fillLanguageSkills(
     await new Promise(resolve => setTimeout(resolve, 800));
 
     // Wait for new row to render
-    let rowsAfter = languageSection.querySelectorAll('tr').length;
+    let rowsAfter = languageSection.querySelectorAll('div.layoutWrapper.row').length;
     let waitCount = 0;
     while (rowsAfter <= rowsBefore && waitCount < 5) {
       await new Promise(resolve => setTimeout(resolve, 400));
-      rowsAfter = languageSection.querySelectorAll('tr').length;
+      rowsAfter = languageSection.querySelectorAll('div.layoutWrapper.row').length;
       waitCount++;
     }
 
     console.log(`[simpleApply:filler] Rows after add: ${rowsAfter}`);
 
-    // Find all rows in the section
-    const rows = languageSection.querySelectorAll('tr');
+    // Find all rows in the section (using div.layoutWrapper.row)
+    const rows = languageSection.querySelectorAll('div.layoutWrapper.row');
     if (rows.length === 0 || rows.length <= rowsBefore) {
       console.log('[simpleApply:filler] No new row added, skipping this language');
       continue;
     }
 
     // Get the last row (newly added)
-    const lastRow = rows[rows.length - 1] as HTMLTableRowElement;
+    const lastRow = rows[rows.length - 1] as HTMLElement;
     console.log('[simpleApply:filler] Processing new row. Total rows:', rows.length);
 
-    // Find ALL buttons in this row (language and proficiency)
-    const allBtns = lastRow.querySelectorAll<HTMLButtonElement>('button');
-    console.log('[simpleApply:filler] Found', allBtns.length, 'buttons in the new row');
+    // Find ALL buttons in this row with class "rcmpaginatedselectbutton"
+    const allBtns = Array.from(lastRow.querySelectorAll<HTMLButtonElement>('button.rcmpaginatedselectbutton'));
+    console.log('[simpleApply:filler] Found', allBtns.length, 'select buttons in the new row');
 
     // First button should be the language picker
     if (allBtns.length > 0) {
@@ -717,11 +717,11 @@ async function fillLanguageSkills(
       await typeIntoPicklist(languageBtn, lang.language);
       await new Promise(resolve => setTimeout(resolve, 800));
     } else {
-      console.log('[simpleApply:filler] No buttons found in row');
+      console.log('[simpleApply:filler] No select buttons found in row');
       continue;
     }
 
-    // Fill proficiency dropdown if available
+    // Fill proficiency buttons if available
     if (lang.proficiency && allBtns.length > 1) {
       // Map common proficiency levels to SuccessFactors options: Beginner, Fluent, Intermediate
       const proficiencyMap: Record<string, string> = {
@@ -735,12 +735,12 @@ async function fillLanguageSkills(
 
       const targetProficiency = proficiencyMap[lang.proficiency.toLowerCase()] || 'Intermediate';
 
-      // Fill remaining buttons (proficiency fields)
+      // Fill remaining buttons (proficiency fields: Speaking, Reading, Writing, etc.)
       const proficiencyButtons = Array.from(allBtns).slice(1);
 
-      for (const btn of proficiencyButtons) {
-        console.log(`[simpleApply:filler] Filling proficiency field: ${targetProficiency}`);
-        await typeIntoPicklist(btn, targetProficiency);
+      for (let j = 0; j < proficiencyButtons.length; j++) {
+        console.log(`[simpleApply:filler] Filling proficiency field ${j + 1}: ${targetProficiency}`);
+        await typeIntoPicklist(proficiencyButtons[j], targetProficiency);
         await new Promise(resolve => setTimeout(resolve, 700));
       }
     } else if (lang.proficiency) {
