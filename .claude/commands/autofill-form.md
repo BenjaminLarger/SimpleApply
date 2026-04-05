@@ -285,9 +285,17 @@ When validation shows empty fields, Claude **automatically**:
    - If still failing: repeats steps 1-4
    - If passing: commits and exits
 
-6. **Commits on final pass**
+6. **Takes screenshot before commit**
+   - Captures current form state showing all filled fields
+   - Saves screenshot to validate visual confirmation
+   - Screenshot proves extension filled the form correctly
+   - Screenshot is reference for future testing
+
+7. **Commits on final pass**
+   - Takes screenshot of filled form
    - One commit per round of improvements
    - Message includes which fields were fixed
+   - Screenshot proof attached to commit via git notes (optional)
 
 ## Example: Full Autonomous Loop
 
@@ -315,6 +323,9 @@ ITERATION 2:
   Execute in console (same tab, no reload)
   Get JSON: { fields_filled: 10, empty: 0 }
   Status: PASS
+  
+  Take screenshot: capture filled form state
+  Verify screenshot shows all fields populated
   
   Commit: git commit -m "fix(extension): add email/phone keywords to fieldDetector"
   

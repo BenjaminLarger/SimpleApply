@@ -576,16 +576,35 @@ async function fillLanguageSkills(
     return;
   }
 
-  // Find the Language Skills section by searching for content with "Language" and "Proficiency"
-  const allSections = root.querySelectorAll('[id*="sectionContent"]');
+  // Find the Language Skills section by looking for aria-labelledby that contains "Language" or "Idioma" (Spanish)
+  const allSections = root.querySelectorAll('[role="group"][aria-labelledby]');
   let languageSection: Element | null = null;
 
   for (const section of allSections) {
-    const content = section.textContent || '';
-    if (content.includes('Language') && content.includes('Proficiency')) {
-      languageSection = section;
-      console.log('[simpleApply:filler] Language Skills section found');
-      break;
+    const labelId = section.getAttribute('aria-labelledby');
+    if (labelId) {
+      const labelEl = document.getElementById(labelId);
+      const labelText = labelEl?.textContent || '';
+      const lowerText = labelText.toLowerCase();
+      // Check for both English "language" and Spanish "idioma"
+      if (lowerText.includes('language') || lowerText.includes('idioma')) {
+        languageSection = section;
+        console.log('[simpleApply:filler] Language Skills section found via aria-labelledby:', labelText);
+        break;
+      }
+    }
+  }
+
+  // Fallback: check section text content
+  if (!languageSection) {
+    for (const section of allSections) {
+      const content = section.textContent || '';
+      // Check for both English "Language" and Spanish "Idiomas"
+      if (content.toLowerCase().includes('language') || content.toLowerCase().includes('idioma')) {
+        languageSection = section;
+        console.log('[simpleApply:filler] Language Skills section found via text content');
+        break;
+      }
     }
   }
 
@@ -594,72 +613,142 @@ async function fillLanguageSkills(
     return;
   }
 
-  // Find the "Add new row" button
-  const addBtn = languageSection.querySelector<HTMLElement>(
+  // Find the "Add new row" button - look for the add button within the section
+  // Try multiple selectors to handle different HTML structures
+  let addBtn = languageSection.querySelector<HTMLElement>(
     'div[class*="addRowButton"]'
   );
+
+  if (!addBtn) {
+    // Try finding a button with add-related text or aria-label
+    const buttons = languageSection.querySelectorAll<HTMLElement>('button, div[role="button"]');
+    for (const btn of buttons) {
+      const title = btn.getAttribute('title') || '';
+      const ariaLabel = btn.getAttribute('aria-label') || '';
+      const text = btn.textContent || '';
+      if (
+        title.toLowerCase().includes('add') ||
+        ariaLabel.toLowerCase().includes('add') ||
+        text.toLowerCase().includes('add') ||
+        title.toLowerCase().includes('añadir') ||
+        ariaLabel.toLowerCase().includes('añadir') ||
+        text.toLowerCase().includes('añadir')
+      ) {
+        addBtn = btn;
+        break;
+      }
+    }
+  }
 
   if (!addBtn) {
     console.log('[simpleApply:filler] Add row button not found in Language Skills section');
     return;
   }
 
-  // Add and fill a row for each language
-  for (const lang of profile.languages) {
-    addBtn.click();
+  console.log('[simpleApply:filler] Language Skills add button found, starting to add languages');
 
-    // Wait for new row to render
-    try {
-      await waitForNewNodes(languageSection, 2000);
-    } catch {
-      console.log('[simpleApply:filler] Timeout waiting for language row to render');
+  // Add and fill a row for each language
+  for (let i = 0; i < profile.languages.length; i++) {
+    const lang = profile.languages[i];
+    console.log(`[simpleApply:filler] Processing language ${i + 1}/${profile.languages.length}: ${lang.language}`);
+
+    // Get the current row count before clicking add
+    const rowsBefore = languageSection.querySelectorAll('tr').length;
+    console.log(`[simpleApply:filler] Rows before add: ${rowsBefore}`);
+
+    // Click the add button using multiple methods to ensure it works with SAP UI5
+    if (addBtn) {
+      // Method 1: Try native SAP juic.fire if available (for SAP UI5)
+      const onclickAttr = addBtn.getAttribute('onclick');
+      if (onclickAttr && (window as any).juic) {
+        console.log('[simpleApply:filler] Using SAP juic.fire() method');
+        try {
+          const match = onclickAttr.match(/juic\.fire\("([^"]+)","([^"]+)"/);
+          if (match) {
+            (window as any).juic.fire(match[1], match[2], new Event('click'));
+          } else {
+            addBtn.click();
+          }
+        } catch (e) {
+          console.log('[simpleApply:filler] SAP juic.fire failed, using standard click:', e);
+          addBtn.click();
+        }
+      } else {
+        // Method 2: Standard click with full event sequence
+        addBtn.focus();
+        addBtn.click();
+        addBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        addBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Find the newest row
-    const rowContainers = languageSection.querySelectorAll('[id*="_sectionComponent"]');
-    if (rowContainers.length === 0) {
-      console.log('[simpleApply:filler] No row containers found');
+    // Wait for new row to render
+    let rowsAfter = languageSection.querySelectorAll('tr').length;
+    let waitCount = 0;
+    while (rowsAfter <= rowsBefore && waitCount < 5) {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      rowsAfter = languageSection.querySelectorAll('tr').length;
+      waitCount++;
+    }
+
+    console.log(`[simpleApply:filler] Rows after add: ${rowsAfter}`);
+
+    // Find all rows in the section
+    const rows = languageSection.querySelectorAll('tr');
+    if (rows.length === 0 || rows.length <= rowsBefore) {
+      console.log('[simpleApply:filler] No new row added, skipping this language');
       continue;
     }
 
-    const lastRow = rowContainers[rowContainers.length - 1];
+    // Get the last row (newly added)
+    const lastRow = rows[rows.length - 1] as HTMLTableRowElement;
+    console.log('[simpleApply:filler] Processing new row. Total rows:', rows.length);
 
-    // Fill Language using the typeIntoPicklist pattern
-    const languageBtn = lastRow.querySelector<HTMLButtonElement>(
-      'button[class*="rcmpaginatedselectbutton"][title="Language"]'
-    );
+    // Find ALL buttons in this row (language and proficiency)
+    const allBtns = lastRow.querySelectorAll<HTMLButtonElement>('button');
+    console.log('[simpleApply:filler] Found', allBtns.length, 'buttons in the new row');
 
-    if (languageBtn) {
-      console.log(`[simpleApply:filler] Filling language: ${lang.language}`);
+    // First button should be the language picker
+    if (allBtns.length > 0) {
+      const languageBtn = allBtns[0];
+      console.log(`[simpleApply:filler] Filling language field with: ${lang.language}`);
       await typeIntoPicklist(languageBtn, lang.language);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 800));
+    } else {
+      console.log('[simpleApply:filler] No buttons found in row');
+      continue;
     }
 
-    // Fill proficiency fields (Speaking, Reading, Writing)
-    if (lang.proficiency) {
+    // Fill proficiency dropdown if available
+    if (lang.proficiency && allBtns.length > 1) {
+      // Map common proficiency levels to SuccessFactors options: Beginner, Fluent, Intermediate
       const proficiencyMap: Record<string, string> = {
-        'native': 'Native',
-        'fluent': 'Native',
-        'advanced': 'Advanced',
+        'native': 'Fluent',
+        'fluent': 'Fluent',
+        'advanced': 'Fluent',
         'intermediate': 'Intermediate',
-        'basic': 'Basic',
+        'basic': 'Beginner',
+        'beginner': 'Beginner',
       };
 
-      const targetProficiency = proficiencyMap[lang.proficiency.toLowerCase()] || lang.proficiency;
+      const targetProficiency = proficiencyMap[lang.proficiency.toLowerCase()] || 'Intermediate';
 
-      // Query for all proficiency buttons in this row
-      const proficiencyBtns = lastRow.querySelectorAll<HTMLButtonElement>(
-        'button[class*="rcmpaginatedselectbutton"][title*="Proficiency"]'
-      );
+      // Fill remaining buttons (proficiency fields)
+      const proficiencyButtons = Array.from(allBtns).slice(1);
 
-      for (const btn of proficiencyBtns) {
-        console.log(`[simpleApply:filler] Filling ${btn.title}: ${targetProficiency}`);
+      for (const btn of proficiencyButtons) {
+        console.log(`[simpleApply:filler] Filling proficiency field: ${targetProficiency}`);
         await typeIntoPicklist(btn, targetProficiency);
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise(resolve => setTimeout(resolve, 700));
       }
+    } else if (lang.proficiency) {
+      console.log('[simpleApply:filler] No proficiency buttons found in row (only 1 button detected)');
     }
+
+    // Brief pause before adding next language
+    await new Promise(resolve => setTimeout(resolve, 800));
   }
 
   console.log(`[simpleApply:filler] Language Skills section completed. Added ${profile.languages.length} language(s)`);

@@ -76,6 +76,22 @@ def get_profile():
             "endYear": end_year,
         })
 
+    # Map languages from YAML format to extension ProfileData.Language format
+    # Format: "French (native)" → { language: "French", proficiency: "native" }
+    languages = []
+    for lang_str in profile.get("languages", []):
+        lang_str = lang_str.strip()
+        if "(" in lang_str and ")" in lang_str:
+            lang_name = lang_str.split("(")[0].strip()
+            proficiency = lang_str.split("(")[1].split(")")[0].strip()
+        else:
+            lang_name = lang_str
+            proficiency = ""
+        languages.append({
+            "language": lang_name,
+            "proficiency": proficiency or None,
+        })
+
     return {
         # Personal info fields
         "name": personal_info.get("name", ""),
@@ -94,7 +110,12 @@ def get_profile():
         # Structured data
         "experiences": experiences,
         "education": education,
+        "languages": languages,
         "skills": profile.get("skills", []),
+        # Voluntary disclosures
+        "voluntaryDisclosures": {
+            "gender": personal_info.get("gender", "") or None,
+        },
     }
 
 
