@@ -4,7 +4,7 @@ import { queryShadowAll } from '../utils/shadowDom.js';
 import { fillForm } from '../utils/dynamicFiller.js';
 import { getProfile } from '../utils/profile-client.js';
 import { isWorkday, fillWorkday } from '../utils/adapters/workday.js';
-import { isSuccessFactors } from '../utils/adapters/successfactors.js';
+import { isSuccessFactors, fillSuccessFactorsForm } from '../utils/adapters/successfactors.js';
 
 const MIN_FIELDS = 3;
 let bannerInjected = false;
@@ -287,6 +287,7 @@ async function doFill(
     if (workday) {
       await fillWorkday(profile);
     } else {
+      // Dispatch to fillForm which internally handles SuccessFactors
       await fillForm(document.documentElement, profile, detectedFields);
     }
   } catch (err) {
