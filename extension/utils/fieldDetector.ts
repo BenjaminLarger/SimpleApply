@@ -398,6 +398,23 @@ export function detectFields(root: Element): DetectedField[] {
       minConfidenceToStopSearch: 0.75,
     },
     {
+      source: 'aria-labelledby',
+      // Parse CSOD/Cornerstone ATS pattern: "actionItem.firstName.idTag-error" → "firstName"
+      // Also resolves referenced element text content as fallback
+      getValue: (el) => {
+        const labelledById = el.getAttribute('aria-labelledby');
+        if (!labelledById) return '';
+        // CSOD pattern: actionItem.FIELDNAME.idTag-...
+        const csodMatch = labelledById.match(/actionItem\.(\w+)\./);
+        if (csodMatch) return csodMatch[1];
+        // Fallback: resolve referenced element text
+        const refEl = el.ownerDocument.getElementById(labelledById);
+        return refEl?.textContent?.trim() ?? '';
+      },
+      confidenceMultiplier: 0.95,
+      minConfidenceToStopSearch: 0.9,
+    },
+    {
       source: 'label',
       getValue: (el) => getLabelText(el),
       confidenceMultiplier: 0.9,
@@ -443,7 +460,7 @@ export function detectFields(root: Element): DetectedField[] {
     // Reject matches on inputs with no id, no name, and no autocomplete — these are
     // typically framework-generated helper inputs (e.g. Workday combobox search triggers)
     const hasDirectAttr = !!(el.id || el.getAttribute('name') || el.getAttribute('autocomplete')
-      || el.getAttribute('placeholder'));
+      || el.getAttribute('placeholder') || el.getAttribute('aria-labelledby'));
     if (fieldType !== 'unknown' && hasDirectAttr) {
       console.log(`[simpleApply:fieldDetector] Matched: ${fieldType} (${confidence}) ←`, {
         name: el.getAttribute('name'),
