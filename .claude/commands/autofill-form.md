@@ -349,3 +349,34 @@ ITERATION 2:
 - **Auto-iterates**: Updates source → rebuilds → re-executes → validates
 - **Structured feedback**: Always JSON, never narrative
 - **Fast feedback loop**: Complete test cycle in seconds
+
+## Safety Rules
+
+**CRITICAL: Changes must not break logic for other ATS systems**
+
+When updating `fieldDetector.ts` or `dynamicFiller.ts`:
+
+1. **Scope changes narrowly**
+   - Add new detector sources rather than modifying existing ones
+   - Use pattern matching (regex) to target specific ATS systems
+   - Example: CSOD pattern `actionItem\.(\w+)\.` only matches Cornerstone forms, doesn't affect others
+
+2. **Test specificity before generalizing**
+   - A fallback should NOT match unintended forms from other ATS systems
+   - If uncertain whether a fallback is safe, use pattern matching instead (zero-risk)
+   - Example: Text-content resolution fallback could theoretically misclassify if another ATS happens to have matching keywords → avoid generic fallbacks
+
+3. **Preserve priority ordering**
+   - Earlier detectors (autocomplete, aria-label, name, id) run first
+   - New detectors are added after, so they won't override existing matching
+   - This maintains backward compatibility with all working ATS systems
+
+4. **Validate before committing**
+   - Confirm the change only helps the target form
+   - If in doubt, restrict to pattern-based matching only
+   - Update commit message to note which ATS system is being targeted
+
+5. **Document ATS-specific patterns**
+   - Add comments in code explaining which ATS systems the pattern targets
+   - Example: `// CSOD/Cornerstone ATS pattern: actionItem.FIELDNAME.idTag-...`
+   - Helps future changes understand scope
