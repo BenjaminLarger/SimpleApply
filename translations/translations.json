@@ -106,6 +106,16 @@
           "calendar_integration": "Implemented secure OAuth calendar integrations for Google",
           "workflow_automation": "Developed N8N workflow automation for business process optimization."
         }
+      },
+      "monbusiness": {
+        "role": "Python Developer – Infrastructure & AI Agents (Freelance)",
+        "achievements": {
+          "infrastructure": "Audited and stabilized AI agent infrastructure automating Google Ads & Meta Ads campaign operations for a digital agency.",
+          "code_quality": "Modularized Python codebase and implemented CI/CD strategy with tests on critical functions.",
+          "production": "Investigated and resolved production bugs with direct client impact across automated daily agent runs.",
+          "api_sync": "Maintained synchronization between Stripe, Google Ads API, HubSpot, Discord, Gmail, and Anthropic Claude APIs.",
+          "features": "Developed new Flask dashboard features and improved AI agent business rules and integrations."
+        }
       }
     },
     "hobbies": {
@@ -197,6 +207,18 @@
           "voice_integration": "Intégré Vapi pour l'IA vocale, Twilio et Telynx pour la téléphonie, et implémenté l'Ingénierie des Prompts Avancée avec RAG pour des conversations contextuelles.",
           "calendar_integration": "Implémenté des intégrations de calendrier OAuth sécurisées pour Google.",
           "workflow_automation": "Développé l'automatisation des flux de travail N8N pour l'optimisation des processus métier."
+        }
+      },
+      "monbusiness": {
+        "role": "Développeur Python – Infrastructure & Agents IA (Freelance)",
+        "role_male": "Développeur Python – Infrastructure & Agents IA (Freelance)",
+        "role_female": "Développeuse Python – Infrastructure & Agents IA (Freelance)",
+        "achievements": {
+          "infrastructure": "Audité et stabilisé l'infrastructure d'agents IA automatisant les opérations de campagnes Google Ads & Meta Ads pour une agence digitale.",
+          "code_quality": "Modularisé le codebase Python et mis en place une stratégie CI/CD avec tests sur les fonctions critiques.",
+          "production": "Investigué et résolu les bugs en production avec impact direct sur les clients lors des runs quotidiens d'agents automatisés.",
+          "api_sync": "Maintenu la synchronisation entre les APIs Stripe, Google Ads, HubSpot, Discord, Gmail et Anthropic Claude.",
+          "features": "Développé de nouvelles fonctionnalités sur les dashboards Flask et amélioré les règles métier et intégrations des agents IA."
         }
       }
     },
@@ -319,6 +341,18 @@
           "voice_integration": "Integré Vapi para IA de voz, Twilio y Telynx para telefonía, e implementé Ingeniería de Prompts Avanzada con RAG para conversaciones contextuales.",
           "calendar_integration": "Implementé integraciones seguras de calendario OAuth para Google.",
           "workflow_automation": "Desarrollé automatización de flujo de trabajo N8N para optimización de procesos empresariales."
+        }
+      },
+      "monbusiness": {
+        "role": "Desarrollador Python – Infraestructura & Agentes IA (Freelance)",
+        "role_male": "Desarrollador Python – Infraestructura & Agentes IA (Freelance)",
+        "role_female": "Desarrolladora Python – Infraestructura & Agentes IA (Freelance)",
+        "achievements": {
+          "infrastructure": "Auditado y estabilizado la infraestructura de agentes IA que automatiza las operaciones de campañas Google Ads & Meta Ads para una agencia digital.",
+          "code_quality": "Modularizado el codebase Python e implementado estrategia CI/CD con pruebas en funciones críticas.",
+          "production": "Investigado y resuelto bugs en producción con impacto directo en clientes durante ejecuciones diarias de agentes automatizados.",
+          "api_sync": "Mantenido la sincronización entre las APIs de Stripe, Google Ads, HubSpot, Discord, Gmail y Anthropic Claude.",
+          "features": "Desarrollado nuevas funcionalidades en dashboards Flask y mejorado reglas de negocio e integraciones de agentes IA."
         }
       }
     },
